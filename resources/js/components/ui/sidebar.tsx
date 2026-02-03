@@ -1,5 +1,5 @@
 import { Slot } from "@radix-ui/react-slot"
-import type { VariantProps} from "class-variance-authority";
+import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority"
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react"
 import * as React from "react"
@@ -447,9 +447,9 @@ function SidebarGroupContent({
   )
 }
 
-function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
+function SidebarMenu({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <ul
+    <div
       data-slot="sidebar-menu"
       data-sidebar="menu"
       className={cn("flex w-full min-w-0 flex-col gap-1", className)}
@@ -458,9 +458,9 @@ function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">) {
   )
 }
 
-function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
+function SidebarMenuItem({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <li
+    <div
       data-slot="sidebar-menu-item"
       data-sidebar="menu-item"
       className={cn("group/menu-item relative", className)}
@@ -565,7 +565,7 @@ function SidebarMenuAction({
         "peer-data-[size=lg]/menu-button:top-2.5",
         "group-data-[collapsible=icon]:hidden",
         showOnHover &&
-          "peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0",
+        "peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0",
         className
       )}
       {...props}
@@ -606,8 +606,8 @@ function SidebarMenuSkeleton({
   // wrapping in useState to ensure the width is stable across renders
   // also ensures we have a stable reference to the style object
   const [skeletonStyle] = React.useState(() => (
-      {
-        "--skeleton-width": `${Math.floor(Math.random() * 40) + 50}%` // Random width between 50 to 90%.
+    {
+      "--skeleton-width": `${Math.floor(Math.random() * 40) + 50}%` // Random width between 50 to 90%.
     } as React.CSSProperties
   ))
 

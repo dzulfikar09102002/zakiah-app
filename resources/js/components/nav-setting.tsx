@@ -2,17 +2,19 @@
 
 import {
     SidebarGroup,
+    SidebarGroupLabel,
     SidebarMenu,
 } from "@/components/ui/sidebar"
 import type { NavItem } from "@/types"
-import NavItemNode from "./nav-item-node"
+import NavItemSetting from "./nav-item-setting"
 
-export function NavMain({ items }: { items: NavItem[] }) {
+export function NavSetting({ items }: { items: NavItem[] }) {
     return (
         <SidebarGroup>
+            <SidebarGroupLabel>Pengaturan</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => (
-                    <NavItemNode key={item.title} item={item} />
+                    <NavItemSetting key={item.title} item={item} />
                 ))}
             </SidebarMenu>
         </SidebarGroup>

@@ -1,6 +1,15 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
-import { NavFooter } from '@/components/nav-footer';
+import {
+    LayoutGrid,
+    ScanBarcode,
+    ChartNoAxesCombined,
+    Warehouse,
+    UsersRound,
+    CircleDollarSign,
+    Cog,
+    MonitorCog,
+    UserCog
+} from 'lucide-react';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
@@ -15,28 +24,208 @@ import {
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
+import { NavSetting } from './nav-setting';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard(),
+        href: dashboard().url,
         icon: LayoutGrid,
     },
-];
-
-const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
+        title: "Laporan",
+        href: "#",
+        icon: ChartNoAxesCombined,
+        isActive: false,
+        items: [
+            {
+                title: "Penjualan",
+                href: "/playground/history",
+                items: [
+                    {
+                        title: "Ringkasan",
+                        href: "#"
+                    },
+                    {
+                        title: "Per Product",
+                        href: "#"
+                    },
+                    {
+                        title: "Per Toko",
+                        href: "#"
+                    }
+                ]
+            },
+            {
+                title: "Stok",
+                href: "/playground/starred",
+                items: [
+                    {
+                        title: "Kartu Stok",
+                        href: "#"
+                    },
+                    {
+                        title: "Pergerakan",
+                        href: "#"
+                    }
+                ]
+            },
+            {
+                title: "Sales",
+                href: "#",
+                items: [
+                    {
+                        title: "Perform",
+                        href: "/playground/settings/general",
+                    },
+                    {
+                        title: "Perform Detail",
+                        href: "/playground/settings/team",
+                    },
+                ],
+            },
+        ],
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: "Produk",
+        href: "#",
+        icon: ScanBarcode,
+        items: [
+            {
+                title: "Kelola Produk",
+                href: "#",
+            },
+            {
+                title: "Produk Kategori",
+                href: "#",
+            },
+            {
+                title: "Produk Unit",
+                href: "#",
+            },
+        ],
+    },
+    {
+        title: "Stok",
+        href: "#",
+        icon: Warehouse,
+        items: [
+            {
+                title: "Stok Opname",
+                href: "#",
+            },
+            {
+                title: "Pindah Stok",
+                href: "#",
+            },
+            {
+                title: "Penyesuaian Stok",
+                href: "#",
+            },
+        ],
+    },
+    {
+        title: "People",
+        href: "#",
+        icon: UsersRound,
+        isActive: false,
+        items: [
+            {
+                title: "Pelanggan",
+                href: "/playground/history",
+                items: [
+                    {
+                        title: "Loyalty",
+                        href: "#"
+                    },
+                    {
+                        title: "Kategori",
+                        href: "#"
+                    },
+                ]
+            },
+        ],
+    },
+    {
+        title: "Revenue Center",
+        href: "#",
+        icon: CircleDollarSign,
+        isActive: false,
+        items: [
+            {
+                title: "Penjualan",
+                href: "/playground/history",
+                items: [
+                    {
+                        title: "Rekapan",
+                        href: "#"
+                    },
+                    {
+                        title: "Data Penjualan",
+                        href: "#"
+                    },
+                ]
+            },
+            {
+                title: "Promosi",
+                href: "#"
+            }
+        ],
+    },
+    {
+        title: "Administrasi",
+        href: "#",
+        icon: Cog,
+        items: [
+            {
+                title: "Entity",
+                href: "#",
+            },
+            {
+                title: "Lokasi",
+                href: "#",
+            },
+            {
+                title: "Karyawan",
+                href: "#",
+            },
+            {
+                title: "Role",
+                href: "#",
+            },
+        ],
     },
 ];
-
+const settingNavItems: NavItem[] = [
+    {
+        title: "Sistem",
+        href: "#",
+        icon: MonitorCog,
+        isActive: false,
+        items: [
+            {
+                title: "Pembayaran",
+                href: "/playground/history",
+            },
+            {
+                title: "Pajak",
+                href: "#"
+            }
+        ],
+    },
+    {
+        title: "Konfigurasi",
+        href: "#",
+        icon: UserCog,
+        isActive: false,
+        items: [
+            {
+                title: "Jenis Pesanan",
+                href: "#",
+            },
+        ],
+    },
+];
 export function AppSidebar() {
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -54,10 +243,10 @@ export function AppSidebar() {
 
             <SidebarContent>
                 <NavMain items={mainNavItems} />
+                <NavSetting items={settingNavItems} />
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>
