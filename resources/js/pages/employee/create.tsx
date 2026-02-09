@@ -24,34 +24,58 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-type LocationRole = {
-    location: string
-    role: string
-}
-
 type Props = {
     roles: Role[]
     locations: Location[]
 }
 
+type LocationRoleRow = {
+    location: string
+    role: string
+    saved: boolean
+}
+
 function CreateEmployee({ roles, locations }: Props) {
-    const [locationRoles, setLocationRoles] = useState<LocationRole[]>([
-        { location: "", role: "" },
+    const [locationRoles, setLocationRoles] = useState<LocationRoleRow[]>([
+        { location: "", role: "", saved: false },
     ])
 
     const addLocation = () => {
-        setLocationRoles([...locationRoles, { location: "", role: "" }])
+        setLocationRoles((prev) => [
+            ...prev,
+            { location: "", role: "", saved: false },
+        ])
     }
 
     const removeLocation = (index: number) => {
-        setLocationRoles(locationRoles.filter((_, i) => i !== index))
+        setLocationRoles((prev) => prev.filter((_, i) => i !== index))
     }
 
-    const updateLocation = (index: number, key: keyof LocationRole, value: string) => {
-        const updated = [...locationRoles]
-        updated[index][key] = value
-        setLocationRoles(updated)
+    const saveRow = (index: number) => {
+        setLocationRoles((prev) => {
+            const updated = [...prev]
+            updated[index].saved = true
+            return updated
+        })
     }
+
+    const updateLocation = (
+        index: number,
+        key: "location" | "role",
+        value: string
+    ) => {
+        setLocationRoles((prev) => {
+            const updated = [...prev]
+            updated[index] = { ...updated[index], [key]: value }
+            return updated
+        })
+    }
+
+    const getLocationName = (id: string) =>
+        locations.find((l) => String(l.id) === id)?.name ?? "-"
+
+    const getRoleName = (id: string) =>
+        roles.find((r) => String(r.id) === id)?.name ?? "-"
 
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirm, setShowConfirm] = useState(false)
@@ -160,57 +184,91 @@ function CreateEmployee({ roles, locations }: Props) {
 
                                 {locationRoles.map((item, index) => (
                                     <div key={index} className="grid grid-cols-12 gap-3 items-center">
+                                        {/* LOCATION */}
                                         <div className="col-span-5">
-                                            <Select
-                                                value={item.location}
-                                                onValueChange={(val) =>
-                                                    updateLocation(index, "location", val)
-                                                }
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Pilih Lokasi" />
-                                                </SelectTrigger>
-                                                <SelectContent className="max-h-60 overflow-y-auto">
-                                                    {locations.map((r) => (
-                                                        <SelectItem key={r.id} value={String(r.id)}>
-                                                            {r.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            {item.saved ? (
+                                                <div className="font-medium">
+                                                    {getLocationName(item.location)}
+                                                </div>
+                                            ) : (
+                                                <Select
+                                                    value={item.location}
+                                                    onValueChange={(val) =>
+                                                        updateLocation(index, "location", val)
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Pilih Lokasi" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="max-h-60 overflow-y-auto">
+                                                        {locations.map((r) => (
+                                                            <SelectItem key={r.id} value={String(r.id)}>
+                                                                {r.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
                                         </div>
 
+                                        {/* ROLE */}
                                         <div className="col-span-5">
-                                            <Select
-                                                value={item.role}
-                                                onValueChange={(val) =>
-                                                    updateLocation(index, "role", val)
-                                                }
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Pilih Role" />
-                                                </SelectTrigger>
-                                                <SelectContent className="max-h-60 overflow-y-auto">
-                                                    {roles.map((r) => (
-                                                        <SelectItem key={r.id} value={String(r.id)}>
-                                                            {r.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            {item.saved ? (
+                                                <div>{getRoleName(item.role)}</div>
+                                            ) : (
+                                                <Select
+                                                    value={item.role}
+                                                    onValueChange={(val) =>
+                                                        updateLocation(index, "role", val)
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Pilih Role" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="max-h-60 overflow-y-auto">
+                                                        {roles.map((r) => (
+                                                            <SelectItem key={r.id} value={String(r.id)}>
+                                                                {r.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
                                         </div>
 
+                                        {/* ACTION */}
                                         <div className="col-span-2 flex justify-center gap-2">
-                                            <Button size="icon" variant="default">
-                                                <Save className="w-4 h-4" />
-                                            </Button>
-                                            <Button
-                                                size="icon"
-                                                variant="destructive"
-                                                onClick={() => removeLocation(index)}
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </Button>
+                                            {!item.saved ? (
+                                                <>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="default"
+                                                        disabled={!item.location || !item.role}
+                                                        onClick={() => saveRow(index)}
+                                                        title="Simpan"
+                                                    >
+                                                        <Save className="w-4 h-4" />
+                                                    </Button>
+
+                                                    <Button
+                                                        size="icon"
+                                                        variant="destructive"
+                                                        onClick={() => removeLocation(index)}
+                                                        title="Hapus"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </Button>
+                                                </>
+                                            ) : (
+                                                <Button
+                                                    size="icon"
+                                                    variant="outline"
+                                                    onClick={() => removeLocation(index)}
+                                                    title="Hapus"
+                                                >
+                                                    <X className="w-4 h-4 text-red-500" />
+                                                </Button>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
