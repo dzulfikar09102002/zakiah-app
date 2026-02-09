@@ -21,11 +21,11 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+import { dashboard, employee, summary } from '@/routes';
+import { roles } from '@/routes';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
 import { NavSetting } from './nav-setting';
-
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -40,11 +40,11 @@ const mainNavItems: NavItem[] = [
         items: [
             {
                 title: "Penjualan",
-                href: "/playground/history",
+                href: "#",
                 items: [
                     {
                         title: "Ringkasan",
-                        href: "#"
+                        href: summary().url
                     },
                     {
                         title: "Per Product",
@@ -187,11 +187,11 @@ const mainNavItems: NavItem[] = [
             },
             {
                 title: "Karyawan",
-                href: "#",
+                href: employee().url,
             },
             {
                 title: "Role",
-                href: "#",
+                href: roles().url,
             },
         ],
     },

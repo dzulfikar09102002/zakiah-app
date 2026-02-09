@@ -1,6 +1,8 @@
 "use client"
 
+import { usePage } from "@inertiajs/react"
 import { ChevronRight } from "lucide-react"
+import { useState, useMemo } from "react"
 import {
     Collapsible,
     CollapsibleContent,
@@ -15,13 +17,40 @@ import {
 } from "@/components/ui/sidebar"
 import type { NavItem } from "@/types"
 
+// helper: cek aktif sampai ke anak-anak
+function isItemActive(item: NavItem, currentPath: string): boolean {
+    if (item.href && item.href !== "#" && currentPath.startsWith(item.href)) {
+        return true
+    }
+    if (item.items?.length) {
+        return item.items.some((child) => isItemActive(child, currentPath))
+    }
+    return false
+}
+
 export default function NavItemNode({ item }: { item: NavItem }) {
-    const hasChildren = item.items && item.items.length > 0
+    const { url } = usePage()
+    const hasChildren = !!item.items?.length
+
+    const shouldBeOpen = useMemo(
+        () => hasChildren && isItemActive(item, url),
+        [hasChildren, item, url]
+    )
+
+    const [open, setOpen] = useState(false)
+
+    const isOpen = useMemo(() => {
+        return open || (hasChildren && isItemActive(item, url))
+    }, [open, hasChildren, item, url])
 
     if (!hasChildren) {
         return (
             <SidebarMenuItem>
-                <SidebarMenuButton asChild className="w-full justify-start">
+                <SidebarMenuButton
+                    asChild
+                    isActive={isItemActive(item, url)}
+                    className="w-full justify-start"
+                >
                     <a href={item.href} className="flex items-center gap-2 w-full">
                         {item.icon && <item.icon className="size-4" />}
                         <span>{item.title}</span>
@@ -34,26 +63,36 @@ export default function NavItemNode({ item }: { item: NavItem }) {
     return (
         <Collapsible
             asChild
-            defaultOpen={item.isActive}
+            open={isOpen}
+            onOpenChange={setOpen}
             className="group/collapsible"
         >
             <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
-                    <SidebarMenuButton tooltip={item.title}>
+                    <SidebarMenuButton
+                        tooltip={item.title}
+                        isActive={shouldBeOpen}
+                        className="relative pr-10"
+                    >
                         {item.icon && <item.icon className="mr-2 size-4" />}
                         <span>{item.title}</span>
-                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                        <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
+
                 <CollapsibleContent>
                     <SidebarMenuSub className="pl-4">
                         {item.items?.map((child) => (
                             <SidebarMenuSubItem key={child.title}>
-                                {child.items && child.items.length > 0 ? (
+                                {child.items?.length ? (
                                     <NavItemNode item={child} />
                                 ) : (
-                                    <SidebarMenuSubButton asChild>
-                                        <a href={child.href}>
+                                    <SidebarMenuSubButton
+                                        asChild
+                                        isActive={isItemActive(child, url)}
+                                    >
+                                        <a href={child.href} className="flex items-center gap-2">
+                                            {child.icon && <child.icon className="size-4" />}
                                             <span>{child.title}</span>
                                         </a>
                                     </SidebarMenuSubButton>
