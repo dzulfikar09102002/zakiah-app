@@ -1,11 +1,27 @@
 import type { ImgHTMLAttributes } from 'react';
 
-export default function AppLogoIcon(props: ImgHTMLAttributes<HTMLImageElement>) {
+interface AppLogoIconProps extends ImgHTMLAttributes<HTMLImageElement> {
+    entityName?: string;
+}
+
+export default function AppLogoIcon({ entityName, ...props }: AppLogoIconProps) {
+    const slug = entityName
+        ?.toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '');
+
+    const logoSrc = slug
+        ? `/assets/images/${slug}.png`
+        : '/assets/images/images-logo.png';
+
     return (
         <img
             {...props}
-            src="/assets/images/images-logo.png"
-            alt="Logo"
+            src={logoSrc}
+            alt={entityName ? `Logo ${entityName}` : 'Logo'}
+            onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = '/assets/images/images-logo.png';
+            }}
         />
     );
 }

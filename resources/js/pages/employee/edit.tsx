@@ -1,12 +1,12 @@
 import { Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { roles } from '@/routes';
+import roles from '@/routes/roles';
 import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Karyawan Baru',
-        href: roles().url,
+        href: roles.index().url,
     },
 ];
 function EditEmployee() {

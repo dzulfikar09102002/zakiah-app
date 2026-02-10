@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\employee;
 use App\Http\Requests\StoreemployeeRequest;
 use App\Http\Requests\UpdateemployeeRequest;
+use App\Models\Employee;
 use App\Models\Location;
 use App\Models\Role;
 use Inertia\Inertia;
@@ -17,8 +17,12 @@ class EmployeeController extends Controller
     public function index()
     {
         $perPage = request('per_page', 10);
-    
-        $employees = Employee::paginate($perPage)->withQueryString();
+
+        $user = auth()->user(); 
+
+        $entityId = $user?->entity?->id; 
+        
+        $employees = Employee::where('entity_id', $entityId)->paginate($perPage)->withQueryString();
     
         $roles = Role::select('id','name')->get()->keyBy('id');
     

@@ -6,13 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import type { Employee } from '@/lib/model';
-import { employee } from '@/routes';
+import employees from '@/routes/employees';
 import type { BreadcrumbItem } from '@/types';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Karyawan',
-        href: employee().url,
+        href: employees.index().url,
     },
 ];
 
@@ -36,7 +36,7 @@ function EmployeeIndex({ employees }: Props) {
             <div className="flex flex-1 flex-col gap-4 p-4">
                 <Card>
                     <CardContent>
-                        <Button className="mb-4" onClick={() => router.get(employee().url + '/create')}>
+                        <Button className="mb-4" onClick={() => router.get(employees().url + '/create')}>
                             <Plus /> Karyawan Baru
                         </Button>
                         <EmployeesTable employees={employees} />
@@ -44,7 +44,7 @@ function EmployeeIndex({ employees }: Props) {
                             data={employees}
                             showing={employees.data.length}
                             onPerPageChange={(val) => {
-                                router.get(employee().url, { per_page: val, page: 1 }, { preserveScroll: true })
+                                router.get(employees().url, { per_page: val, page: 1 }, { preserveScroll: true })
                             }}
                         />
                     </CardContent>

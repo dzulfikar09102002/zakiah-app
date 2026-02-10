@@ -18,6 +18,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
     Route::prefix('/roles')->group(function () {
         Route::get('/', [RoleController::class, 'index'])->name('roles.index');
         Route::post('/store', [RoleController::class, 'store'])->name('roles.store');
@@ -25,8 +26,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{role}/delete', [RoleController::class, 'destroy'])->name('roles.destroy');
     });
     Route::prefix('/employees')->group(function () {
-        Route::get('/', [EmployeeController::class, 'index'])->name('employee');
-        Route::post('/store', [EmployeeController::class, 'index'])->name('employee.store');
+        Route::get('/', [EmployeeController::class, 'index'])->name('employees.index');
+        Route::post('/store', [EmployeeController::class, 'index'])->name('employees.store');
         Route::get('/create', [EmployeeController::class, 'create'])->name('employees.create');
     });
     Route::prefix('sellings')->group(function () {

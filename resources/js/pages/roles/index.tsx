@@ -6,17 +6,16 @@ import TablePagination from '@/components/table-pagination';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import type { Role } from '@/lib/model';
-import { roles } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
 
 const role = () => ({
-    url: '/administrasi/role',
-    store: () => ({ url: '/administrasi/role/store' }),
+    url: '/roles',
+    store: () => ({ url: 'roles/store' }),
 });
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Role',
-        href: roles().url,
+        href: role().url,
     },
 ];
 type Props = {
