@@ -21,11 +21,12 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, employee, summary } from '@/routes';
-import { roles } from '@/routes';
+import { dashboard, employee } from '@/routes';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
 import { NavSetting } from './nav-setting';
+import sellings from '@/routes/sellings';
+import roles from '@/routes/roles';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -44,7 +45,7 @@ const mainNavItems: NavItem[] = [
                 items: [
                     {
                         title: "Ringkasan",
-                        href: summary().url
+                        href: sellings.summary().url
                     },
                     {
                         title: "Per Product",
@@ -191,7 +192,7 @@ const mainNavItems: NavItem[] = [
             },
             {
                 title: "Role",
-                href: roles().url,
+                href: roles.index().url
             },
         ],
     },
