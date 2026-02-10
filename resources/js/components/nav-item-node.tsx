@@ -1,5 +1,3 @@
-"use client"
-
 import { Link, usePage } from "@inertiajs/react"
 import { ChevronRight } from "lucide-react"
 import { useState, useMemo } from "react"
@@ -71,7 +69,6 @@ export default function NavItemNode({ item }: { item: NavItem }) {
                 <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                         tooltip={item.title}
-                        isActive={shouldBeOpen}
                         className="relative pr-10"
                     >
                         {item.icon && <item.icon className="mr-2 size-4" />}
