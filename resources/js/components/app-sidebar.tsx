@@ -21,12 +21,13 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard, employee } from '@/routes';
+import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 import AppLogo from './app-logo';
 import { NavSetting } from './nav-setting';
 import sellings from '@/routes/sellings';
 import roles from '@/routes/roles';
+import employees from '@/routes/employees';
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
@@ -188,7 +189,7 @@ const mainNavItems: NavItem[] = [
             },
             {
                 title: "Karyawan",
-                href: employee().url,
+                href: employees.index().url,
             },
             {
                 title: "Role",
