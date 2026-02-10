@@ -20,7 +20,7 @@ export default function AppLogoIcon({ entityName, ...props }: AppLogoIconProps) 
             src={logoSrc}
             alt={entityName ? `Logo ${entityName}` : 'Logo'}
             onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = '/assets/images/images-logo.png';
+                (e.currentTarget as HTMLImageElement).src = '/assets/images/zakiah.png';
             }}
         />
     );

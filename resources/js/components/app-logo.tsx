@@ -9,10 +9,12 @@ export default function AppLogo() {
 
     return (
         <>
-            <AppLogoIcon
-                className="size-8 fill-current text-white dark:text-black"
-                entityName={entityName}
-            />
+            <div className="size-8 flex justify-center items-center rounded-md bg-white border">
+                <AppLogoIcon
+                    className="size-6"
+                    entityName={entityName}
+                />
+            </div>
             <div className="ml-1 grid flex-1 text-left text-sm">
                 <span className="mb-0.5 truncate leading-tight font-semibold">
                     {entityName?.toUpperCase()} POS
