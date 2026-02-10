@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Nama image sesuai keinginan Anda
+    image: php8.3-node24
+    container_name: zakiah-app
+    env_file: .env
+    ports:
+      - "8000:8000"
+      - "5173:5173"
+    volumes:
+      - .:/var/www
+    # Agar container bisa akses MySQL di Windows/Host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - zakiah-network
+
+networks:
+  zakiah-network:
+    driver: bridge
