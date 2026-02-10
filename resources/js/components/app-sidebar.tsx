@@ -10,10 +10,10 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { mainNavItems, settingNavItems } from '@/lib/nav-items';
 import { dashboard } from '@/routes';
 import AppLogo from './app-logo';
 import { NavSetting } from './nav-setting';
-import { mainNavItems, settingNavItems } from '@/lib/nav-items';
 
 export function AppSidebar() {
     return (
