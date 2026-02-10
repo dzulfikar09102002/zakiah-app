@@ -1,6 +1,6 @@
 "use client"
 
-import { usePage } from "@inertiajs/react"
+import { Link, usePage } from "@inertiajs/react"
 import { ChevronRight } from "lucide-react"
 import { useState, useMemo } from "react"
 import {
@@ -51,10 +51,10 @@ export default function NavItemNode({ item }: { item: NavItem }) {
                     isActive={isItemActive(item, url)}
                     className="w-full justify-start"
                 >
-                    <a href={item.href} className="flex items-center gap-2 w-full">
+                    <Link href={item.href} className="flex items-center gap-2 w-full">
                         {item.icon && <item.icon className="size-4" />}
                         <span>{item.title}</span>
-                    </a>
+                    </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         )
@@ -91,10 +91,10 @@ export default function NavItemNode({ item }: { item: NavItem }) {
                                         asChild
                                         isActive={isItemActive(child, url)}
                                     >
-                                        <a href={child.href} className="flex items-center gap-2">
+                                        <Link href={child.href} className="flex items-center gap-2">
                                             {child.icon && <child.icon className="size-4" />}
                                             <span>{child.title}</span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuSubButton>
                                 )}
                             </SidebarMenuSubItem>

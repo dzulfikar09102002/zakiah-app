@@ -49,4 +49,15 @@ class User extends Authenticatable
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    public function employee()
+    {
+        return $this->hasOne(Employee::class);
+    }
+
+    public function entity()
+    {
+        // Akses langsung ke Entity melewati tabel Employee
+        return $this->hasOneThrough(Entity::class, Employee::class, 'user_id', 'id', 'id', 'entity_id');
+    }
 }
