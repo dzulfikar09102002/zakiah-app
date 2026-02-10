@@ -46,7 +46,7 @@ function RolesTable({ roles }: Props) {
 
         setProcessing(true)
 
-        router.delete(`/administrasi/role/${deleteRole.id}/delete`, {
+        router.delete(`/roles/${deleteRole.id}/delete`, {
             preserveScroll: true,
             onSuccess: () => {
                 toast.success("Role berhasil dihapus", { position: "top-right" })
