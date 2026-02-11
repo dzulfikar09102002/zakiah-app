@@ -9,11 +9,12 @@ import {
     MonitorCog,
     UserCog
 } from 'lucide-react';
-import sellings from '@/routes/sellings';
-import roles from '@/routes/roles';
-import employees from '@/routes/employees';
-import type { NavItem } from '@/types';
 import { dashboard } from '@/routes';
+import employees from '@/routes/employees';
+import roles from '@/routes/roles';
+import sellings from '@/routes/sellings';
+import type { NavItem } from '@/types';
+import categories from '@/routes/categories';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -86,7 +87,7 @@ export const mainNavItems: NavItem[] = [
             },
             {
                 title: "Produk Kategori",
-                href: "#",
+                href: categories.index().url,
             },
             {
                 title: "Produk Unit",

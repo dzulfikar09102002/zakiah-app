@@ -30,11 +30,6 @@ export default function NavItemNode({ item }: { item: NavItem }) {
     const { url } = usePage()
     const hasChildren = !!item.items?.length
 
-    const shouldBeOpen = useMemo(
-        () => hasChildren && isItemActive(item, url),
-        [hasChildren, item, url]
-    )
-
     const [open, setOpen] = useState(false)
 
     const isOpen = useMemo(() => {
