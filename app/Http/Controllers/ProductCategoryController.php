@@ -14,9 +14,8 @@ class ProductCategoryController extends Controller
     public function index()
     {
         $perPage = request('per_page', 10);
-        $user = auth()->user(); 
 
-        $entityId = $user?->entity?->id; 
+        $entityId =  auth()->user()?->entity?->id; 
         
         $categories = ProductCategory::where('entity_id', $entityId)->paginate($perPage)->withQueryString();
     

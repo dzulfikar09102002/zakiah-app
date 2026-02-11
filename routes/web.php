@@ -38,6 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('/products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products.index');
+        Route::get('/create', [ProductController::class, 'create'])->name('products.create');
     });
 
     Route::prefix('/categories')->group(function () {

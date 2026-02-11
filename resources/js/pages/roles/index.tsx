@@ -36,28 +36,25 @@ function RoleIndex({ roles }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Role" />
-
-            <div className="flex flex-1 flex-col gap-4 p-4">
-                <Card>
-                    <CardContent>
-                        <RoleInputModal
-                            triggerText="Role Baru"
-                            submitUrl={role().store().url}
-                            onSuccess={() =>
-                                toast.success("Role berhasil ditambahkan", { position: "top-right" })
-                            }
-                        />
-                        <RolesTable roles={roles} />
-                        <TablePagination
-                            data={roles}
-                            showing={roles.data.length}
-                            onPerPageChange={(val) => {
-                                router.get(role().url, { per_page: val, page: 1 }, { preserveScroll: true })
-                            }}
-                        />
-                    </CardContent>
-                </Card>
-            </div>
+            <Card>
+                <CardContent>
+                    <RoleInputModal
+                        triggerText="Role Baru"
+                        submitUrl={role().store().url}
+                        onSuccess={() =>
+                            toast.success("Role berhasil ditambahkan", { position: "top-right" })
+                        }
+                    />
+                    <RolesTable roles={roles} />
+                    <TablePagination
+                        data={roles}
+                        showing={roles.data.length}
+                        onPerPageChange={(val) => {
+                            router.get(role().url, { per_page: val, page: 1 }, { preserveScroll: true })
+                        }}
+                    />
+                </CardContent>
+            </Card>
         </AppLayout>
     );
 }

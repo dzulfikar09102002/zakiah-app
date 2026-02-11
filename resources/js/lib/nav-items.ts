@@ -15,6 +15,7 @@ import roles from '@/routes/roles';
 import sellings from '@/routes/sellings';
 import type { NavItem } from '@/types';
 import categories from '@/routes/categories';
+import products from '@/routes/products';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -83,7 +84,7 @@ export const mainNavItems: NavItem[] = [
         items: [
             {
                 title: "Kelola Produk",
-                href: "#",
+                href: products.index().url,
             },
             {
                 title: "Produk Kategori",
