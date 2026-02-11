@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\LocationController;
+use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellingController;
@@ -18,6 +20,7 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     Route::prefix('/roles')->group(function () {
         Route::get('/', [RoleController::class, 'index'])->name('roles.index');
         Route::post('/store', [RoleController::class, 'store'])->name('roles.store');
@@ -26,14 +29,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
     Route::prefix('/employees')->group(function () {
         Route::get('/', [EmployeeController::class, 'index'])->name('employees.index');
-        Route::post('/store', [EmployeeController::class, 'index'])->name('employees.store');
         Route::get('/create', [EmployeeController::class, 'create'])->name('employees.create');
+        Route::post('/store', [EmployeeController::class, 'store'])->name('employees.store');
     });
     Route::prefix('sellings')->group(function () {
         Route::get('/', [SellingController::class, 'summary'])->name('sellings.summary');
     });
+
     Route::prefix('/products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products.index');
+    });
+
+    Route::prefix('/categories')->group(function () {
+        Route::get('/', [ProductCategoryController::class, 'index'])->name('categories.index');
+        Route::post('/store', [ProductCategoryController::class, 'store'])->name('categories.store');
+    });
+
+    Route::prefix('/locations')->group(function () {
+        Route::get('/', [LocationController::class, 'index'])->name('locations.index');
+        Route::post('/store', [LocationController::class, 'store'])->name('locations.store');
     });
 });
 

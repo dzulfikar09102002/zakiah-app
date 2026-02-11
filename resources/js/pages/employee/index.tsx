@@ -28,7 +28,8 @@ type Props = {
         links: { url: string | null; label: string; active: boolean }[]
     }
 }
-function EmployeeIndex({ employees }: Props) {
+
+function EmployeeIndex({ employees: employeesData }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Karyawan" />
@@ -36,15 +37,24 @@ function EmployeeIndex({ employees }: Props) {
             <div className="flex flex-1 flex-col gap-4 p-4">
                 <Card>
                     <CardContent>
-                        <Button className="mb-4" onClick={() => router.get(employees().url + '/create')}>
+                        <Button
+                            className="mb-4"
+                            onClick={() => router.get(employees.create().url)}
+                        >
                             <Plus /> Karyawan Baru
                         </Button>
-                        <EmployeesTable employees={employees} />
+
+                        <EmployeesTable employees={employeesData} />
+
                         <TablePagination
-                            data={employees}
-                            showing={employees.data.length}
+                            data={employeesData}
+                            showing={employeesData.data.length}
                             onPerPageChange={(val) => {
-                                router.get(employees().url, { per_page: val, page: 1 }, { preserveScroll: true })
+                                router.get(
+                                    employees.index().url,
+                                    { per_page: val, page: 1 },
+                                    { preserveScroll: true }
+                                )
                             }}
                         />
                     </CardContent>
