@@ -7,16 +7,20 @@ use App\Models\ProductCategory;
 
 class ProductService
 {
-    public function getProducts(int $entityId, int $perPage = 10)
+    public function getProducts(int $entityId)
     {
-        return Product::where('entity_id', $entityId)
-        ->withSum('locationStocks as total_stock', 'stock')
-        ->paginate($perPage)
-        ->withQueryString();
+        $perPage = request('per_page', 10);
+        $search = request('search', '');
+
+        return Product::with('product_category')->where('entity_id', $entityId)
+            ->whereLike('name', "%$search%")
+            ->withSum('locationStocks as total_stock', 'stock')
+            ->paginate($perPage)
+            ->withQueryString();
     }
 
     public function getCategories(int $entityId)
     {
-        return ProductCategory::where('entity_id', $entityId);
+        return ProductCategory::where('entity_id', $entityId)->get();
     }
 }

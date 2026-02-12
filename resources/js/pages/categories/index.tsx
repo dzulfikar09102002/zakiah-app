@@ -1,57 +1,107 @@
-import { Head, router } from '@inertiajs/react';
-import { toast } from 'sonner';
-// import ProductCategoryTable from '@/components/partials/product-categories-table';
-import RoleInputModal from '@/components/partials/role-input-modal';
+import { Form, Head } from '@inertiajs/react';
 import TablePagination from '@/components/table-pagination';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardHeader
+} from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import type { Category } from '@/lib/model';
+import type {
+    Category,
+    Pagination
+} from '@/lib/model';
 import type { BreadcrumbItem } from '@/types';
 import categories from '@/routes/categories';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow
+} from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash, X } from 'lucide-react';
+import {
+    Pencil,
+    Plus,
+    Search,
+    X
+} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from '@/components/ui/dialog';
+import { useState } from 'react';
+import {
+    Field,
+    FieldLabel,
+    FieldSet
+} from '@/components/ui/field';
+import { useQuery } from '@/hooks/use-query';
 
-const category = () => ({
-    url: categories.index().url,
-    store: () => ({ url: categories.store().url }),
-});
+const title = 'Kategori'
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Kategori',
+        title,
         href: categories.index().url
     },
 ];
+
 type Props = {
-    categories: {
-
-        data: Category[]
-        current_page: number
-        total: number
-        last_page: number
-        per_page: number
-        prev_page_url: string | null
-        next_page_url: string | null
-        links: { url: string | null; label: string; active: boolean }[]
-    }
+    pagination: Pagination<Category>
 }
-function Category({ categories }: Props) {
 
-    const startIndex = (categories.current_page - 1) * categories.per_page
+export default ({ pagination }: Props) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const startIndex = (pagination.current_page - 1) * pagination.per_page
+    const search = useQuery().search || ''
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Kategori" />
-            <RoleInputModal
-                triggerText="Kategori Baru"
-                submitUrl={category().store().url}
-                onSuccess={() =>
-                    toast.success("Kategori berhasil ditambahkan", { position: "top-right" })
-                }
-            />
-            <Card>
-                <CardContent>
+            <Head title={title} />
+            <Dialog open={isModalOpen} onOpenChange={val => setIsModalOpen(val)}>
+                <Form>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Kategori Baru</DialogTitle>
+                        </DialogHeader>
+                        <FieldSet>
+                            <Field>
+                                <FieldLabel htmlFor='name'>Nama</FieldLabel>
+                                <Input name='name' id='name' />
+                            </Field>
+                        </FieldSet>
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button variant={'outline'}>Batal</Button>
+                            </DialogClose>
+                            <Button type='submit'>Simpan</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Form>
+            </Dialog>
+            <div className="mb-4">
+                <Button className="size-9 lg:size-auto" onClick={() => setIsModalOpen(true)}>
+                    <Plus /> <span className="hidden lg:inline">Kategori Baru</span>
+                </Button>
+            </div>
+            <Card className="bg-background lg:bg-card p-0 lg:py-6 border-0 lg:border">
+                <CardHeader className='p-0 lg:px-6'>
+                    <Form method='GET'>
+                        <div className="grid lg:flex gap-2">
+                            <input type="hidden" name="page" value={1} />
+                            <Input defaultValue={search} name='search' placeholder='Cari...' />
+                            <Button variant={'secondary'}><Search /> Cari</Button>
+                        </div>
+                    </Form>
+                </CardHeader>
+                <CardContent className="p-0 lg:px-6 border-t lg:border-0">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -62,7 +112,7 @@ function Category({ categories }: Props) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {categories.data.map((category: Category, index: number) => (
+                            {pagination.data.map((category: Category, index: number) => (
                                 <TableRow key={category.id ?? index}>
                                     <TableCell>{startIndex + index + 1}.</TableCell>
                                     <TableCell>{category.name}</TableCell>
@@ -80,9 +130,9 @@ function Category({ categories }: Props) {
                                 </TableRow>
                             ))}
 
-                            {categories.data.length === 0 && (
+                            {pagination.data.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                    <TableCell colSpan={6} className="text-center py-2 text-muted-foreground">
                                         Tidak ada data Kategori
                                     </TableCell>
                                 </TableRow>
@@ -90,16 +140,11 @@ function Category({ categories }: Props) {
                         </TableBody>
                     </Table>
                     <TablePagination
-                        data={categories}
-                        showing={categories.data.length}
-                        onPerPageChange={(val) => {
-                            router.get(category().url, { per_page: val, page: 1 }, { preserveScroll: true })
-                        }}
+                        path={categories.index().url}
+                        pagination={pagination}
                     />
                 </CardContent>
             </Card>
         </AppLayout>
     );
 }
-
-export default Category;

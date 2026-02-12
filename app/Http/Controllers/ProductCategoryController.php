@@ -14,12 +14,11 @@ class ProductCategoryController extends Controller
     public function index()
     {
         $perPage = request('per_page', 10);
-
         $entityId =  auth()->user()?->entity?->id; 
-        
-        $categories = ProductCategory::where('entity_id', $entityId)->paginate($perPage)->withQueryString();
+        $search=request('search','');
+        $pagination = ProductCategory::where('entity_id', $entityId)->whereLike('name',"%$search%")->paginate($perPage)->withQueryString();
     
-        return Inertia::render('categories/index', compact('categories'));
+        return Inertia::render('categories/index', compact('pagination'));
     }
 
     /**

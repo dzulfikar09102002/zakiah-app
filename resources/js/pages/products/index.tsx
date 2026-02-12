@@ -26,33 +26,43 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Form, Head, Link, router, usePage } from "@inertiajs/react";
+import {
+    Card,
+    CardContent,
+    CardHeader
+} from "@/components/ui/card";
+import { Form, Head } from "@inertiajs/react";
 import { ButtonGroup } from "@/components/ui/button-group";
-import ProductInfiniteList from "@/components/product-infinite-list";
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from "@/components/ui/dialog";
+import {
+    Field,
+    FieldGroup,
+    FieldLabel,
+    FieldSet
+} from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { capitalize, toRupiah } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Category, Pagination, Product } from "@/lib/model";
+import TablePagination from "@/components/table-pagination";
+import { useQuery } from "@/hooks/use-query";
 
 const title = 'Kelola Produk'
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        href: products.index().url,
-        title
+        title,
+        href: products.index().url
     }
 ]
-
-const data = [
-    { name: "Pita Serut Kecil", sku: "900602202535", barcode: "900602202535", category: "GIFT", buyPrice: "450", price: 1000, stock: 544 },
-    { name: "Jarum pentul 5K", sku: "910403202336", barcode: "910403202336", category: "ACCESORIES", buyPrice: "700", price: "5.000", stock: 290 },
-    { name: "Bross Pin 2K", sku: "913001202534", barcode: "913001202534", category: "ACCESORIES", buyPrice: "750", price: "2.000", stock: 469 },
-    { name: "Strap masker Tali Polos 5K", sku: "592706202410", barcode: "592706202410", category: "ACCESORIES", buyPrice: "980", price: "5.000", stock: 205 },
-    { name: "Kartu Ucapan Kecil", sku: "9928062021002", barcode: "9928062021002", category: "GIFT", buyPrice: "1.000", price: "2.000", stock: 235 },
-];
 
 const stockData = [
     { lokasi: "STORE PANDAAN", sekarang: 0, stok: 0 },
@@ -66,10 +76,13 @@ const stockData = [
 ];
 
 type Props = {
+    categories: Category[]
+    pagination: Pagination<Product>
 }
 
-export default ({ }: Props) => {
+export default ({ categories, pagination }: Props) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const search = useQuery().search || ''
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -90,46 +103,49 @@ export default ({ }: Props) => {
             {/* Table Section */}
             <Card className="bg-background lg:bg-card p-0 lg:py-6 border-0 lg:border">
                 <CardHeader className="p-0 lg:px-6">
-                    <form className="grid lg:flex gap-2">
-                        <Select>
+                    <Form method="GET" className="grid lg:flex gap-2">
+                        <Select defaultValue="all">
                             <SelectTrigger>
                                 <SelectValue placeholder="Semua Kategori" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="gift">GIFT</SelectItem>
-                                <SelectItem value="accessories">ACCESORIES</SelectItem>
+                                <SelectItem value="all">Semua</SelectItem>
+                                {categories.map(el => (
+                                    <SelectItem key={el.id} value={el.id.toString()}>{el.name}</SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
-                        <Input placeholder="Cari..." />
-                        <Button><SearchIcon /> Cari</Button>
-                    </form>
+                        <Input placeholder="Cari..." name="search" defaultValue={search} />
+                        <input type="hidden" name="page" value={1} />
+                        <Button variant={"secondary"}><SearchIcon /> Cari</Button>
+                    </Form>
                 </CardHeader>
                 <CardContent className="p-0 lg:px-6 border-t lg:border-0">
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>No.</TableHead>
-                                <TableHead>Produk</TableHead>
+                                <TableHead>Nama</TableHead>
                                 <TableHead>Kategori</TableHead>
                                 <TableHead>SKU</TableHead>
                                 <TableHead>Barcode</TableHead>
                                 <TableHead>Harga Beli</TableHead>
-                                <TableHead>Harga</TableHead>
+                                <TableHead>Harga Jual</TableHead>
                                 <TableHead>Stok</TableHead>
                                 <TableHead>Aksi</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {data.map((product, idx) => (
+                            {pagination.data.map((product, idx) => (
                                 <TableRow key={product.sku}>
-                                    <TableCell>{idx + 1}</TableCell>
+                                    <TableCell>{idx + 1}.</TableCell>
                                     <TableCell>{product.name}</TableCell>
-                                    <TableCell><Badge variant={"secondary"}>{capitalize(product.category)}</Badge></TableCell>
+                                    <TableCell><Badge variant={"secondary"}>{product.product_category?.name}</Badge></TableCell>
                                     <TableCell>{product.sku}</TableCell>
                                     <TableCell>{product.barcode}</TableCell>
-                                    <TableCell>{toRupiah(product.buyPrice)}</TableCell>
-                                    <TableCell>{toRupiah(product.price)}</TableCell>
-                                    <TableCell>{product.stock}</TableCell>
+                                    <TableCell>{toRupiah(product.last_buying_price)}</TableCell>
+                                    <TableCell>{toRupiah(product.sell_price)}</TableCell>
+                                    <TableCell>{product.total_stock}</TableCell>
                                     <TableCell>
                                         <div className="flex gap-2">
                                             <Button variant="outline" size="icon">
@@ -144,6 +160,7 @@ export default ({ }: Props) => {
                             ))}
                         </TableBody>
                     </Table>
+                    <TablePagination pagination={pagination} path={products.index().url} />
                 </CardContent>
             </Card>
             {/* <ProductInfiniteList /> */}
