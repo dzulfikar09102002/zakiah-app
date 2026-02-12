@@ -6,8 +6,8 @@ import {
     FileDown,
     FileUp,
     Pencil,
-    Trash2,
     SearchIcon,
+    X,
 } from "lucide-react";
 import {
     Table,
@@ -34,6 +34,8 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
+import { capitalize, toRupiah } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 const title = 'Kelola Produk'
 
@@ -45,7 +47,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 const data = [
-    { name: "Pita Serut Kecil", sku: "900602202535", barcode: "900602202535", category: "GIFT", buyPrice: "450", price: "1.000", stock: 544 },
+    { name: "Pita Serut Kecil", sku: "900602202535", barcode: "900602202535", category: "GIFT", buyPrice: "450", price: 1000, stock: 544 },
     { name: "Jarum pentul 5K", sku: "910403202336", barcode: "910403202336", category: "ACCESORIES", buyPrice: "700", price: "5.000", stock: 290 },
     { name: "Bross Pin 2K", sku: "913001202534", barcode: "913001202534", category: "ACCESORIES", buyPrice: "750", price: "2.000", stock: 469 },
     { name: "Strap masker Tali Polos 5K", sku: "592706202410", barcode: "592706202410", category: "ACCESORIES", buyPrice: "980", price: "5.000", stock: 205 },
@@ -108,9 +110,9 @@ export default ({ }: Props) => {
                             <TableRow>
                                 <TableHead>No.</TableHead>
                                 <TableHead>Produk</TableHead>
+                                <TableHead>Kategori</TableHead>
                                 <TableHead>SKU</TableHead>
                                 <TableHead>Barcode</TableHead>
-                                <TableHead>Kategori</TableHead>
                                 <TableHead>Harga Beli</TableHead>
                                 <TableHead>Harga</TableHead>
                                 <TableHead>Stok</TableHead>
@@ -122,11 +124,11 @@ export default ({ }: Props) => {
                                 <TableRow key={product.sku}>
                                     <TableCell>{idx + 1}</TableCell>
                                     <TableCell>{product.name}</TableCell>
+                                    <TableCell><Badge variant={"secondary"}>{capitalize(product.category)}</Badge></TableCell>
                                     <TableCell>{product.sku}</TableCell>
                                     <TableCell>{product.barcode}</TableCell>
-                                    <TableCell>{product.category}</TableCell>
-                                    <TableCell>{product.buyPrice}</TableCell>
-                                    <TableCell>{product.price}</TableCell>
+                                    <TableCell>{toRupiah(product.buyPrice)}</TableCell>
+                                    <TableCell>{toRupiah(product.price)}</TableCell>
                                     <TableCell>{product.stock}</TableCell>
                                     <TableCell>
                                         <div className="flex gap-2">
@@ -134,7 +136,7 @@ export default ({ }: Props) => {
                                                 <Pencil />
                                             </Button>
                                             <Button variant="destructive" size="icon">
-                                                <Trash2 />
+                                                <X />
                                             </Button>
                                         </div>
                                     </TableCell>
