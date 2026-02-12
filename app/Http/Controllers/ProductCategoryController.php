@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Services\ProductCategoryService;
-use App\Models\ProductCategory;
 use App\Http\Requests\StoreProductCategoryRequest;
 use App\Http\Requests\UpdateProductCategoryRequest;
+use App\Http\Services\ProductCategoryService;
+use App\Models\ProductCategory;
 use Inertia\Inertia;
 
 class ProductCategoryController extends Controller
@@ -16,10 +16,7 @@ class ProductCategoryController extends Controller
 
     public function index()
     {
-        $perPage = request('per_page', 10);
-        $entityId = auth()->user()?->entity?->id;
-
-        $categories = $this->service->paginateByEntity($entityId, $perPage);
+        $categories = $this->service->paginateByEntity();
 
         return Inertia::render('categories/index', compact('categories'));
     }

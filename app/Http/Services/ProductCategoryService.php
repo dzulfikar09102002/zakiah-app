@@ -6,10 +6,13 @@ use App\Models\ProductCategory;
 
 class ProductCategoryService
 {
-    public function paginateByEntity(int $entityId, int $perPage = 10)
+    public function paginateByEntity()
     {
-        return ProductCategory::where('entity_id', $entityId)
-            ->paginate($perPage)
+        $search = request('name', '');
+
+        return ProductCategory::where('entity_id', auth()->user()?->entity?->id)
+            ->whereLike('name', "%$search%")
+            ->paginate(request('per_page', 10))
             ->withQueryString();
     }
 
