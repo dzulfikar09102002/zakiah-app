@@ -1,8 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use App\Services\ProductService;
+use App\Http\Services\ProductService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -10,7 +9,7 @@ class ProductController extends Controller
 {
 
     public function __construct(
-        protected ProductService $service
+        private ProductService $service
     ) {}
     public function index()
     {
