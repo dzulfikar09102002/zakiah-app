@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Services\LocationService;
 use App\Models\location;
 use App\Http\Requests\StorelocationRequest;
 use App\Http\Requests\UpdatelocationRequest;
+use Inertia\Inertia;
 
 class LocationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct(
+        protected LocationService $service
+    ) {}
     public function index()
     {
-        //
+        $perPage = request('per_page', 10);
+        $entityId = auth()->user()?->entity?->id;
+        $pagination = $this->service->paginate($entityId, $perPage);
+        return Inertia::render('locations/index', compact('pagination'));
     }
 
     /**

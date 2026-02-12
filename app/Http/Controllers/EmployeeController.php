@@ -4,83 +4,59 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreemployeeRequest;
 use App\Http\Requests\UpdateemployeeRequest;
+use App\Http\Services\EmployeeService;
 use App\Models\Employee;
-use App\Models\Location;
-use App\Models\Role;
 use Inertia\Inertia;
 
 class EmployeeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct(
+        private EmployeeService $service
+    ) {}
+
     public function index()
     {
         $perPage = request('per_page', 10);
+        $entityId = auth()->user()?->entity?->id;
 
-        $user = auth()->user(); 
+        $employees = $this->service->paginateByEntity($entityId, $perPage);
 
-        $entityId = $user?->entity?->id; 
-        
-        $employees = Employee::where('entity_id', $entityId)->paginate($perPage)->withQueryString();
-    
-        $roles = Role::select('id','name')->get()->keyBy('id');
-    
-        $employees->getCollection()->transform(function($employee) use ($roles) {
-            $employee->role_name = $roles[$employee->role_id]->name ?? "-";
-            return $employee;
-        });
-    
         return Inertia::render('employee/index', compact('employees'));
     }
-    
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create()
     {
-        return Inertia::render('employee/create', [
-            'roles' => Role::select('id', 'name')->get(), 'locations' => Location::select('id', 'name')->get()
-        ]);
+        return Inertia::render('employee/create', $this->service->getFormOptions());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreemployeeRequest $request)
     {
-        //
+        $entityId = auth()->user()?->entity?->id;
+
+        $this->service->store(
+            $request->validated(),
+            $entityId,
+            auth()->id()
+        );
+
+        return redirect()->route('employee.index')->with('success', 'Karyawan berhasil ditambahkan');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(employee $employee)
+    public function update(UpdateemployeeRequest $request, Employee $employee)
     {
-        //
+        $this->service->update(
+            $employee,
+            $request->validated(),
+            auth()->id()
+        );
+
+        return redirect()->route('employee.index')->with('success', 'Karyawan berhasil diperbarui');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(employee $employee)
+    public function destroy(Employee $employee)
     {
-        //
-    }
+        $this->service->delete($employee);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateemployeeRequest $request, employee $employee)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(employee $employee)
-    {
-        //
+        return redirect()->route('employee.index')->with('success', 'Karyawan berhasil dihapus');
     }
 }
