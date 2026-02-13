@@ -1,10 +1,29 @@
+# Dependency (Sudah diinstall via Dockerfile)
 node_modules
 vendor
-.git
-.env
-docker-compose.yml
-Dockerfile
-.dockerignore
-storage/*.key
-public/storage
+
+# IDE & OS Garbage
+.idea
+.vscode
+.zed
+.fleet
+.nova
+.DS_Store
+Thumbs.db
+
+# Laravel Specific
+.phpunit.cache
+.phpunit.result.cache
 public/build
+bootstrap/ssr
+
+# Config
+.env
+.env.backup
+.env.production
+auth.json
+
+# Wayfinder (Jika ini auto-generated, jangan masukkan ke image)
+resources/js/wayfinder
+resources/js/actions
+resources/js/routes

@@ -14,13 +14,13 @@ import {
 } from "@/components/ui/select"
 import AppLayout from '@/layouts/app-layout';
 import type { Location, Role } from '@/lib/model';
-import { roles } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
+import employees from '@/routes/employees';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Karyawan Baru',
-        href: roles().url,
+        href: employees.create().url,
     },
 ];
 

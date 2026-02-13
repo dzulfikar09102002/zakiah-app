@@ -49,11 +49,19 @@ import {
 } from "@/components/ui/field";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { capitalize, toRupiah } from "@/lib/utils";
+import { toRupiah } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Category, Pagination, Product } from "@/lib/model";
+import { Pagination, Product } from "@/lib/model";
 import TablePagination from "@/components/table-pagination";
 import { useQuery } from "@/hooks/use-query";
+import {
+    Combobox,
+    ComboboxContent,
+    ComboboxEmpty,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxList
+} from "@/components/ui/combobox";
 
 const title = 'Kelola Produk'
 
@@ -75,14 +83,22 @@ const stockData = [
     { lokasi: "Zakiah Tulangan", sekarang: 0, stok: 0 },
 ];
 
+type Option = {
+    label: string
+    value: any
+}
+
 type Props = {
-    categories: Category[]
+    categoryOptions: Option[]
     pagination: Pagination<Product>
 }
 
-export default ({ categories, pagination }: Props) => {
+export default ({ categoryOptions, pagination }: Props) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const search = useQuery().search || ''
+    const query = useQuery()
+    const search = query.search || ''
+    const product_category_id = query.product_category_id || 'all'
+    const startIndex = (pagination.current_page - 1) * pagination.per_page
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -104,17 +120,23 @@ export default ({ categories, pagination }: Props) => {
             <Card className="bg-background lg:bg-card p-0 lg:py-6 border-0 lg:border">
                 <CardHeader className="p-0 lg:px-6">
                     <Form method="GET" className="grid lg:flex gap-2">
-                        <Select defaultValue="all">
-                            <SelectTrigger>
-                                <SelectValue placeholder="Semua Kategori" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Semua</SelectItem>
-                                {categories.map(el => (
-                                    <SelectItem key={el.id} value={el.id.toString()}>{el.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Combobox
+                            items={categoryOptions}
+                            name="product_category_id"
+                            defaultValue={categoryOptions.find(el => el.value == product_category_id)}
+                        >
+                            <ComboboxInput placeholder="Pilih Kategori" className={'w-full'} />
+                            <ComboboxContent>
+                                <ComboboxEmpty>Tidak ditemukan</ComboboxEmpty>
+                                <ComboboxList>
+                                    {(el) => (
+                                        <ComboboxItem key={el.value} value={el}>
+                                            {el.label}
+                                        </ComboboxItem>
+                                    )}
+                                </ComboboxList>
+                            </ComboboxContent>
+                        </Combobox>
                         <Input placeholder="Cari..." name="search" defaultValue={search} />
                         <input type="hidden" name="page" value={1} />
                         <Button variant={"secondary"}><SearchIcon /> Cari</Button>
@@ -138,7 +160,7 @@ export default ({ categories, pagination }: Props) => {
                         <TableBody>
                             {pagination.data.map((product, idx) => (
                                 <TableRow key={product.sku}>
-                                    <TableCell>{idx + 1}.</TableCell>
+                                    <TableCell>{startIndex + idx + 1}.</TableCell>
                                     <TableCell>{product.name}</TableCell>
                                     <TableCell><Badge variant={"secondary"}>{product.product_category?.name}</Badge></TableCell>
                                     <TableCell>{product.sku}</TableCell>
@@ -160,7 +182,7 @@ export default ({ categories, pagination }: Props) => {
                             ))}
                         </TableBody>
                     </Table>
-                    <TablePagination pagination={pagination} path={products.index().url} />
+                    <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>
             {/* <ProductInfiniteList /> */}

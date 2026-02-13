@@ -23,16 +23,15 @@ import {
 
 type Props<T> = {
     pagination: Pagination<T>
-    path: string // Tambahkan path untuk mempermudah navigasi manual
 }
 
-export default function TablePagination<T>({ path, pagination }: Props<T>) {
-    const { per_page, total, prev_page_url, next_page_url, current_page, last_page } = pagination
+export default function TablePagination<T>({ pagination }: Props<T>) {
+    const { per_page, total, prev_page_url, next_page_url, current_page, last_page, first_page_url } = pagination
 
     // Fungsi untuk handle perpindahan halaman via Select
     const handlePageChange = (page: string | null) => {
         if (page) {
-            router.get(path, { page: page, per_page: per_page }, { preserveScroll: true })
+            router.get(first_page_url, { page: page }, { preserveScroll: true })
         }
     }
 
@@ -43,7 +42,7 @@ export default function TablePagination<T>({ path, pagination }: Props<T>) {
                 <span>Menampilkan</span>
                 <Select
                     value={String(per_page)}
-                    onValueChange={(val) => router.get(path, { per_page: val, page: 1 }, { preserveScroll: true })}
+                    onValueChange={(val) => router.get(first_page_url, { per_page: val }, { preserveScroll: true })}
                 >
                     <SelectTrigger className="h-9 w-20">
                         <SelectValue placeholder="Per page" />

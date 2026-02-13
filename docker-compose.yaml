@@ -5,7 +5,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    # Nama image sesuai keinginan Anda
     image: php8.3-node24
     container_name: zakiah-app
     env_file: .env
@@ -14,7 +13,14 @@ services:
       - "5173:5173"
     volumes:
       - .:/var/www
-    # Agar container bisa akses MySQL di Windows/Host
+      - /var/www/node_modules
+      - /var/www/vendor
+      - /var/www/bootstrap/ssr
+      - /var/www/public/build
+      # Khusus Wayfinder:
+      - /var/www/resources/js/wayfinder
+      - /var/www/resources/js/actions
+      - /var/www/resources/js/routes
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:

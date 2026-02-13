@@ -140,7 +140,6 @@ export default ({ pagination }: Props) => {
                         </TableBody>
                     </Table>
                     <TablePagination
-                        path={categories.index().url}
                         pagination={pagination}
                     />
                 </CardContent>

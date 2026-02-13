@@ -15,8 +15,12 @@ class ProductController extends Controller
     {
         $entityId = auth()->user()?->entity?->id;
         $pagination = $this->service->getProducts($entityId);
-        $categories = $this->service->getCategories($entityId);
+        $categoryOptions = $this->service->getCategories($entityId);
+        $categoryOptions->prepend([
+            'value' => 'all',
+            'label' => 'Semua',
+        ]);
 
-        return Inertia::render('products/index', compact('pagination', 'categories'));
+        return Inertia::render('products/index', compact('pagination', 'categoryOptions'));
     }
 }

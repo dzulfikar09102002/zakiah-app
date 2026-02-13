@@ -27,5 +27,9 @@ WORKDIR /var/www
 # Port 8000 untuk Laravel, 5173 untuk Vite
 EXPOSE 8000 5173
 
+# ... setelah COPY code ...
+RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache
+RUN chown -R www-data:www-data storage bootstrap/cache
+
 # Standby mode
 CMD ["tail", "-f", "/dev/null"]
