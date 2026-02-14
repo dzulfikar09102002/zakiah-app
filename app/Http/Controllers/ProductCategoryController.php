@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProductCategoryRequest;
 use App\Http\Requests\UpdateProductCategoryRequest;
-use App\Http\Services\ProductCategoryService;
 use App\Models\ProductCategory;
+use App\Services\ProductCategoryService;
 use Inertia\Inertia;
 
 class ProductCategoryController extends Controller
@@ -16,39 +16,36 @@ class ProductCategoryController extends Controller
 
     public function index()
     {
-        $categories = $this->service->paginateByEntity();
+        $pagination = $this->service->paginateByEntity();
 
-        return Inertia::render('categories/index', compact('categories'));
+        return Inertia::render('categories/index', compact('pagination'));
     }
 
     public function store(StoreProductCategoryRequest $request)
     {
-        $entityId = auth()->user()?->entity?->id;
+        $this->service->store($request->validated()['name']);
 
-        $this->service->store(
-            $request->validated(),
-            $entityId,
-            auth()->id()
-        );
-
-        return redirect()->back()->with('success', 'Kategori berhasil ditambahkan');
+        return to_route('categories.index')->with('success', 'Kategori berhasil ditambahkan');
     }
 
     public function update(UpdateProductCategoryRequest $request, ProductCategory $productCategory)
     {
-        $this->service->update(
-            $productCategory,
-            $request->validated(),
-            auth()->id()
-        );
+        $this->service->update($productCategory, $request->validated()['name']);
 
-        return redirect()->back()->with('success', 'Kategori berhasil diperbarui');
+        return to_route('categories.index')->with('success', 'Kategori berhasil diperbarui');
     }
 
     public function destroy(ProductCategory $productCategory)
     {
         $this->service->delete($productCategory);
 
-        return redirect()->back()->with('success', 'Kategori berhasil dihapus');
+        return to_route('categories.index')->with('success', 'Kategori berhasil dihapus');
+    }
+
+    public function restore(int $id)
+    {
+        $this->service->restore($id);
+
+        return to_route('categories.index')->with('success', 'Kategori berhasil dipulihkan');
     }
 }

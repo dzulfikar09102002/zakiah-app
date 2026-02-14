@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Services;
+namespace App\Services;
 
 use App\Models\Employee;
-use App\Models\Role;
 use App\Models\Location;
+use App\Models\Role;
 
 class EmployeeService
 {
@@ -20,6 +20,7 @@ class EmployeeService
         // Inject role_name ke setiap employee
         $employees->getCollection()->transform(function ($employee) use ($roles) {
             $employee->role_name = $roles[$employee->role_id]->name ?? '-';
+
             return $employee;
         });
 

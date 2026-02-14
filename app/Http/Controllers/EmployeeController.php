@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreemployeeRequest;
 use App\Http\Requests\UpdateemployeeRequest;
-use App\Http\Services\EmployeeService;
+use App\Services\EmployeeService;
 use App\Models\Employee;
 use Inertia\Inertia;
 

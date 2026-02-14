@@ -180,6 +180,13 @@ export default ({ categoryOptions, pagination }: Props) => {
                                     </TableCell>
                                 </TableRow>
                             ))}
+                            {!pagination.data.length && (
+                                <TableRow>
+                                    <TableCell colSpan={9} className="text-center py-2 text-muted-foreground">
+                                        Data tidak ditemukan
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </TableBody>
                     </Table>
                     <TablePagination pagination={pagination} />

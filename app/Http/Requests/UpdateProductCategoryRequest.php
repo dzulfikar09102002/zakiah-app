@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateProductCategoryRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class UpdateProductCategoryRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,8 +22,18 @@ class UpdateProductCategoryRequest extends FormRequest
      */
     public function rules(): array
     {
+        $item = $this->route('productCategory');
+        // Jika $item adalah objek (Model Binding), ambil id. Jika string, gunakan langsung.
+        $id = is_object($item) ? $item->id : $item;
+
         return [
-            //
+            'name' => [
+                'required',
+                Rule::unique('product_categories')
+                    ->where(fn ($query) => $query->where('entity_id', $this->entity_id))
+                    ->ignore($id), // Abaikan data ini sendiri
+            ],
+            'entity_id' => ['required'],
         ];
     }
 }

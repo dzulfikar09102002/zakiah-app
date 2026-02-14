@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Services;
+namespace App\Services;
 
 use App\Models\Location;
 
-class LocationService{
+class LocationService
+{
     public function paginate(int $entityId, int $perPage = 10)
     {
         return Location::where('entity_id', $entityId)
-        ->paginate($perPage)
-        ->withQueryString();
+            ->paginate($perPage)
+            ->withQueryString();
     }
 }

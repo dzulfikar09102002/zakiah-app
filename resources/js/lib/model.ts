@@ -19,7 +19,7 @@ export type Location = {
 export type Category = {
     id: number
     name: string
-    status: string
+    deleted_at?: string
 }
 
 export interface Product {

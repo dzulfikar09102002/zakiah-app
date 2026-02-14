@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Services\ProductService;
+use App\Services\ProductService;
 use Inertia\Inertia;
 
 class ProductController extends Controller
