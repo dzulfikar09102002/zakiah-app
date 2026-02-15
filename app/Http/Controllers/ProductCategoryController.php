@@ -16,7 +16,7 @@ class ProductCategoryController extends Controller
 
     public function index()
     {
-        $pagination = $this->service->paginateByEntity();
+        $pagination = $this->service->getCategories();
 
         return Inertia::render('categories/index', compact('pagination'));
     }

@@ -1,6 +1,4 @@
-import AppLayout from "@/layouts/app-layout"
-import products from "@/routes/products"
-import { BreadcrumbItem } from "@/types"
+import { Form, Head } from "@inertiajs/react";
 import {
     Plus,
     FileDown,
@@ -9,30 +7,24 @@ import {
     SearchIcon,
     X,
 } from "lucide-react";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { useState } from "react";
+import TablePagination from "@/components/table-pagination";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
     Card,
     CardContent,
     CardHeader
 } from "@/components/ui/card";
-import { Form, Head } from "@inertiajs/react";
-import { ButtonGroup } from "@/components/ui/button-group";
+import {
+    Combobox,
+    ComboboxContent,
+    ComboboxEmpty,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxList
+} from "@/components/ui/combobox";
 import {
     Dialog,
     DialogClose,
@@ -47,21 +39,29 @@ import {
     FieldLabel,
     FieldSet
 } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { toRupiah } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Pagination, Product } from "@/lib/model";
-import TablePagination from "@/components/table-pagination";
-import { useQuery } from "@/hooks/use-query";
 import {
-    Combobox,
-    ComboboxContent,
-    ComboboxEmpty,
-    ComboboxInput,
-    ComboboxItem,
-    ComboboxList
-} from "@/components/ui/combobox";
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { useQuery } from "@/hooks/use-query";
+import AppLayout from "@/layouts/app-layout"
+import type { Pagination, Product } from "@/lib/model";
+import { toRupiah } from "@/lib/utils";
+import products from "@/routes/products"
+import type { BreadcrumbItem } from "@/types"
 
 const title = 'Kelola Produk'
 
@@ -85,7 +85,7 @@ const stockData = [
 
 type Option = {
     label: string
-    value: any
+    value: unknown
 }
 
 type Props = {

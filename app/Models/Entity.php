@@ -13,7 +13,6 @@ class Entity extends Model
 
     public function users()
     {
-        // Mendapatkan semua User yang terdaftar di Entity ini
         return $this->hasManyThrough(User::class, Employee::class, 'entity_id', 'id', 'id', 'user_id');
     }
 }

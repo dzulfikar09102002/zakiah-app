@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class ProductCategoryService
 {
-    public function paginateByEntity()
+    public function getCategories()
     {
         $search = request('search', '');
 

@@ -9,6 +9,7 @@ export type Employee = {
     last_name: string
     role_id?: number
     role_name?: string
+    deleted_at: string
 }
 
 export type Location = {
@@ -39,7 +40,7 @@ export interface Product {
     barcode: string;
     description: string;
     image_url: string | null;
-    sell_to_customer: number | boolean; // 1 biasanya boolean true di DB
+    sell_to_customer: number | boolean; // 
     service: number | boolean;
     modifier: number | boolean;
     has_variance: number | boolean;
@@ -47,7 +48,7 @@ export interface Product {
     select_all_location: number | boolean;
     location_ids: number[] | null;
     exclude_location_ids: number[] | null;
-    tax_setting: any | null; // Bisa dispesifikkan jika ada strukturnya
+    tax_setting: unknown | null; // Bisa dispesifikkan jika ada strukturnya
     sell_price: number;
     status: "active" | "inactive" | string;
     deleted_at: string | null;

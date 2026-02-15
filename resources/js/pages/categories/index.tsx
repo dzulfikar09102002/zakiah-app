@@ -1,29 +1,30 @@
-import { Form, Head, router, useForm } from '@inertiajs/react';
+import { Form, Head } from '@inertiajs/react';
+import {
+    Plus,
+    Search,
+} from 'lucide-react';
+import { useState } from 'react';
+import Alert from '@/components/product-categories/alert';
+import type { AlertState } from '@/components/product-categories/alert';
+import Modal from '@/components/product-categories/modal';
+import type { ModalState } from '@/components/product-categories/modal';
+import Table from '@/components/product-categories/table';
 import TablePagination from '@/components/table-pagination';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
     CardHeader
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type {
     Category,
     Pagination
 } from '@/lib/model';
-import type { BreadcrumbItem } from '@/types';
 import categories from '@/routes/categories';
-import { Button } from '@/components/ui/button';
-import {
-    Plus,
-    Search,
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { useQuery } from '@/hooks/use-query';
-
-import { useState } from 'react';
-import Modal, { ModalState } from '@/components/product-categories/modal';
-import Alert, { AlertState } from '@/components/product-categories/alert';
-import Table from '@/components/product-categories/table';
+import type { BreadcrumbItem } from '@/types';
 
 const title = 'Kategori'
 const breadcrumbs: BreadcrumbItem[] = [
@@ -40,12 +41,12 @@ type Props = {
 export default ({ pagination }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
-        dataId: undefined as any
+        dataId: undefined as unknown
     });
     const [alert, setAlert] = useState<AlertState>({
         delete: true,
         isOpen: false,
-        dataId: undefined as any,
+        dataId: undefined as unknown,
         proccessing: false
     });
     const search = useQuery().search || ''
@@ -56,13 +57,13 @@ export default ({ pagination }: Props) => {
     const onAlertlClose = () => setAlert({ isOpen: false, proccessing: false, dataId: undefined, delete: true })
     const onAlertProccessing = () => setAlert({ ...alert, proccessing: true })
 
-    const onEdit = (id: any) => setModal({
+    const onEdit = (id: unknown) => setModal({
         ...modal,
         dataId: id,
         isOpen: true
     })
 
-    const onDeleteOrRestore = (id: any, action: boolean) => setAlert({
+    const onDeleteOrRestore = (id: unknown, action: boolean) => setAlert({
         ...alert,
         dataId: id,
         delete: action,

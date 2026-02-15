@@ -10,12 +10,12 @@ import {
     UserCog
 } from 'lucide-react';
 import { dashboard } from '@/routes';
+import categories from '@/routes/categories';
 import employees from '@/routes/employees';
+import products from '@/routes/products';
 import roles from '@/routes/roles';
 import sellings from '@/routes/sellings';
 import type { NavItem } from '@/types';
-import categories from '@/routes/categories';
-import products from '@/routes/products';
 
 export const mainNavItems: NavItem[] = [
     {

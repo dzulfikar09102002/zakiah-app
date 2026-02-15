@@ -1,5 +1,5 @@
-import { Pencil, Trash2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Eye, EyeOff, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
     Table,
     TableBody,
@@ -7,19 +7,19 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table"
-import type { Employee } from "@/lib/model"
+} from "@/components/ui/table";
+
+import type { Employee, Pagination } from "@/lib/model";
 
 type Props = {
-    employees: {
-        data: Employee[]
-        current_page: number
-        per_page: number
-    }
+    pagination: Pagination<Employee>
+    onEdit: (id: unknown) => void
+    onDeleteOrRestore: (id: unknown, action: boolean) => void
 }
 
-function EmployeesTable({ employees }: Props) {
-    const startIndex = (employees.current_page - 1) * employees.per_page
+export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
+    const startIndex = (pagination.current_page - 1) * pagination.per_page
+
     return (
         <div className="relative w-full overflow-auto">
             <Table>
@@ -31,39 +31,38 @@ function EmployeesTable({ employees }: Props) {
                         <TableHead className="text-center">Aksi</TableHead>
                     </TableRow>
                 </TableHeader>
+
                 <TableBody>
-                    {employees.data.map((employee: Employee, index: number) => (
+                    {pagination.data.map((employee, index) => (
                         <TableRow key={employee.id ?? index}>
                             <TableCell>{startIndex + index + 1}.</TableCell>
-                            <TableCell className="min-w-[800px]">{employee.first_name + " " + employee.last_name}</TableCell>
+                            <TableCell className="min-w-[800px]">
+                                {employee.first_name} {employee.last_name}
+                            </TableCell>
                             <TableCell>{employee.role_name ?? "-"}</TableCell>
                             <TableCell className="space-x-2 text-center">
                                 <Button
                                     size="icon"
                                     variant="outline"
-                                >
-                                    <Pencil className="size-4" />
+                                    onClick={() => onEdit(employee.id)}>
+                                    <Pencil />
                                 </Button>
-                                <Button
-                                    size="icon"
-                                    variant="destructive"
-                                >
-                                    <Trash2 className="size-4" />
+                                <Button size="icon" variant={'secondary'} onClick={() => onDeleteOrRestore(employee.id, !employee.deleted_at)}>
+                                    {employee.deleted_at ? <Eye /> : <EyeOff />}
                                 </Button>
                             </TableCell>
                         </TableRow>
                     ))}
 
-                    {employees.data.length === 0 && (
+                    {!pagination.data.length && (
                         <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                Tidak ada data Employee
+                            <TableCell colSpan={4} className="text-center py-2 text-muted-foreground">
+                                Data tidak ditemukan
                             </TableCell>
                         </TableRow>
                     )}
                 </TableBody>
             </Table>
         </div>
-    )
+    );
 }
-export default EmployeesTable

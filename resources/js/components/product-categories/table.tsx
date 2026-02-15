@@ -1,3 +1,4 @@
+import { Eye, EyeOff, Pencil } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -6,15 +7,14 @@ import {
     TableHeader,
     TableRow
 } from '@/components/ui/table';
+import type { Category, Pagination } from '@/lib/model';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Eye, EyeOff, Pencil } from 'lucide-react';
-import { Category, Pagination } from '@/lib/model';
 
 type Props = {
     pagination: Pagination<Category>
-    onEdit: (id: any) => void
-    onDeleteOrRestore: (id: any, action: boolean) => void
+    onEdit: (id: unknown) => void
+    onDeleteOrRestore: (id: unknown, action: boolean) => void
 }
 
 export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {

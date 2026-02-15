@@ -3,15 +3,8 @@ import {
     ChevronLeft,
     ChevronRight
 } from "lucide-react"
+import type { Pagination } from "@/lib/model"
 import { Button } from "./ui/button"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from "./ui/select"
-import { Pagination } from "@/lib/model"
 import {
     Combobox,
     ComboboxContent,
@@ -20,6 +13,13 @@ import {
     ComboboxItem,
     ComboboxList
 } from "./ui/combobox"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "./ui/select"
 
 type Props<T> = {
     pagination: Pagination<T>

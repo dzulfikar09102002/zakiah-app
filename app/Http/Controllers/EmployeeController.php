@@ -16,17 +16,15 @@ class EmployeeController extends Controller
 
     public function index()
     {
-        $perPage = request('per_page', 10);
         $entityId = auth()->user()?->entity?->id;
+        $pagination = $this->service->getEmployees($entityId);
 
-        $employees = $this->service->paginateByEntity($entityId, $perPage);
-
-        return Inertia::render('employee/index', compact('employees'));
+        return Inertia::render('employees/index', compact('pagination'));
     }
 
     public function create()
     {
-        return Inertia::render('employee/create', $this->service->getFormOptions());
+        return Inertia::render('employees/create', $this->service->getFormOptions());
     }
 
     public function store(StoreemployeeRequest $request)
@@ -39,7 +37,7 @@ class EmployeeController extends Controller
             auth()->id()
         );
 
-        return redirect()->route('employee.index')->with('success', 'Karyawan berhasil ditambahkan');
+        return redirect()->route('employees.index')->with('success', 'Karyawan berhasil ditambahkan');
     }
 
     public function update(UpdateemployeeRequest $request, Employee $employee)
@@ -50,13 +48,13 @@ class EmployeeController extends Controller
             auth()->id()
         );
 
-        return redirect()->route('employee.index')->with('success', 'Karyawan berhasil diperbarui');
+        return redirect()->route('employees.index')->with('success', 'Karyawan berhasil diperbarui');
     }
 
     public function destroy(Employee $employee)
     {
         $this->service->delete($employee);
 
-        return redirect()->route('employee.index')->with('success', 'Karyawan berhasil dihapus');
+        return redirect()->route('employees.index')->with('success', 'Karyawan berhasil dihapus');
     }
 }

@@ -1,8 +1,9 @@
 import { Form, Head } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
+import EmployeesTable from '@/components/partials/employees-table';
+import type { AlertState } from '@/components/product-categories/alert';
 import type { ModalState } from '@/components/product-categories/modal';
-import RolesTable from '@/components/roles-table';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,8 +14,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
-import type { Role, Pagination } from '@/lib/model';
-import roles from '@/routes/roles';
+import type { Employee, Pagination } from '@/lib/model';
+import employees from '@/routes/employees';
 import type { BreadcrumbItem } from '@/types';
 
 const title = 'Karyawan';
@@ -22,12 +23,12 @@ const title = 'Karyawan';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title,
-        href: roles.index().url,
+        href: employees.index().url,
     },
 ];
 
 type Props = {
-    pagination: Pagination<Role>
+    pagination: Pagination<Employee>
 }
 
 export default ({ pagination }: Props) => {
@@ -35,7 +36,19 @@ export default ({ pagination }: Props) => {
         isOpen: false,
         dataId: undefined as unknown
     });
+    const [alert, setAlert] = useState<AlertState>({
+        delete: true,
+        isOpen: false,
+        dataId: undefined as unknown,
+        proccessing: false
+    });
     const search = useQuery().search || ''
+
+    // const onModalSuccess = () => setModal({ ...modal, isOpen: false, dataId: undefined })
+    // const onModalClose = () => setModal({ ...modal, dataId: undefined, isOpen: false })
+
+    // const onAlertlClose = () => setAlert({ isOpen: false, proccessing: false, dataId: undefined, delete: true })
+    // const onAlertProccessing = () => setAlert({ ...alert, proccessing: true })
 
     const onEdit = (id: unknown) => setModal({
         ...modal,
@@ -43,6 +56,12 @@ export default ({ pagination }: Props) => {
         isOpen: true
     })
 
+    const onDeleteOrRestore = (id: unknown, action: boolean) => setAlert({
+        ...alert,
+        dataId: id,
+        delete: action,
+        isOpen: true
+    })
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -62,7 +81,8 @@ export default ({ pagination }: Props) => {
                     </Form>
                 </CardHeader>
                 <CardContent className="p-0 lg:px-6 border-t lg:border-0">
-                    <RolesTable pagination={pagination}
+                    <EmployeesTable pagination={pagination}
+                        onDeleteOrRestore={onDeleteOrRestore}
                         onEdit={onEdit} />
                     <TablePagination pagination={pagination} />
                 </CardContent>

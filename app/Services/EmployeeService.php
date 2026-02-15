@@ -8,23 +8,12 @@ use App\Models\Role;
 
 class EmployeeService
 {
-    public function paginateByEntity(int $entityId, int $perPage = 10)
+    public function getEmployees(int $entityId)
     {
-        $employees = Employee::where('entity_id', $entityId)
-            ->paginate($perPage)
-            ->withQueryString();
-
-        // Ambil roles sekali (biar nggak N+1)
-        $roles = Role::select('id', 'name')->get()->keyBy('id');
-
-        // Inject role_name ke setiap employee
-        $employees->getCollection()->transform(function ($employee) use ($roles) {
-            $employee->role_name = $roles[$employee->role_id]->name ?? '-';
-
-            return $employee;
-        });
-
-        return $employees;
+        return Employee::with('role:id,name')
+        ->where('entity_id', $entityId)
+        ->paginate(request('per_page', 10))
+        ->withQueryString();
     }
 
     public function getFormOptions()

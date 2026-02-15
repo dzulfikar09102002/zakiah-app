@@ -6,9 +6,15 @@ use App\Models\Role;
 
 class RoleService
 {
-    public function paginate(int $perPage = 10)
+    public function getRoles()
     {
-        return Role::paginate($perPage);
+        return Role::query()
+        ->when(
+            request('search'),
+            fn ($q, $search) => $q->where('name', 'like', "%{$search}%")
+        )
+        ->paginate(request('per_page', 10))
+        ->withQueryString();
     }
 
     public function store(array $data, int $userId)
