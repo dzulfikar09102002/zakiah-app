@@ -14,21 +14,21 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
-import type { Location, Pagination } from '@/lib/model';
-import locations from '@/routes/locations';
+import type { Pagination, Unit } from '@/lib/model';
+import units from '@/routes/units';
 import type { BreadcrumbItem } from '@/types';
 
-const title = 'Lokasi';
+const title = 'Produk Unit';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title,
-        href: locations.index().url,
+        href: units.index().url,
     },
 ];
 
 type Props = {
-    pagination: Pagination<Location>
+    pagination: Pagination<Unit>
 }
 
 export default ({ pagination }: Props) => {
@@ -43,7 +43,7 @@ export default ({ pagination }: Props) => {
             <Head title={title} />
             <div className="mb-4">
                 <Button className="size-9 lg:size-auto" onClick={() => setModal({ ...modal, isOpen: true })}>
-                    <Plus /> <span className="hidden lg:inline">Lokasi Baru</span>
+                    <Plus /> <span className="hidden lg:inline">Unit Baru</span>
                 </Button>
             </div>
             <Card className="bg-background lg:bg-card p-0 lg:py-6 border-0 lg:border">
@@ -62,27 +62,19 @@ export default ({ pagination }: Props) => {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>No.</TableHead>
-                                    <TableHead >Initial</TableHead>
                                     <TableHead >Nama</TableHead>
-                                    <TableHead >Jenis</TableHead>
-                                    <TableHead >Alamat</TableHead>
-                                    <TableHead >Kota</TableHead>
                                     <TableHead >Status</TableHead>
                                     <TableHead className="text-center">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {pagination.data.map((location, idx) => (
-                                    <TableRow key={location.id ?? idx}>
+                                {pagination.data.map((unit, idx) => (
+                                    <TableRow key={unit.id ?? idx}>
                                         <TableCell>{startIndex + idx + 1}.</TableCell>
-                                        <TableCell>{location.initial}</TableCell>
                                         <TableCell>
-                                            {location.name}
+                                            {unit.name}
                                         </TableCell>
-                                        <TableCell>{location.kind}</TableCell>
-                                        <TableCell>{location.full_address}</TableCell>
-                                        <TableCell>{location.city}</TableCell>
-                                        <TableCell><Badge variant='secondary'>{location.status}</Badge></TableCell>
+                                        <TableCell><Badge variant='secondary'>{unit.status}</Badge></TableCell>
                                         <TableCell className="space-x-2 text-center">
                                             <Button
                                                 size="icon"
@@ -96,7 +88,7 @@ export default ({ pagination }: Props) => {
                                 ))}
                                 {!pagination.data.length && (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="text-center py-2 text-muted-foreground">
+                                        <TableCell colSpan={4} className="text-center py-2 text-muted-foreground">
                                             Data tidak ditemukan
                                         </TableCell>
                                     </TableRow>

@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Pencil } from "lucide-react";
+import { Pencil, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -14,10 +14,9 @@ import type { Employee, Pagination } from "@/lib/model";
 type Props = {
     pagination: Pagination<Employee>
     onEdit: (id: unknown) => void
-    onDeleteOrRestore: (id: unknown, action: boolean) => void
 }
 
-export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
+export default ({ pagination, onEdit }: Props) => {
     const startIndex = (pagination.current_page - 1) * pagination.per_page
 
     return (
@@ -39,7 +38,7 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                             <TableCell className="min-w-[800px]">
                                 {employee.first_name} {employee.last_name}
                             </TableCell>
-                            <TableCell>{employee.role_name ?? "-"}</TableCell>
+                            <TableCell>{employee.role?.name ?? "-"}</TableCell>
                             <TableCell className="space-x-2 text-center">
                                 <Button
                                     size="icon"
@@ -47,9 +46,7 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                                     onClick={() => onEdit(employee.id)}>
                                     <Pencil />
                                 </Button>
-                                <Button size="icon" variant={'secondary'} onClick={() => onDeleteOrRestore(employee.id, !employee.deleted_at)}>
-                                    {employee.deleted_at ? <Eye /> : <EyeOff />}
-                                </Button>
+                                <Button size="icon" variant='destructive'> <X /></Button>
                             </TableCell>
                         </TableRow>
                     ))}

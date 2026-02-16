@@ -17,7 +17,7 @@ import type { Role, Pagination } from '@/lib/model';
 import roles from '@/routes/roles';
 import type { BreadcrumbItem } from '@/types';
 
-const title = 'Karyawan';
+const title = 'Role';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -48,7 +48,7 @@ export default ({ pagination }: Props) => {
             <Head title={title} />
             <div className="mb-4">
                 <Button className="size-9 lg:size-auto" onClick={() => setModal({ ...modal, isOpen: true })}>
-                    <Plus /> <span className="hidden lg:inline">Karyawan Baru</span>
+                    <Plus /> <span className="hidden lg:inline">Role Baru</span>
                 </Button>
             </div>
             <Card className="bg-background lg:bg-card p-0 lg:py-6 border-0 lg:border">

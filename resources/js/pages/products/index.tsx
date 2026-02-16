@@ -115,8 +115,6 @@ export default ({ categoryOptions, pagination }: Props) => {
                     <Button variant="outline"><FileUp /> Import</Button>
                 </ButtonGroup>
             </ButtonGroup>
-
-            {/* Table Section */}
             <Card className="bg-background lg:bg-card p-0 lg:py-6 border-0 lg:border">
                 <CardHeader className="p-0 lg:px-6">
                     <Form method="GET" className="grid lg:flex gap-2">
@@ -192,7 +190,6 @@ export default ({ categoryOptions, pagination }: Props) => {
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>
-            {/* <ProductInfiniteList /> */}
             <Dialog open={isModalOpen} onOpenChange={() => setIsModalOpen(false)}>
                 <Form>
                     <DialogContent>
@@ -274,8 +271,6 @@ export default ({ categoryOptions, pagination }: Props) => {
                                     </Field>
                                 </FieldGroup>
                             </FieldSet>
-
-                            {/* Stock Table Section */}
                             <div className="space-y-4">
                                 <Label className="mb-4 inline-block">Stok</Label>
                                 <div className="rounded-md border">

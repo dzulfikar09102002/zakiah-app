@@ -12,9 +12,11 @@ import {
 import { dashboard } from '@/routes';
 import categories from '@/routes/categories';
 import employees from '@/routes/employees';
+import locations from '@/routes/locations';
 import products from '@/routes/products';
 import roles from '@/routes/roles';
 import sellings from '@/routes/sellings';
+import units from '@/routes/units';
 import type { NavItem } from '@/types';
 
 export const mainNavItems: NavItem[] = [
@@ -92,7 +94,7 @@ export const mainNavItems: NavItem[] = [
             },
             {
                 title: "Produk Unit",
-                href: "#",
+                href: units.index().url,
             },
         ],
     },
@@ -174,7 +176,7 @@ export const mainNavItems: NavItem[] = [
             },
             {
                 title: "Lokasi",
-                href: "#",
+                href: locations.index().url,
             },
             {
                 title: "Karyawan",

@@ -5,6 +5,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductUnitController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellingController;
 use Illuminate\Support\Facades\Route;
@@ -46,6 +47,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/{productCategory}', [ProductCategoryController::class, 'update'])->name('categories.update');
         Route::delete('/{productCategory}', [ProductCategoryController::class, 'destroy'])->name('categories.delete');
         Route::post('/{id}/restore', [ProductCategoryController::class, 'restore'])->name('categories.restore');
+    });
+
+    Route::prefix('/units')->group(function () {
+        Route::get('/', [ProductUnitController::class, 'index'])->name('units.index');
+        Route::get('/create', [ProductUnitController::class, 'index'])->name('units.create');
     });
 
     Route::prefix('/locations')->group(function () {

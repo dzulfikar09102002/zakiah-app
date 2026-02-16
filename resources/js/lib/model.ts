@@ -3,18 +3,26 @@ export type Role = {
     name: string
 }
 
-export type Employee = {
+export interface Employee {
     id: number
+    entity_id: number
+    user_id: number
+    role_id: number
+    code: string
     first_name: string
     last_name: string
-    role_id?: number
-    role_name?: string
-    deleted_at: string
-}
-
-export type Location = {
-    id: number
-    name: string
+    select_all_location: boolean
+    entity_permission: Record<string, unknown> | null
+    location_permission: Record<string, unknown> | null
+    created_at: string | null
+    updated_at: string | null
+    deleted_at: string | null
+    updated_by: number | null
+    created_by: number | null
+    role?: {
+        id: number
+        name: string
+    } | null
 }
 
 export type Category = {
@@ -77,4 +85,52 @@ export type Pagination<T> = {
         label: string
         active: boolean
     }[]
+}
+export interface Location {
+    id: number
+    entity_id: number
+    code: string
+    initial: string
+    name: string
+    search_name: string
+    image_url?: string | null
+    icon_image_url?: string | null
+    backoffice_phone_number?: string | null
+    backoffice_phone_number_country_code?: string | null
+    backoffice_email?: string | null
+    contact_phone_number?: string | null
+    contact_phone_number_country_code?: string | null
+    contact_email?: string | null
+    kind: string
+    warehouse: boolean
+    full_address?: string | null
+    postal_code?: string | null
+    city?: string | null
+    province?: string | null
+    country?: string | null
+    timezone?: string | null
+    footer?: string | null
+    allow_transfer_stock: boolean
+    allow_external_supplier: boolean
+    franchise: boolean
+    status: 'active' | 'inactive'
+    deleted_at?: string | null
+    created_at?: string | null
+    updated_at?: string | null
+    updated_by?: number | null
+    created_by?: number | null
+    checksum: string
+}
+
+export interface Unit {
+    id: number
+    entity_id: number
+    name: string
+    search_name: string
+    status: 'active' | 'inactive'
+    created_at: string | null
+    updated_at: string | null
+    deleted_at: string | null
+    updated_by: number | null
+    created_by: number | null
 }

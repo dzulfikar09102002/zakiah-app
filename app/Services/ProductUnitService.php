@@ -1,16 +1,15 @@
 <?php
 
 namespace App\Services;
+use App\Models\ProductUnit;
 
-use App\Models\Location;
-
-class LocationService
+class ProductUnitService
 {
-    public function getLocation()
+    public function getUnits()
     {
         $search = request('search', '');
 
-        return Location::where('entity_id', auth()->user()?->entity?->id)
+        return ProductUnit::where('entity_id', auth()->user()?->entity?->id)
             ->withTrashed()
             ->whereLike('name', "%$search%")
             ->paginate(request('per_page', 10))

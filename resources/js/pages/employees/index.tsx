@@ -2,7 +2,6 @@ import { Form, Head } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import EmployeesTable from '@/components/partials/employees-table';
-import type { AlertState } from '@/components/product-categories/alert';
 import type { ModalState } from '@/components/product-categories/modal';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
@@ -36,32 +35,13 @@ export default ({ pagination }: Props) => {
         isOpen: false,
         dataId: undefined as unknown
     });
-    const [alert, setAlert] = useState<AlertState>({
-        delete: true,
-        isOpen: false,
-        dataId: undefined as unknown,
-        proccessing: false
-    });
     const search = useQuery().search || ''
-
-    // const onModalSuccess = () => setModal({ ...modal, isOpen: false, dataId: undefined })
-    // const onModalClose = () => setModal({ ...modal, dataId: undefined, isOpen: false })
-
-    // const onAlertlClose = () => setAlert({ isOpen: false, proccessing: false, dataId: undefined, delete: true })
-    // const onAlertProccessing = () => setAlert({ ...alert, proccessing: true })
-
     const onEdit = (id: unknown) => setModal({
         ...modal,
         dataId: id,
         isOpen: true
     })
 
-    const onDeleteOrRestore = (id: unknown, action: boolean) => setAlert({
-        ...alert,
-        dataId: id,
-        delete: action,
-        isOpen: true
-    })
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -82,7 +62,6 @@ export default ({ pagination }: Props) => {
                 </CardHeader>
                 <CardContent className="p-0 lg:px-6 border-t lg:border-0">
                     <EmployeesTable pagination={pagination}
-                        onDeleteOrRestore={onDeleteOrRestore}
                         onEdit={onEdit} />
                     <TablePagination pagination={pagination} />
                 </CardContent>

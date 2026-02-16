@@ -11,6 +11,7 @@ class EmployeeService
     public function getEmployees(int $entityId)
     {
         return Employee::with('role:id,name')
+        ->withTrashed()
         ->where('entity_id', $entityId)
         ->paginate(request('per_page', 10))
         ->withQueryString();

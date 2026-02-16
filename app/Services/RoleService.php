@@ -8,11 +8,9 @@ class RoleService
 {
     public function getRoles()
     {
-        return Role::query()
-        ->when(
-            request('search'),
-            fn ($q, $search) => $q->where('name', 'like', "%{$search}%")
-        )
+        $search = request('search', '');
+
+        return Role::whereLike('name', "%$search%")
         ->paginate(request('per_page', 10))
         ->withQueryString();
     }

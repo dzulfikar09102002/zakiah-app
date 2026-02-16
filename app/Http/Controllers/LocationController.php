@@ -15,23 +15,16 @@ class LocationController extends Controller
     ) {}
     public function index()
     {
-        $perPage = request('per_page', 10);
         $entityId = auth()->user()?->entity?->id;
-        $pagination = $this->service->paginate($entityId, $perPage);
+        $pagination = $this->service->getLocation();
         return Inertia::render('locations/index', compact('pagination'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StorelocationRequest $request)
     {
         //

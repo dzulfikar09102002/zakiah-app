@@ -13,9 +13,8 @@ class ProductController extends Controller
 
     public function index()
     {
-        $entityId = auth()->user()?->entity?->id;
-        $pagination = $this->service->getProducts($entityId);
-        $categoryOptions = $this->service->getCategories($entityId);
+        $pagination = $this->service->getProducts();
+        $categoryOptions = $this->service->getCategories();
         $categoryOptions->prepend([
             'value' => 'all',
             'label' => 'Semua',

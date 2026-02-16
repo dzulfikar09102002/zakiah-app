@@ -26,7 +26,7 @@ import type {
 import categories from '@/routes/categories';
 import type { BreadcrumbItem } from '@/types';
 
-const title = 'Kategori'
+const title = 'Produk Kategori'
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title,
