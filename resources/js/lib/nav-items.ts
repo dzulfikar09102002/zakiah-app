@@ -16,6 +16,7 @@ import locations from '@/routes/locations';
 import products from '@/routes/products';
 import roles from '@/routes/roles';
 import sellings from '@/routes/sellings';
+import stockreports from '@/routes/stockreports';
 import units from '@/routes/units';
 import type { NavItem } from '@/types';
 
@@ -60,6 +61,10 @@ export const mainNavItems: NavItem[] = [
                     {
                         title: "Pergerakan",
                         href: "#"
+                    },
+                    {
+                        title: "Sisa Stok",
+                        href: stockreports.remaining().url
                     }
                 ]
             },
