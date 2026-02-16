@@ -58,7 +58,6 @@ export default function NavItemNode({ item }: { item: NavItem }) {
             asChild
             open={isOpen}
             onOpenChange={setOpen}
-            className="group/collapsible"
         >
             <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
@@ -68,7 +67,7 @@ export default function NavItemNode({ item }: { item: NavItem }) {
                     >
                         {item.icon && <item.icon className="mr-2 size-4" />}
                         <span>{item.title}</span>
-                        <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                        <ChevronRight className={`absolute right-3 top-1/2 -translate-y-1/2 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} />
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
 
