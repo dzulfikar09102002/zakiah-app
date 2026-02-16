@@ -1,6 +1,6 @@
-"use client"
-
+import { Link, usePage } from "@inertiajs/react"
 import { ChevronRight } from "lucide-react"
+import { useState, useMemo } from "react"
 import {
     Collapsible,
     CollapsibleContent,
@@ -15,17 +15,41 @@ import {
 } from "@/components/ui/sidebar"
 import type { NavItem } from "@/types"
 
+function isItemActive(item: NavItem, currentPath: string): boolean {
+    if (item.href && item.href !== "#" && currentPath.startsWith(item.href)) {
+        return true
+    }
+
+    if (item.items?.length) {
+        return item.items.some((child) =>
+            isItemActive(child, currentPath)
+        )
+    }
+
+    return false
+}
+
 export default function NavItemSetting({ item }: { item: NavItem }) {
-    const hasChildren = item.items && item.items.length > 0
+    const { url } = usePage()
+    const hasChildren = !!item.items?.length
+    const [open, setOpen] = useState(false)
+
+    const isOpen = useMemo(() => {
+        return open || (hasChildren && isItemActive(item, url))
+    }, [open, hasChildren, item, url])
 
     if (!hasChildren) {
         return (
             <SidebarMenuItem>
-                <SidebarMenuButton asChild className="w-full justify-start">
-                    <a href={item.href} className="flex items-center gap-2 w-full">
+                <SidebarMenuButton
+                    asChild
+                    isActive={isItemActive(item, url)}
+                    className="w-full justify-start"
+                >
+                    <Link href={item.href} className="flex items-center gap-2 w-full">
                         {item.icon && <item.icon className="size-4" />}
                         <span>{item.title}</span>
-                    </a>
+                    </Link>
                 </SidebarMenuButton>
             </SidebarMenuItem>
         )
@@ -34,28 +58,35 @@ export default function NavItemSetting({ item }: { item: NavItem }) {
     return (
         <Collapsible
             asChild
-            defaultOpen={item.isActive}
-            className="group/collapsible"
+            open={isOpen}
+            onOpenChange={setOpen}
         >
             <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                     <SidebarMenuButton tooltip={item.title}>
                         {item.icon && <item.icon className="mr-2 size-4" />}
                         <span>{item.title}</span>
-                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                        <ChevronRight
+                            className={`ml-auto transition-transform duration-200 ${isOpen ? "rotate-90" : ""
+                                }`}
+                        />
                     </SidebarMenuButton>
                 </CollapsibleTrigger>
+
                 <CollapsibleContent>
                     <SidebarMenuSub className="pl-4">
                         {item.items?.map((child) => (
                             <SidebarMenuSubItem key={child.title}>
-                                {child.items && child.items.length > 0 ? (
+                                {child.items?.length ? (
                                     <NavItemSetting item={child} />
                                 ) : (
-                                    <SidebarMenuSubButton asChild>
-                                        <a href={child.href}>
+                                    <SidebarMenuSubButton
+                                        asChild
+                                        isActive={isItemActive(child, url)}
+                                    >
+                                        <Link href={child.href}>
                                             <span>{child.title}</span>
-                                        </a>
+                                        </Link>
                                     </SidebarMenuSubButton>
                                 )}
                             </SidebarMenuSubItem>

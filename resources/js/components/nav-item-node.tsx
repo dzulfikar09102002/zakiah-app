@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/sidebar"
 import type { NavItem } from "@/types"
 
-// helper: cek aktif sampai ke anak-anak
 function isItemActive(item: NavItem, currentPath: string): boolean {
     if (item.href && item.href !== "#" && currentPath.startsWith(item.href)) {
         return true

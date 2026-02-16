@@ -3,6 +3,23 @@ export type Role = {
     name: string
 }
 
+export interface PaymentMethod {
+    id: number
+    entity_id: number | null
+    name: string
+    icon_image_url: string | null
+    status: 'active' | 'inactive'
+    kind: 'cash' | 'debit' | 'credit_card' | 'qris' | 'online_payment' | 'va'
+    fixed_fee: number
+    variable_fee: number
+    created_at: string | null
+    updated_at: string | null
+    deleted_at: string | null
+    updated_by: number | null
+    created_by: number | null
+}
+
+
 export interface Employee {
     id: number
     entity_id: number

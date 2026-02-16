@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductUnitController;
@@ -60,9 +61,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [LocationController::class, 'index'])->name('locations.index');
         Route::post('/store', [LocationController::class, 'store'])->name('locations.store');
     });
-    Route::prefix('/stockreports')->group(function () {
+
+    Route::prefix('/stock-reports')->group(function () {
         Route::get('/remaining', [StockRemainingController::class, 'index'])->name('stockreports.remaining');
-    });
+    }); 
+
+    Route::prefix('/payment-methods')->group(function () {
+        Route::get('/', [PaymentMethodController::class, 'index'])->name('paymentmethods.index');
+    }); 
+   
 });
 
 require __DIR__.'/settings.php';

@@ -1,4 +1,4 @@
-import { ArchiveRestore, Eye, EyeOff, Pencil, X } from 'lucide-react';
+import { ArchiveRestore, Pencil, X } from 'lucide-react';
 import {
     Table,
     TableBody,

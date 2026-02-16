@@ -1,9 +1,14 @@
-import { Form, Head, Link, router, usePage } from '@inertiajs/react';
+import { Form, Head, Link } from '@inertiajs/react';
 import {
     Plus,
     Search,
 } from 'lucide-react';
 import { useState } from 'react';
+import {
+    MainCard,
+    MainCardContent,
+    MainCardHeader
+} from '@/components/main-card';
 import Alert from '@/components/product-categories/alert';
 import type { AlertState } from '@/components/product-categories/alert';
 import Modal from '@/components/product-categories/modal';
@@ -11,12 +16,8 @@ import type { ModalState } from '@/components/product-categories/modal';
 import Table from '@/components/product-categories/table';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
-import {
-    MainCard,
-    MainCardContent,
-    MainCardHeader
-} from '@/components/main-card';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type {
@@ -25,7 +26,6 @@ import type {
 } from '@/lib/model';
 import categories from '@/routes/categories';
 import type { BreadcrumbItem } from '@/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const title = 'Produk Kategori'
 const breadcrumbs: BreadcrumbItem[] = [
@@ -41,7 +41,6 @@ type Props = {
 }
 
 export default ({ pagination, onlyTrashed }: Props) => {
-    const { url } = usePage()
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined as unknown
