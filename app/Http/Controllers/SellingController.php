@@ -9,6 +9,6 @@ class SellingController extends Controller
 {
     public function summary()
     {
-        return Inertia::render('report/sellings/summary');
+        return Inertia::render('reports/sellings/summary');
     }
 }

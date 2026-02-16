@@ -8,6 +8,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductUnitController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellingController;
+use App\Http\Controllers\StockRemainingController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -58,6 +59,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('/locations')->group(function () {
         Route::get('/', [LocationController::class, 'index'])->name('locations.index');
         Route::post('/store', [LocationController::class, 'store'])->name('locations.store');
+    });
+    Route::prefix('/stockreports')->group(function () {
+        Route::get('/remaining', [StockRemainingController::class, 'index'])->name('stockreports.remaining');
     });
 });
 
