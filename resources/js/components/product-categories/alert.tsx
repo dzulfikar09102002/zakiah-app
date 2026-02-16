@@ -35,14 +35,14 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
         >
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{alertState.delete ? 'Arsipkan' : 'Pulihkan'} Item</AlertDialogTitle>
+                    <AlertDialogTitle>{alertState.delete ? 'Hapus' : 'Pulihkan'} Item</AlertDialogTitle>
                     <AlertDialogDescription>
                         Apakah anda yakin?
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel disabled={alertState.proccessing}>Batal</AlertDialogCancel>
-                    <Button disabled={alertState.proccessing} onClick={() => {
+                    <Button variant={alertState.delete ? 'destructive' : 'default'} disabled={alertState.proccessing} onClick={() => {
                         const options = {
                             only: ['pagination'],
                             preserveState: true,
@@ -50,7 +50,7 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
                             onError: (errors: any) => {
                                 toast.error(
                                     alertState.delete
-                                        ? 'Gagal mengarsipkan data'
+                                        ? 'Gagal menghapus data'
                                         : 'Gagal memulihkan data'
                                 )
 
@@ -59,7 +59,7 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
                             onSuccess: () => {
                                 toast.success(
                                     alertState.delete
-                                        ? 'Data berhasil diarsipkan'
+                                        ? 'Data berhasil dihapus'
                                         : 'Data berhasil dipulihkan'
                                 )
                             },

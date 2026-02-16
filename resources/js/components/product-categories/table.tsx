@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Pencil } from 'lucide-react';
+import { ArchiveRestore, Eye, EyeOff, Pencil, X } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -8,7 +8,6 @@ import {
     TableRow
 } from '@/components/ui/table';
 import type { Category, Pagination } from '@/lib/model';
-import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 
 type Props = {
@@ -21,12 +20,11 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
     const startIndex = (pagination.current_page - 1) * pagination.per_page
 
     return (
-        <Table>
+        <Table className='stripped'>
             <TableHeader>
                 <TableRow>
                     <TableHead>No.</TableHead>
                     <TableHead>Nama</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead>Aksi</TableHead>
                 </TableRow>
             </TableHeader>
@@ -36,20 +34,14 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                         <TableCell>{startIndex + index + 1}.</TableCell>
                         <TableCell>{category.name}</TableCell>
                         <TableCell>
-                            <Badge variant={category.deleted_at ? 'destructive' : 'secondary'}>
-                                {category.deleted_at ? 'diarsipkan' : 'aktif'}
-                            </Badge>
-                        </TableCell>
-                        <TableCell>
                             <div className="flex gap-2">
-                                <Button
-                                    size="icon"
-                                    variant="outline"
-                                    onClick={() => onEdit(category.id)}>
-                                    <Pencil />
-                                </Button>
-                                <Button size="icon" variant={'secondary'} onClick={() => onDeleteOrRestore(category.id, !category.deleted_at)}>
-                                    {category.deleted_at ? <Eye /> : <EyeOff />}
+                                {!category.deleted_at && (
+                                    <Button size="icon" variant="outline" onClick={() => onEdit(category.id)}>
+                                        <Pencil />
+                                    </Button>
+                                )}
+                                <Button size="icon" variant={category.deleted_at ? "outline" : "destructive"} onClick={() => onDeleteOrRestore(category.id, !category.deleted_at)}>
+                                    {category.deleted_at ? <ArchiveRestore /> : <X />}
                                 </Button>
                             </div>
                         </TableCell>
@@ -58,7 +50,7 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
 
                 {!pagination.data.length && (
                     <TableRow>
-                        <TableCell colSpan={4} className="text-center py-2 text-muted-foreground">
+                        <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
                             Data tidak ditemukan
                         </TableCell>
                     </TableRow>

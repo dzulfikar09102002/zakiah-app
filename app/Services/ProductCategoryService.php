@@ -13,7 +13,16 @@ class ProductCategoryService
         $search = request('search', '');
 
         return ProductCategory::where('entity_id', auth()->user()?->entity?->id)
-            ->withTrashed()
+            ->whereLike('name', "%$search%")
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
+    }
+
+    public function getDeletedCategories()
+    {
+        $search = request('search', '');
+
+        return ProductCategory::onlyTrashed()->where('entity_id', auth()->user()?->entity?->id)
             ->whereLike('name', "%$search%")
             ->paginate(request('per_page', 10))
             ->withQueryString();

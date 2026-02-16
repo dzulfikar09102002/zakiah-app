@@ -47,6 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/{productCategory}', [ProductCategoryController::class, 'update'])->name('categories.update');
         Route::delete('/{productCategory}', [ProductCategoryController::class, 'destroy'])->name('categories.delete');
         Route::post('/{id}/restore', [ProductCategoryController::class, 'restore'])->name('categories.restore');
+        Route::get('/deleted', [ProductCategoryController::class, 'deleted'])->name('categories.deleted');
     });
 
     Route::prefix('/units')->group(function () {

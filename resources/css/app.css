@@ -143,4 +143,8 @@
     button,a{
         @apply cursor-pointer
     }
+
+    table.stripped tbody tr {
+        @apply odd:bg-muted/25;
+    }
 }

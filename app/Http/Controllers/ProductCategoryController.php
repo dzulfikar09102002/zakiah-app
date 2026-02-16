@@ -21,6 +21,14 @@ class ProductCategoryController extends Controller
         return Inertia::render('categories/index', compact('pagination'));
     }
 
+    public function deleted()
+    {
+        $onlyTrashed = true;
+        $pagination = $this->service->getDeletedCategories();
+
+        return Inertia::render('categories/index', compact('pagination', 'onlyTrashed'));
+    }
+
     public function store(StoreProductCategoryRequest $request)
     {
         $this->service->store($request->validated()['name']);

@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Plus,
     Search,
@@ -12,10 +12,10 @@ import Table from '@/components/product-categories/table';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 import {
-    Card,
-    CardContent,
-    CardHeader
-} from '@/components/ui/card';
+    MainCard,
+    MainCardContent,
+    MainCardHeader
+} from '@/components/main-card';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
@@ -25,6 +25,7 @@ import type {
 } from '@/lib/model';
 import categories from '@/routes/categories';
 import type { BreadcrumbItem } from '@/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const title = 'Produk Kategori'
 const breadcrumbs: BreadcrumbItem[] = [
@@ -36,9 +37,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 type Props = {
     pagination: Pagination<Category>
+    onlyTrashed?: boolean
 }
 
-export default ({ pagination }: Props) => {
+export default ({ pagination, onlyTrashed }: Props) => {
+    const { url } = usePage()
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined as unknown
@@ -89,25 +92,37 @@ export default ({ pagination }: Props) => {
                     <Plus /> <span className="hidden lg:inline">Kategori Baru</span>
                 </Button>
             </div>
-            <Card className="bg-background lg:bg-card p-0 lg:py-6 border-0 lg:border">
-                <CardHeader className='p-0 lg:px-6'>
-                    <Form method='GET'>
-                        <div className="grid lg:flex gap-2">
-                            <input type="hidden" name="page" value={1} />
-                            <Input defaultValue={search} name='search' placeholder='Cari...' />
-                            <Button variant={'secondary'}><Search /> Cari</Button>
-                        </div>
+            <MainCard>
+                <MainCardHeader>
+                    <Form method='GET' className='grid lg:flex gap-2'>
+                        <input type="hidden" name="page" value={1} />
+                        <Input defaultValue={search} name='search' placeholder='Cari...' />
+                        <Button variant={'secondary'}><Search /> Cari</Button>
                     </Form>
-                </CardHeader>
-                <CardContent className="p-0 lg:px-6 border-t lg:border-0">
+                </MainCardHeader>
+                <MainCardContent>
+                    <Tabs value={onlyTrashed ? 'deleted' : 'available'} className='mb-4'>
+                        <TabsList>
+                            <TabsTrigger value='available' asChild>
+                                <Link href={categories.index().url}>
+                                    Tersedia
+                                </Link>
+                            </TabsTrigger>
+                            <TabsTrigger value="deleted" asChild>
+                                <Link href={categories.deleted().url}>
+                                    Terhapus
+                                </Link>
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
                     <Table
                         pagination={pagination}
                         onDeleteOrRestore={onDeleteOrRestore}
                         onEdit={onEdit}
                     />
                     <TablePagination pagination={pagination} />
-                </CardContent>
-            </Card>
+                </MainCardContent>
+            </MainCard>
         </AppLayout>
     );
 }
