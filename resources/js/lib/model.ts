@@ -151,3 +151,25 @@ export interface Unit {
     updated_by: number | null
     created_by: number | null
 }
+
+export interface ProductStock {
+    id: number
+    product_id: number
+    location_id: number
+    product_unit_id: number
+    stock: number
+    last_in_stock: number
+    last_out_stock: number
+    last_buy_price: number
+    average_buy_price: number
+    lowest_buy_price: number
+    highest_buy_price: number
+    created_at: string | null
+    updated_at: string | null
+    deleted_at: string | null
+    created_by: number | null
+    updated_by: number | null
+    checksum: string
+    product: Product
+    location: Location
+}
