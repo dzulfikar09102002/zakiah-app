@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Location;
 use App\Models\ProductLocationStock;
 
 class StockRemainingService{
@@ -28,5 +29,14 @@ class StockRemainingService{
         return $query
             ->paginate(request('per_page', 10))
             ->withQueryString();
-        }
+    }
+
+    public function getLocations(){
+        return Location::where('entity_id', auth()->user()?->entity?->id)->get()->map(function ($locatiuon) {
+            return [
+                'value' => $locatiuon->id,
+                'label' => $locatiuon->name,
+            ];
+        });
+    }
 }
