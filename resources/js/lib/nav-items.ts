@@ -17,9 +17,9 @@ import paymentmethods from '@/routes/paymentmethods';
 import products from '@/routes/products';
 import roles from '@/routes/roles';
 import sellings from '@/routes/sellings';
-import stockreports from '@/routes/stockreports';
 import units from '@/routes/units';
 import type { NavItem } from '@/types';
+import stockRemaining from '@/routes/stock-remaining';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -65,7 +65,7 @@ export const mainNavItems: NavItem[] = [
                     },
                     {
                         title: "Sisa Stok",
-                        href: stockreports.remaining().url
+                        href: stockRemaining.chooseLocation().url
                     }
                 ]
             },

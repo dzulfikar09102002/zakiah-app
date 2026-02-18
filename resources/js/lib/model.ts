@@ -5,18 +5,18 @@ export type Role = {
 
 export interface PaymentMethod {
     id: number
-    entity_id: number | null
+    entity_id?: number
     name: string
-    icon_image_url: string | null
+    icon_image_url?: string
     status: 'active' | 'inactive'
     kind: 'cash' | 'debit' | 'credit_card' | 'qris' | 'online_payment' | 'va'
     fixed_fee: number
     variable_fee: number
-    created_at: string | null
-    updated_at: string | null
-    deleted_at: string | null
-    updated_by: number | null
-    created_by: number | null
+    created_at?: string
+    updated_at?: string
+    deleted_at?: string
+    updated_by?: number
+    created_by?: number
 }
 
 
@@ -29,17 +29,17 @@ export interface Employee {
     first_name: string
     last_name: string
     select_all_location: boolean
-    entity_permission: Record<string, unknown> | null
-    location_permission: Record<string, unknown> | null
-    created_at: string | null
-    updated_at: string | null
-    deleted_at: string | null
-    updated_by: number | null
-    created_by: number | null
+    entity_permission?: Record<string, unknown>
+    location_permission?: Record<string, unknown>
+    created_at?: string
+    updated_at?: string
+    deleted_at?: string
+    updated_by?: number
+    created_by?: number
     role?: {
         id: number
         name: string
-    } | null
+    }
 }
 
 export type Category = {
@@ -55,32 +55,32 @@ export interface Product {
     product_category?: Category;
     product_unit_id: number;
     location_id: number;
-    tax_id: number | null;
-    child_product_category_id: number | null;
+    tax_id?: number;
+    child_product_category_id?: number;
     product_sell_unit_id: number;
-    parent_variance_id: number | null;
+    parent_variance_id?: number;
     name: string;
     code: string;
     sku: string;
     barcode: string;
     description: string;
-    image_url: string | null;
+    image_url?: string;
     sell_to_customer: number | boolean; // 
     service: number | boolean;
     modifier: number | boolean;
     has_variance: number | boolean;
     allow_custom_price: number | boolean;
     select_all_location: number | boolean;
-    location_ids: number[] | null;
-    exclude_location_ids: number[] | null;
-    tax_setting: unknown | null; // Bisa dispesifikkan jika ada strukturnya
+    location_ids?: number[];
+    exclude_location_ids?: number[];
+    tax_setting?: unknown;
     sell_price: number;
-    status: "active" | "inactive" | string;
-    deleted_at: string | null;
-    created_at: string;
-    updated_at: string;
-    updated_by: number | null;
-    created_by: number | null;
+    status: "active" | "archive";
+    deleted_at?: string;
+    created_at?: string;
+    updated_at?: string;
+    updated_by?: number;
+    created_by?: number;
     cost_of_goods_sold: number;
     last_buying_price: number;
     total_stock: string | number; // Di data kamu berupa string "544"
@@ -110,32 +110,32 @@ export interface Location {
     initial: string
     name: string
     search_name: string
-    image_url?: string | null
-    icon_image_url?: string | null
-    backoffice_phone_number?: string | null
-    backoffice_phone_number_country_code?: string | null
-    backoffice_email?: string | null
-    contact_phone_number?: string | null
-    contact_phone_number_country_code?: string | null
-    contact_email?: string | null
+    image_url?: string
+    icon_image_url?: string
+    backoffice_phone_number?: string
+    backoffice_phone_number_country_code?: string
+    backoffice_email?: string
+    contact_phone_number?: string
+    contact_phone_number_country_code?: string
+    contact_email?: string
     kind: string
     warehouse: boolean
-    full_address?: string | null
-    postal_code?: string | null
-    city?: string | null
-    province?: string | null
-    country?: string | null
-    timezone?: string | null
-    footer?: string | null
+    full_address?: string
+    postal_code?: string
+    city?: string
+    province?: string
+    country?: string
+    timezone?: string
+    footer?: string
     allow_transfer_stock: boolean
     allow_external_supplier: boolean
     franchise: boolean
     status: 'active' | 'inactive'
-    deleted_at?: string | null
-    created_at?: string | null
-    updated_at?: string | null
-    updated_by?: number | null
-    created_by?: number | null
+    deleted_at?: string
+    created_at?: string
+    updated_at?: string
+    updated_by?: number
+    created_by?: number
     checksum: string
 }
 
@@ -145,11 +145,11 @@ export interface Unit {
     name: string
     search_name: string
     status: 'active' | 'inactive'
-    created_at: string | null
-    updated_at: string | null
-    deleted_at: string | null
-    updated_by: number | null
-    created_by: number | null
+    created_at?: string
+    updated_at?: string
+    deleted_at?: string
+    updated_by?: number
+    created_by?: number
 }
 
 export interface ProductStock {
@@ -164,11 +164,11 @@ export interface ProductStock {
     average_buy_price: number
     lowest_buy_price: number
     highest_buy_price: number
-    created_at: string | null
-    updated_at: string | null
-    deleted_at: string | null
-    created_by: number | null
-    updated_by: number | null
+    created_at?: string
+    updated_at?: string
+    deleted_at?: string
+    created_by?: number
+    updated_by?: number
     checksum: string
     product: Product
     location: Location

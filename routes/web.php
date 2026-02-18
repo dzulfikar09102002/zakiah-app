@@ -62,14 +62,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/store', [LocationController::class, 'store'])->name('locations.store');
     });
 
-    Route::prefix('/stock-reports')->group(function () {
-        Route::get('/remaining', [StockRemainingController::class, 'index'])->name('stockreports.remaining');
-    }); 
+    Route::prefix('/stock-remaining')->group(function () {
+        Route::get('/', [StockRemainingController::class, 'chooseLocation'])->name('stock-remaining.choose-location');
+        Route::get('/{location}', [StockRemainingController::class, 'report'])->name('stock-remaining.report');
+    });
 
     Route::prefix('/payment-methods')->group(function () {
         Route::get('/', [PaymentMethodController::class, 'index'])->name('paymentmethods.index');
-    }); 
-   
+    });
+
 });
 
 require __DIR__.'/settings.php';

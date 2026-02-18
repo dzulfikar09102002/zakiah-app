@@ -4,11 +4,6 @@ import {
     Search,
 } from 'lucide-react';
 import { useState } from 'react';
-import {
-    MainCard,
-    MainCardContent,
-    MainCardHeader
-} from '@/components/main-card';
 import Alert from '@/components/product-categories/alert';
 import type { AlertState } from '@/components/product-categories/alert';
 import Modal from '@/components/product-categories/modal';
@@ -26,6 +21,7 @@ import type {
 } from '@/lib/model';
 import categories from '@/routes/categories';
 import type { BreadcrumbItem } from '@/types';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 const title = 'Produk Kategori'
 const breadcrumbs: BreadcrumbItem[] = [
@@ -91,15 +87,15 @@ export default ({ pagination, onlyTrashed }: Props) => {
                     <Plus /> <span className="hidden lg:inline">Kategori Baru</span>
                 </Button>
             </div>
-            <MainCard>
-                <MainCardHeader>
+            <Card>
+                <CardHeader>
                     <Form method='GET' className='grid lg:flex gap-2'>
                         <input type="hidden" name="page" value={1} />
                         <Input defaultValue={search} name='search' placeholder='Cari...' />
                         <Button variant={'secondary'}><Search /> Cari</Button>
                     </Form>
-                </MainCardHeader>
-                <MainCardContent>
+                </CardHeader>
+                <CardContent>
                     <Tabs value={onlyTrashed ? 'deleted' : 'available'} className='mb-4'>
                         <TabsList>
                             <TabsTrigger value='available' asChild>
@@ -120,8 +116,8 @@ export default ({ pagination, onlyTrashed }: Props) => {
                         onEdit={onEdit}
                     />
                     <TablePagination pagination={pagination} />
-                </MainCardContent>
-            </MainCard>
+                </CardContent>
+            </Card>
         </AppLayout>
     );
 }
