@@ -4,6 +4,8 @@ import { useState } from 'react';
 import type { ModalState } from '@/components/product-categories/modal';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
+import Modal from '@/components/payment-methods/modal';
+import Alert from '@/components/payment-methods/alert';
 import {
     Card,
     CardContent,
@@ -16,6 +18,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { Pagination, PaymentMethod } from '@/lib/model';
 import paymentmethods from '@/routes/paymentmethods';
 import type { BreadcrumbItem } from '@/types';
+import { AlertState } from '@/components/payment-methods/alert';
 
 const title = 'Metode Pembayaran';
 
@@ -35,9 +38,19 @@ export default ({ pagination }: Props) => {
         isOpen: false,
         dataId: undefined as unknown
     });
-
-    const startIndex = (pagination.current_page - 1) * pagination.per_page
+    const [alert, setAlert] = useState<AlertState>({
+        delete: true,
+        isOpen: false,
+        dataId: undefined as unknown,
+        proccessing: false
+    });
     const search = useQuery().search || ''
+    const startIndex = (pagination.current_page - 1) * pagination.per_page
+    const onModalSuccess = () => setModal({ ...modal, isOpen: false, dataId: undefined })
+    const onModalClose = () => setModal({ ...modal, dataId: undefined, isOpen: false })
+
+    const onAlertlClose = () => setAlert({ isOpen: false, proccessing: false, dataId: undefined, delete: true })
+    const onAlertProccessing = () => setAlert({ ...alert, proccessing: true })
 
     const onEdit = (id: unknown) => setModal({
         ...modal,
@@ -45,9 +58,27 @@ export default ({ pagination }: Props) => {
         isOpen: true
     })
 
+    const onDeleteOrRestore = (id: unknown, action: boolean) => setAlert({
+        ...alert,
+        dataId: id,
+        delete: action,
+        isOpen: true
+    })
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
+            <Modal
+                modalState={modal}
+                onModalClose={onModalClose}
+                onModalSuccess={onModalSuccess}
+                tableData={pagination.data}
+            />
+            <Alert
+                alertState={alert}
+                onAlertClose={onAlertlClose}
+                onAlertProccessing={onAlertProccessing}
+            />
             <div className="mb-4">
                 <Button className="size-9 lg:size-auto" onClick={() => setModal({ ...modal, isOpen: true })}>
                     <Plus /> <span className="hidden lg:inline">Metode Baru</span>

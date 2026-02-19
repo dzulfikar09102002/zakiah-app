@@ -68,6 +68,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('/payment-methods')->group(function () {
         Route::get('/', [PaymentMethodController::class, 'index'])->name('paymentmethods.index');
+        Route::post('/store', [PaymentMethodController::class, 'index'])->name('paymentmethods.store');
+        Route::patch('/{paymentMethod}', [PaymentMethodController::class, 'update'])->name('paymentmethods.update');
+        Route::delete('/{paymentMethod}', [PaymentMethodController::class, 'destroy'])->name('paymentmethods.delete');
+        Route::post('/{id}restore', [PaymentMethodController::class, 'restore'])->name('paymentmethods.restore');
+        Route::get('/deleted', [PaymentMethodController::class, 'deleted'])->name('paymentmethods.deleted');
     }); 
    
 });

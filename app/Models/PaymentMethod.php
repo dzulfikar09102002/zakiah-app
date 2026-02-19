@@ -3,8 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PaymentMethod extends Model
 {
-    //
+    use SoftDeletes;
+
+    protected $fillable = [
+        'name',
+        'icon_image_url',
+        'status',
+        'kind',
+        'fixed_fee',
+        'variable_fee',
+    ];
 }

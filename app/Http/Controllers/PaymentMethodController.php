@@ -32,7 +32,8 @@ class PaymentMethodController extends Controller
      */
     public function store(StorePaymentMethodRequest $request)
     {
-        //
+        $this->service->store($request->validated());
+        return to_route('paymentmethods.index')->with('success', 'Metode pembayaran berhasil diperbarui');
     }
 
     /**
@@ -65,5 +66,13 @@ class PaymentMethodController extends Controller
     public function destroy(PaymentMethod $paymentMethod)
     {
         //
+    }
+
+    public function restore(int $id){
+
+    }
+
+    public function deleted(){
+        
     }
 }
