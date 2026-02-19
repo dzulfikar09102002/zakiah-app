@@ -1,4 +1,4 @@
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
 import {
     Plus,
     Search,
@@ -67,6 +67,8 @@ export default ({ pagination, onlyTrashed }: Props) => {
         delete: action,
         isOpen: true
     })
+    const { url } = usePage()
+    const isDeletedRoute = url.includes('deleted')
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -96,7 +98,7 @@ export default ({ pagination, onlyTrashed }: Props) => {
                     </Form>
                 </CardHeader>
                 <CardContent>
-                    <Tabs value={onlyTrashed ? 'deleted' : 'available'} className='mb-4'>
+                    <Tabs value={isDeletedRoute ? 'deleted' : 'available'} className='mb-4'>
                         <TabsList>
                             <TabsTrigger value='available' asChild>
                                 <Link href={categories.index().url}>

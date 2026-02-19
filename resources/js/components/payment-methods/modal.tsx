@@ -53,13 +53,14 @@ export default function PaymentMethodModal({
         reset,
         errors,
         data,
-        setData
+        setData,
+        clearErrors
     } = useForm({
         name: '',
         kind: 'cash',
         fixed_fee: 0,
         variable_fee: 0,
-        entity_id: auth.user.entity.id
+        entity_id: auth.user.entity.id,
     });
 
     const submit: SubmitEventHandler<HTMLFormElement> = (e) => {
@@ -84,26 +85,32 @@ export default function PaymentMethodModal({
     };
 
     useEffect(() => {
-        if (!modalState.dataId) return;
-
         const existing = tableData.find(el => el.id === modalState.dataId);
 
         if (existing) {
             setData({
-                ...data,
                 name: existing.name,
                 kind: existing.kind,
                 fixed_fee: existing.fixed_fee,
                 variable_fee: existing.variable_fee,
                 entity_id: existing.entity_id
             });
+        } else {
+            reset();
+            setData('entity_id', auth.user.entity.id);
         }
-    }, [modalState]);
+    }, [modalState.dataId]);
+
 
     return (
         <Dialog
             open={modalState.isOpen}
-            onOpenChange={() => { processing || onModalClose(); }}
+            onOpenChange={(open) => {
+                if (!open && !processing) {
+                    clearErrors();
+                    onModalClose();
+                }
+            }}
         >
             <DialogContent asChild>
                 <form onSubmit={submit}>
@@ -113,10 +120,7 @@ export default function PaymentMethodModal({
                             {modalState.dataId ? 'Edit Metode Pembayaran' : 'Metode Pembayaran Baru'}
                         </DialogTitle>
                     </DialogHeader>
-
                     <FieldSet>
-
-                        {/* Nama */}
                         <Field>
                             <FieldLabel htmlFor="name">Nama</FieldLabel>
                             <Input
@@ -128,8 +132,6 @@ export default function PaymentMethodModal({
                             />
                             <FieldError>{errors.name}</FieldError>
                         </Field>
-
-                        {/* Jenis */}
                         <Field>
                             <FieldLabel htmlFor="kind">Jenis Metode Pembayaran</FieldLabel>
                             <Select
@@ -151,8 +153,6 @@ export default function PaymentMethodModal({
                             </Select>
                             <FieldError>{errors.kind}</FieldError>
                         </Field>
-
-                        {/* Biaya Tetap */}
                         <Field>
                             <FieldLabel htmlFor="fixed_fee">Biaya Tetap (Rp)</FieldLabel>
                             <Input

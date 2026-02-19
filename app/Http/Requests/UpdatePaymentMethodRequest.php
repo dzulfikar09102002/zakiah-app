@@ -3,26 +3,39 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePaymentMethodRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'name' => trim($this->name),
+        ]);
+    }
+
     public function rules(): array
     {
         return [
-            //
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('payment_methods')
+                    ->ignore($this->paymentMethod->id)
+                    ->where(fn ($query) =>
+                        $query->where('entity_id', $this->entity_id)
+                    ),
+            ],
+            'kind' => ['required', 'string', 'max:100'],
+            'fixed_fee' => ['required', 'numeric', 'min:0'],
+            'variable_fee' => ['required', 'numeric', 'min:0'],
+            'entity_id' => ['required'],
         ];
     }
 }

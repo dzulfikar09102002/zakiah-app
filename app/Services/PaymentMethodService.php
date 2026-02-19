@@ -15,22 +15,47 @@ class PaymentMethodService{
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }
+    public function getDeletedMethod()
+    {
+        $search = request('search', '');
 
-    public function store(array $data)
+        return PaymentMethod::onlyTrashed()->where('entity_id', auth()->user()?->entity?->id)
+            ->whereLike('name', "%$search%")
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
+    }
+    public function store(array $input)
     {
         $user = auth()->user();
-
         return PaymentMethod::create([
-            'name' => $data['name'],
-            'kind' => $data['kind'],
-            'fixed_fee' => $data['fixed_fee'],
-            'variable_fee' => $data['variable_fee'],
+            'name' => $input['name'],
+            'kind' => $input['kind'],
+            'fixed_fee' => $input['fixed_fee'],
+            'variable_fee' => $input['variable_fee'],
             'entity_id' => $user->entity?->id,
             'created_by' => $user->id,
             'updated_by' => $user->id,
-            'created_at' => now(),
-            'updated_at' => now()
-
         ]);
+    }
+
+    public function update(PaymentMethod $paymentMethod, array $input)
+    {
+        return $paymentMethod->update([
+            'name'         => $input['name'],
+            'kind'         => $input['kind'],
+            'fixed_fee'    => $input['fixed_fee'],
+            'variable_fee' => $input['variable_fee'],
+            'updated_by'   => auth()->user()->id,
+        ]);
+    }
+
+    public function delete(PaymentMethod $paymentMethod)
+    {
+        return $paymentMethod->delete();
+    }
+
+    public function restore(int $id){
+        $paymentmethod = PaymentMethod::withTrashed()->findOrFail($id);
+        return $paymentmethod->restore();
     }
 }

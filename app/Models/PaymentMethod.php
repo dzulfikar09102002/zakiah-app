@@ -16,5 +16,9 @@ class PaymentMethod extends Model
         'kind',
         'fixed_fee',
         'variable_fee',
+        'entity_id',
+        'created_by',
+        'updated_by',
     ];
+    
 }

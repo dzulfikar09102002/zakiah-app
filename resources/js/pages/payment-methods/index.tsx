@@ -1,5 +1,5 @@
-import { Form, Head } from '@inertiajs/react';
-import { Pencil, Plus, Search, X } from 'lucide-react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { ArchiveRestore, Pencil, Plus, Search, X } from 'lucide-react';
 import { useState } from 'react';
 import type { ModalState } from '@/components/product-categories/modal';
 import TablePagination from '@/components/table-pagination';
@@ -19,6 +19,7 @@ import type { Pagination, PaymentMethod } from '@/lib/model';
 import paymentmethods from '@/routes/paymentmethods';
 import type { BreadcrumbItem } from '@/types';
 import { AlertState } from '@/components/payment-methods/alert';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const title = 'Metode Pembayaran';
 
@@ -31,9 +32,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 type Props = {
     pagination: Pagination<PaymentMethod>
+    onlyTrashed?: boolean
 }
 
-export default ({ pagination }: Props) => {
+export default ({ pagination, onlyTrashed }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined as unknown
@@ -64,7 +66,8 @@ export default ({ pagination }: Props) => {
         delete: action,
         isOpen: true
     })
-
+    const { url } = usePage()
+    const isDeletedRoute = url.includes('deleted')
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -95,6 +98,20 @@ export default ({ pagination }: Props) => {
                     </Form>
                 </CardHeader>
                 <CardContent className="p-0 lg:px-6 border-t lg:border-0">
+                    <Tabs value={isDeletedRoute ? 'deleted' : 'available'} className="mb-4">
+                        <TabsList>
+                            <TabsTrigger value="available" asChild>
+                                <Link href={paymentmethods.index().url}>
+                                    Tersedia
+                                </Link>
+                            </TabsTrigger>
+                            <TabsTrigger value="deleted" asChild>
+                                <Link href={paymentmethods.deleted().url}>
+                                    Terhapus
+                                </Link>
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
                     <div className="relative w-full overflow-auto">
                         <Table>
                             <TableHeader>
@@ -104,7 +121,6 @@ export default ({ pagination }: Props) => {
                                     <TableHead className="text-center">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
-
                             <TableBody>
                                 {pagination.data.map((pmethod, idx) => (
                                     <TableRow key={pmethod.id ?? idx}>
@@ -119,7 +135,11 @@ export default ({ pagination }: Props) => {
                                                 onClick={() => onEdit(pmethod.id)}>
                                                 <Pencil />
                                             </Button>
-                                            <Button size="icon" variant='destructive'> <X />
+                                            <Button
+                                                size="icon"
+                                                variant={isDeletedRoute ? "outline" : "destructive"}
+                                                onClick={() => onDeleteOrRestore(pmethod.id, !isDeletedRoute)}>
+                                                {isDeletedRoute ? <ArchiveRestore /> : <X />}
                                             </Button>
                                         </TableCell>
                                     </TableRow>

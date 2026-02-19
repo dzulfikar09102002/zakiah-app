@@ -9,16 +9,17 @@ import {
 } from '@/components/ui/table';
 import type { Category, Pagination } from '@/lib/model';
 import { Button } from '../ui/button';
+import { usePage } from '@inertiajs/react';
 
 type Props = {
     pagination: Pagination<Category>
     onEdit: (id: unknown) => void
     onDeleteOrRestore: (id: unknown, action: boolean) => void
 }
-
 export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
     const startIndex = (pagination.current_page - 1) * pagination.per_page
-
+    const { url } = usePage()
+    const isDeletedRoute = url.includes('deleted')
     return (
         <Table className='stripped'>
             <TableHeader>
@@ -40,8 +41,11 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                                         <Pencil />
                                     </Button>
                                 )}
-                                <Button size="icon" variant={category.deleted_at ? "outline" : "destructive"} onClick={() => onDeleteOrRestore(category.id, !category.deleted_at)}>
-                                    {category.deleted_at ? <ArchiveRestore /> : <X />}
+                                <Button
+                                    size="icon"
+                                    variant={isDeletedRoute ? "outline" : "destructive"}
+                                    onClick={() => onDeleteOrRestore(category.id, !isDeletedRoute)}>
+                                    {isDeletedRoute ? <ArchiveRestore /> : <X />}
                                 </Button>
                             </div>
                         </TableCell>
