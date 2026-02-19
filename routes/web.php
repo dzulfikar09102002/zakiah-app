@@ -62,19 +62,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/store', [LocationController::class, 'store'])->name('locations.store');
     });
 
-    Route::prefix('/stock-reports')->group(function () {
-        Route::get('/remaining', [StockRemainingController::class, 'index'])->name('stockreports.remaining');
-    }); 
+    Route::prefix('/stock-remaining')->group(function () {
+        Route::get('/', [StockRemainingController::class, 'chooseLocation'])->name('stock-remaining.choose-location');
+        Route::get('/{location}', [StockRemainingController::class, 'report'])->name('stock-remaining.report');
+    });
 
     Route::prefix('/payment-methods')->group(function () {
-        Route::get('/', [PaymentMethodController::class, 'index'])->name('paymentmethods.index');
+       
         Route::post('/store', [PaymentMethodController::class, 'index'])->name('paymentmethods.store');
         Route::patch('/{paymentMethod}', [PaymentMethodController::class, 'update'])->name('paymentmethods.update');
         Route::delete('/{paymentMethod}', [PaymentMethodController::class, 'destroy'])->name('paymentmethods.delete');
         Route::post('/{id}restore', [PaymentMethodController::class, 'restore'])->name('paymentmethods.restore');
         Route::get('/deleted', [PaymentMethodController::class, 'deleted'])->name('paymentmethods.deleted');
     }); 
-   
-});
 
+
+});
 require __DIR__.'/settings.php';

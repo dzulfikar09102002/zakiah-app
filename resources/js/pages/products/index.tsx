@@ -62,6 +62,7 @@ import type { Pagination, Product } from "@/lib/model";
 import { toRupiah } from "@/lib/utils";
 import products from "@/routes/products"
 import type { BreadcrumbItem } from "@/types"
+import { Separator } from "@/components/ui/separator";
 
 const title = 'Kelola Produk'
 
@@ -103,20 +104,17 @@ export default ({ categoryOptions, pagination }: Props) => {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
+            <div className="grid lg:flex gap-2 flex-wrap">
+                <Button onClick={() => setIsModalOpen(true)}>
+                    <Plus /> Produk Baru
+                </Button>
 
-            <ButtonGroup className="mb-4 justify-between w-full">
-                <ButtonGroup>
-                    <Button className="size-9 lg:size-auto" onClick={() => setIsModalOpen(true)}>
-                        <Plus /> <span className="hidden lg:inline">Produk Baru</span>
-                    </Button>
-                </ButtonGroup>
-                <ButtonGroup>
-                    <Button variant="outline"><FileDown /> Export</Button>
-                    <Button variant="outline"><FileUp /> Import</Button>
-                </ButtonGroup>
-            </ButtonGroup>
-            <Card className="bg-background lg:bg-card p-0 lg:py-6 border-0 lg:border">
-                <CardHeader className="p-0 lg:px-6">
+                <Button variant="outline"><FileDown /> Export</Button>
+                <Button variant="outline"><FileUp /> Import</Button>
+            </div>
+            <Separator className="my-4" />
+            <Card>
+                <CardHeader>
                     <Form method="GET" className="grid lg:flex gap-2">
                         <Combobox
                             items={categoryOptions}
@@ -140,7 +138,7 @@ export default ({ categoryOptions, pagination }: Props) => {
                         <Button variant={"secondary"}><SearchIcon /> Cari</Button>
                     </Form>
                 </CardHeader>
-                <CardContent className="p-0 lg:px-6 border-t lg:border-0">
+                <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>

@@ -11,13 +11,13 @@ class ProductService
     {
         $search = request('search', '');
         $product_category_id = request('product_category_id', 'all');
-        $query = Product::with('product_category')
-        ->where('entity_id', auth()->user()?->entity?->id)
-        ->where(function ($q) use ($search) {
-            $q->whereLike('name', "%$search%")
-            ->orWhereLike('code', "%$search%");
-        })
-        ->withSum('locationStocks as total_stock', 'stock');
+        $query = Product::with('productCategory')
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->where(function ($q) use ($search) {
+                $q->whereLike('name', "%$search%")
+                    ->orWhereLike('code', "%$search%");
+            })
+            ->withSum('locationStocks as total_stock', 'stock');
 
         if ($product_category_id !== 'all') {
             $query->where('product_category_id', $product_category_id);
@@ -26,15 +26,23 @@ class ProductService
         return $query
             ->paginate(request('per_page', 10))
             ->withQueryString();
-        }
+    }
 
-    public function getCategories()
+    public function getCategoryOptions()
     {
-        return ProductCategory::where('entity_id', auth()->user()?->entity?->id)->get()->map(function ($category) {
-            return [
-                'value' => $category->id,
-                'label' => $category->name,
-            ];
-        });
+        $options = ProductCategory::where('entity_id', auth()->user()?->entity?->id)->get()
+            ->map(function ($category) {
+                return [
+                    'value' => $category->id,
+                    'label' => $category->name,
+                ];
+            });
+
+        $options->prepend([
+            'value' => 'all',
+            'label' => 'Semua kategori',
+        ]);
+
+        return $options;
     }
 }

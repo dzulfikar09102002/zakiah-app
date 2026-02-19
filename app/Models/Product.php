@@ -10,7 +10,7 @@ class Product extends Model
         'total_stock' => 'integer',
     ];
 
-    public function product_category()
+    public function productCategory()
     {
         return $this->belongsTo(ProductCategory::class);
     }

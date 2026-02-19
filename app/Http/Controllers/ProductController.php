@@ -14,11 +14,7 @@ class ProductController extends Controller
     public function index()
     {
         $pagination = $this->service->getProducts();
-        $categoryOptions = $this->service->getCategories();
-        $categoryOptions->prepend([
-            'value' => 'all',
-            'label' => 'Semua',
-        ]);
+        $categoryOptions = $this->service->getCategoryOptions();
 
         return Inertia::render('products/index', compact('pagination', 'categoryOptions'));
     }
