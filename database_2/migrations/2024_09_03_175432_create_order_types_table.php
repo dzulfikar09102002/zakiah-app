@@ -1,0 +1,49 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use App\Models\Entity;
+use App\Models\PaymentMethod;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('order_types', function (Blueprint $table) {
+            $table->id();
+            $table->foreignIdFor(Entity::class);
+            $table->foreignIdFor(PaymentMethod::class)->nullable();
+            $table->longText('name');
+            $table->string('search_name');
+            $table->integer('fixed_fee');
+            $table->integer('variable_fee');
+            
+            $table->boolean("require_customer_data")->default(false);
+
+            $table->enum('status', ['active', 'archived']);
+
+            $table->timestamps();
+            $table->softDeletesTz('deleted_at', precision: 0);
+
+            $table->bigInteger("updated_by")->unsigned()->nullable();
+            $table->foreign("updated_by")->references("id")->on("users");
+
+            $table->bigInteger("created_by")->unsigned()->nullable();
+            $table->foreign("created_by")->references("id")->on("users");
+
+            $table->unique(['entity_id', 'search_name', 'deleted_at']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('order_types');
+    }
+};

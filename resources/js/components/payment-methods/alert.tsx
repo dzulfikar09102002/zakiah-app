@@ -11,7 +11,7 @@ import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { router } from '@inertiajs/react';
 import { Spinner } from '../ui/spinner';
-import paymentmethods from '@/routes/paymentmethods';
+import paymentmethods from '@/routes/payment-methods';
 
 export type AlertState = {
     delete: boolean
@@ -67,7 +67,7 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
                         }
 
                         alertState.delete
-                            ? router.delete(paymentmethods.delete(alertState.dataId).url, options)
+                            ? router.delete(paymentmethods.destroy(alertState.dataId).url, options)
                             : router.post(paymentmethods.restore(alertState.dataId).url, {}, options)
                     }}>
                         <Spinner className={alertState.proccessing ? '' : 'hidden'} />

@@ -1,0 +1,8 @@
+foreach (App\Models\SaleTransaction::where('status', 'void')->get() as $saleTransaction) {
+
+    foreach (App\Models\SaleTransactionDetail::where('sale_transaction_id', $saleTransaction->id)->get() as $saleDetailTransaction)
+    {
+        $saleDetailTransaction->status = 'void';
+        $saleDetailTransaction->save();
+    }
+}

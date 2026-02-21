@@ -1,0 +1,20 @@
+foreach (App\Models\Role::where('id', '>', 0)->get() as $role) {
+    $entity_permission = $role->entity_permission;
+    $entity_permission[App\Helpers\Constants\PageNameConstants::ProductAdjustmentStockMenu] = [
+        'index' => true,
+        'show' => true,
+        'store' => true,
+        'update' => true,
+        'destroy' => true,
+        'archive' => true,
+        'activate' => true,
+        'approve' => true,
+        'reject' => true,
+        'cancel' => true,
+        'void' => true,
+        'apply_promo' => true,
+    ];
+
+    $role->entity_permission = $entity_permission;
+    $role->save();
+}

@@ -6,6 +6,7 @@ use App\Http\Requests\StoreemployeeRequest;
 use App\Http\Requests\UpdateemployeeRequest;
 use App\Services\EmployeeService;
 use App\Models\Employee;
+use Illuminate\Database\Eloquent\Builder;
 use Inertia\Inertia;
 
 class EmployeeController extends Controller
@@ -16,12 +17,10 @@ class EmployeeController extends Controller
 
     public function index()
     {
-        $entityId = auth()->user()?->entity?->id;
-        $pagination = $this->service->getEmployees($entityId);
-
+        $pagination = $this->service->getEmployees();
         return Inertia::render('employees/index', compact('pagination'));
     }
-
+ 
     public function create()
     {
         return Inertia::render('employees/create', $this->service->getFormOptions());

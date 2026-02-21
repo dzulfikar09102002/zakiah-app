@@ -1,0 +1,16 @@
+foreach (App\Models\SaleTransaction::where('id', '>', 0)->get() as $saleTransaction) {
+    $net_profit = 0;
+
+    foreach (App\Models\SaleTransactionDetail::where('sale_transaction_id', $saleTransaction->id)->get() as $saleDetailTransaction)
+    {
+        $net_profit += ($saleDetailTransaction->sell_price - $saleDetailTransaction->cost_of_goods_sold 
+                - $saleDetailTransaction->discount_amount - $saleDetailTransaction->promo_amount 
+                + $saleDetailTransaction->surcharge_amount
+                - $saleDetailTransaction->prorate_discount_amount - $saleDetailTransaction->prorate_promo_amount 
+                + $saleDetailTransaction->prorate_surcharge_amount
+            ) * $saleDetailTransaction->quantity;
+    }
+
+    $saleTransaction->net_profit = $net_profit;
+    $saleTransaction->save();
+}

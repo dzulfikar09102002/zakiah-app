@@ -21,23 +21,23 @@ class PaymentMethodController extends Controller
     public function store(StorePaymentMethodRequest $request)
     {
         $this->service->store($request->validated());
-        return to_route('paymentmethods.index')->with('success', 'Metode pembayaran berhasil diperbarui');
+        return to_route('payment-methods.index')->with('success', 'Metode pembayaran berhasil diperbarui');
     }
     public function update(UpdatePaymentMethodRequest $request, PaymentMethod $paymentMethod)
     {
         $this->service->update($paymentMethod, $request->validated());
-        return to_route('paymentmethods.index')->with('success', 'Metode pembayaran berhasil diperbarui');
+        return to_route('payment-methods.index')->with('success', 'Metode pembayaran berhasil diperbarui');
     }
     public function destroy(PaymentMethod $paymentMethod)
     {
         $this->service->delete($paymentMethod);
-        return to_route('paymentmethods.index')->with('success', 'Metode pembayaran berhasil dihapus');
+        return to_route('payment-methods.index')->with('success', 'Metode pembayaran berhasil dihapus');
     }
 
     public function restore(int $id)
     {
         $this->service->restore($id);
-        return to_route('paymentmethods.index')->with('success', 'Metode pembayaran berhasil dipulihkan');
+        return to_route('payment-methods.index')->with('success', 'Metode pembayaran berhasil dipulihkan');
     }
 
     public function deleted(){

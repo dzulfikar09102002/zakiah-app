@@ -1,0 +1,115 @@
+{
+    "location_id": 1,
+    "order_type_id": 1,
+    "adjustment": { // nullable | next
+        "amount": 2000,
+        "free_of_charge": false,
+        "is_percentage": false
+    },
+    "promo_ids": [],
+    "customer": { // nullable
+        "id": null,
+        "email": "",
+        "first_name": "",
+        "last_name": "",
+        "phone_number": "",
+        "phone_number_country_code": ""
+    },
+    "products": [
+        {
+            "id": 1,
+            "brand_id": 1,
+            "order_type_id": 1,
+            "product_unit_id": 1,
+            "product_category_id": null,
+            "catalogue_detail_id": null,
+            "quantity": 2,
+            "price": 5000,
+            "custom_price": false,
+            "adjustment": { // nullable | next
+                "amount": 2000,
+                "free_of_charge": false,
+                "is_percentage": false
+            },
+            "modifiers": [ // nullable | next
+                {
+                    "id": 1,
+                    "name": "Pilihan Sendok",
+                    "print_to_receipt": true,
+                    "options": [
+                        {
+                            "id": 1,
+                            "product_id": 1,
+                            "product_name": "Tidak pakai sendok",
+                            "sell_price": 1,
+                            "option_quantity": 1, // from BE
+                            "quantity": 2, // from parent
+                            "options": []
+                        }
+                    ]
+                },
+                {
+                    "id": 1,
+                    "name": "Pilihan Makanan",
+                    "print_to_receipt": true,
+                    "options": [
+                        {
+                            "id": 1,
+                            "product_id": 1,
+                            "product_name": "nasi goreng",
+                            "sell_price": 1,
+                            "option_quantity": 1, // from BE
+                            "quantity": 2, // from parent
+                            "options": [
+                                {
+                                    "id": 1,
+                                    "product_id": 1,
+                                    "product_name": "nasi goreng - Udang",
+                                    "sell_price": 1,
+                                    "option_quantity": 1, // from BE
+                                    "quantity": 2, // from parent
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": 1,
+                    "name": "Pilihan Minuman",
+                    "print_to_receipt": true,
+                    "options": [
+                        {
+                            "id": 1,
+                            "product_id": 1,
+                            "product_name": "Es Jeruk",
+                            "sell_price": 1,
+                            "option_quantity": 1, // from BE
+                            "quantity": 2, // from parent
+                            "options": [
+                                {
+                                    "id": 1,
+                                    "modifier_id": 1,
+                                    "modifier_name": "Jenis Gula",
+                                    "sell_price": 1,
+                                    "option_quantity": 1, // from BE
+                                    "quantity": 2, // from parent,
+                                    "options": [
+                                        {
+                                            "id": 1,
+                                            "product_id": 1,
+                                            "product_name": "Gula Merah",
+                                            "sell_price": 1,
+                                            "option_quantity": 1, // from BE
+                                            "quantity": 2, // from parent
+                                            "options": []
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

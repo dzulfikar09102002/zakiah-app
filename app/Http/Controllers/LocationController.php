@@ -15,8 +15,7 @@ class LocationController extends Controller
     ) {}
     public function index()
     {
-        $entityId = auth()->user()?->entity?->id;
-        $pagination = $this->service->getLocation();
+        $pagination = $this->service->getLocations();
         return Inertia::render('locations/index', compact('pagination'));
     }
 

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\PaymentMethod;
-use DateTime;
 
 class PaymentMethodService{
     public function getPaymentMethod()

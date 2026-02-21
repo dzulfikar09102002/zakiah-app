@@ -3,16 +3,37 @@
 namespace App\Services;
 
 use App\Models\Role;
+use Illuminate\Database\Eloquent\Builder;
 
 class RoleService
 {
     public function getRoles()
     {
-        $search = request('search', '');
-
-        return Role::whereLike('name', "%$search%")
-        ->paginate(request('per_page', 10))
-        ->withQueryString();
+        $search = request('search');
+        $entityId = auth()->user()?->entity?->id;
+        return Role::with('parentRole:id,name')
+            ->when($search, fn ($query) =>
+                $query->whereLike('name', "%{$search}%")
+            )
+    
+            ->when(request('parent_ids'), fn ($query, $parentIds) =>
+                $query->whereIn('parent_id', (array) $parentIds)
+            )
+    
+            ->when(request('show_system') === 'true',
+                function ($query) use ($entityId) {
+                    $query->where(function (Builder $q) use ($entityId) {
+                        $q->where('entity_id', $entityId)
+                          ->orWhereNull('entity_id');
+                    });
+                },
+                function ($query) use ($entityId) {
+                    $query->where('entity_id', $entityId);
+                }
+            )
+    
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
     }
 
     public function store(array $data, int $userId)

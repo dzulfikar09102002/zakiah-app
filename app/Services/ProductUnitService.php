@@ -9,9 +9,18 @@ class ProductUnitService
     {
         $search = request('search', '');
 
-        return ProductUnit::where('entity_id', auth()->user()?->entity?->id)
+        return ProductUnit::query()
+            ->where('entity_id', auth()->user()?->entity?->id)
             ->withTrashed()
-            ->whereLike('name', "%$search%")
+
+            ->when($search, fn ($query) =>
+                $query->whereLike('name', "%{$search}%")
+            )
+
+            ->when(request('statuses'), fn ($query, $statuses) =>
+                $query->whereIn('status', (array) $statuses)
+            )
+
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }

@@ -5,18 +5,29 @@ namespace App\Services;
 use App\Models\Employee;
 use App\Models\Location;
 use App\Models\Role;
+use Illuminate\Database\Eloquent\Builder;
 
 class EmployeeService
 {
-    public function getEmployees(int $entityId)
+    public function getEmployees()
     {
-        return Employee::with('role:id,name')
-        ->withTrashed()
-        ->where('entity_id', $entityId)
-        ->paginate(request('per_page', 10))
-        ->withQueryString();
+        $entityId = auth()->user()?->entity?->id;
+        return Employee::with([
+                'role:id,name',
+                'user:id,email',
+                'employeeLocations:id,employee_id,location_id,role_id,entity_permission'
+            ])
+            ->withTrashed()
+            ->where('entity_id', $entityId)
+            ->when(request('search'), fn(Builder $query, $search) => 
+                $query->where(function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%");
+                })
+            )
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
     }
-
     public function getFormOptions()
     {
         return [

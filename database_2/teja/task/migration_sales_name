@@ -1,0 +1,29 @@
+foreach (App\Models\SaleTransaction::where('id', '>', 0)->get() as $saleTransaction) {
+    $employee = App\Models\Employee::where('id', $saleTransaction->employee_sales_id)->first();
+    $saleTransaction->employee_sales_first_name = $employee->first_name;
+    $saleTransaction->employee_sales_last_name = $employee->last_name;
+
+    $employee = App\Models\Employee::where('id', $saleTransaction->cashier_id)->first();
+    $saleTransaction->cashier_first_name = $employee->first_name;
+    $saleTransaction->cashier_last_name = $employee->last_name;
+
+    $employee = App\Models\Employee::where('id', $saleTransaction->receive_paid_by)->first();
+    $saleTransaction->receive_paid_by_first_name = $employee?->first_name;
+    $saleTransaction->receive_paid_by_last_name = $employee?->last_name;
+
+    $employee = App\Models\Employee::where('id', $saleTransaction->paid_by)->first();
+    $saleTransaction->paid_by_first_name = $employee?->first_name;
+    $saleTransaction->paid_by_last_name = $employee?->last_name;
+
+    $employee = App\Models\Employee::where('id', $saleTransaction->void_by)->first();
+    $saleTransaction->void_by_first_name = $employee?->first_name;
+    $saleTransaction->void_by_last_name = $employee?->last_name;
+
+    $customer = App\Models\Customer::where('id', $saleTransaction->customer_id)->first();
+    $saleTransaction->customer_first_name = $customer?->first_name;
+    $saleTransaction->customer_last_name = $customer?->last_name;
+    $saleTransaction->customer_phone_number = $customer?->phone_number;
+    $saleTransaction->customer_phone_number_country_code = $customer?->phone_number_country_code;
+
+    $saleTransaction->save();
+}

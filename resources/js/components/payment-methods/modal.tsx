@@ -22,7 +22,7 @@ import { SubmitEventHandler, useEffect } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { SharedData } from '@/types';
-import paymentMethods from '@/routes/paymentmethods';
+import paymentMethods from '@/routes/payment-methods';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 export type ModalState = {

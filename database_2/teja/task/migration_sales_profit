@@ -1,0 +1,15 @@
+foreach (App\Models\SaleTransactionDetail::with('product')->get() as $saleDetail) {
+    $saleDetail->cost_of_goods_sold = $saleDetail['product']['cost_of_goods_sold'];
+    $saleDetail->save();
+}
+
+foreach (App\Models\SaleTransaction::where('gross_profit', '=', 0)->get() as $saleTransaction) {
+    $sum = App\Models\SaleTransactionDetail::where('sale_transaction_id', $saleTransaction->id)
+            ->selectRaw('sum((sell_price - sell_price_tax_amount - cost_of_goods_sold) * quantity) as gross_profit')
+            ->selectRaw('sum((sell_price - sell_price_tax_amount - cost_of_goods_sold - discount_amount - discount_amount_tax_amount) * quantity) as net_profit')
+            ->first();
+
+    $saleTransaction->gross_profit = $sum['gross_profit'];
+    $saleTransaction->net_profit = $sum['net_profit'];
+    $saleTransaction->save();
+}

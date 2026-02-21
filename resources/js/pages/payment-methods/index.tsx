@@ -16,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination, PaymentMethod } from '@/lib/model';
-import paymentmethods from '@/routes/paymentmethods';
+import paymentmethods from '@/routes/payment-methods';
 import type { BreadcrumbItem } from '@/types';
 import { AlertState } from '@/components/payment-methods/alert';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';

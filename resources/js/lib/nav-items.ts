@@ -13,7 +13,7 @@ import { dashboard } from '@/routes';
 import categories from '@/routes/categories';
 import employees from '@/routes/employees';
 import locations from '@/routes/locations';
-import paymentmethods from '@/routes/paymentmethods';
+import paymentmethods from '@/routes/payment-methods';
 import products from '@/routes/products';
 import roles from '@/routes/roles';
 import sellings from '@/routes/sellings';

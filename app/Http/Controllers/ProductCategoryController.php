@@ -33,7 +33,7 @@ class ProductCategoryController extends Controller
     {
         $this->service->store($request->validated()['name']);
 
-        return to_route('categories.index')->with('success', 'Kategori berhasil ditambahkan');
+        return to_route('categories.index')->with('success', value: 'Kategori berhasil ditambahkan');
     }
 
     public function update(UpdateProductCategoryRequest $request, ProductCategory $productCategory)
