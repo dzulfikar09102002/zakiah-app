@@ -18,52 +18,30 @@ class ProductUnitController extends Controller
         $pagination = $this->service->getUnits();
         return Inertia::render('units/index', compact('pagination'));
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
+    
     public function store(StoreProductUnitRequest $request)
     {
-        //
-    }
+        $this->service->store($request->validated()['name']);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ProductUnit $productUnit)
-    {
-        //
+        return to_route('product-units.index')->with('success', value: 'Produk unit berhasil ditambahkan');
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ProductUnit $productUnit)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+ 
     public function update(UpdateProductUnitRequest $request, ProductUnit $productUnit)
     {
-        //
+        $this->service->update($productUnit, $request->validated()['name']);
+
+        return to_route('product-units.index')->with('success', 'Produk unit berhasil diperbarui');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(ProductUnit $productUnit)
     {
-        //
+        dd($productUnit);
+        $this->service->delete($productUnit);
+        return to_route('product-units.index')->with('success', 'Produk unit berhasil dihapus');
+    }
+
+    public function deleted()
+    {
+
     }
 }

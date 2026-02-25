@@ -11,7 +11,7 @@ import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { router } from '@inertiajs/react';
 import { Spinner } from '../ui/spinner';
-import categories from '@/routes/categories';
+import productCategories from '@/routes/product-categories';
 
 export type AlertState = {
     delete: boolean
@@ -67,8 +67,8 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
                         }
 
                         alertState.delete
-                            ? router.delete(categories.delete(alertState.dataId).url, options)
-                            : router.post(categories.restore(alertState.dataId).url, {}, options)
+                            ? router.delete(productCategories.destroy(alertState.dataId).url, options)
+                            : router.post(productCategories.restore(alertState.dataId).url, {}, options)
                     }}>
                         <Spinner className={alertState.proccessing ? '' : 'hidden'} />
                         Ya

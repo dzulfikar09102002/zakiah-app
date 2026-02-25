@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App_2\Http\Controllers;
 
 use App\Helpers\UniqueCodeGenerator;
 use App\Http\Requests\IndexProductCategoryRequest;

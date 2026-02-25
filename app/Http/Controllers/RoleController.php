@@ -16,29 +16,25 @@ class RoleController extends Controller
 
     public function index()
     {
+        $parents = $this->service->getParents();
         $pagination = $this->service->getRoles();
-        return Inertia::render('roles/index', compact('pagination'));
+        return Inertia::render('roles/index', compact('pagination', 'parents'));
     }
 
     public function store(StoreRoleRequest $request)
     {
-        $this->service->store(
-            $request->validated(),
-            auth()->id()
-        );
-
-        return redirect()->back()->with('success', 'Role berhasil ditambahkan');
+        $this->service->store($request->validated());
+        return to_route('roles.index')->with('success', 'Role berhasil ditambahkan');
     }
 
     public function update(UpdateRoleRequest $request, Role $role)
     {
         $this->service->update(
             $role,
-            $request->validated(),
-            auth()->id()
+            $request->validated()
         );
 
-        return redirect()->back()->with('success', 'Role berhasil diperbarui');
+        return to_route('roles.index')->with('success', 'Role berhasil diperbarui');
     }
 
     public function destroy(Role $role)

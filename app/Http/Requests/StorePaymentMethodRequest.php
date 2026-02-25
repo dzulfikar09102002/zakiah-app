@@ -26,10 +26,10 @@ class StorePaymentMethodRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('payment_methods')
-                    ->where(fn ($query) =>
-                        $query->where('entity_id', $this->entity_id)
-                    ),
+                Rule::unique('payment_methods')->where(function ($query) {
+                    return $query->where('entity_id', $this->entity_id)
+                                 ->whereNull('deleted_at');
+                }),
             ],
             'kind' => ['required', 'string', 'max:100'],
             'fixed_fee' => ['required', 'numeric', 'min:0'],

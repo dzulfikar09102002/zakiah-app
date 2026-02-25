@@ -50,8 +50,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('roles', RoleController::class);
     Route::resource('employees', EmployeeController::class);
     Route::resource('products', ProductController::class);
-    Route::resource('categories', ProductCategoryController::class);
-    Route::resource('units', ProductUnitController::class);
+    Route::resource('product-categories', ProductCategoryController::class)->except(['show']);
+    Route::resource('product-units', ProductUnitController::class);
+    Route::get('product-units/deleted', [ProductUnitController::class, 'deleted'])
+    ->name('product-units.deleted');
     Route::resource('locations', LocationController::class);
     // Payment Methods
     Route::get('payment-methods/deleted', [PaymentMethodController::class, 'deleted'])
@@ -71,11 +73,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('stock-remaining.report');
 
     // Categories
-    Route::get('categories/deleted', [ProductCategoryController::class, 'deleted'])
-        ->name('categories.deleted');
+    Route::get('product-categories/deleted', [ProductCategoryController::class, 'deleted'])
+        ->name('product-categories.deleted');
 
-    Route::post('categories/{id}/restore', [ProductCategoryController::class, 'restore'])
-        ->name('categories.restore');
+    Route::post('product-categories/{id}/restore', [ProductCategoryController::class, 'restore'])
+        ->name('product-categories.restore');
 
 
     Route::post('payment-methods/{id}/restore', [PaymentMethodController::class, 'restore'])

@@ -19,15 +19,15 @@ import type {
     Category,
     Pagination
 } from '@/lib/model';
-import categories from '@/routes/categories';
 import type { BreadcrumbItem } from '@/types';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import productCategories from '@/routes/product-categories';
 
 const title = 'Produk Kategori'
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title,
-        href: categories.index().url
+        href: productCategories.index().url
     },
 ];
 
@@ -101,12 +101,12 @@ export default ({ pagination, onlyTrashed }: Props) => {
                     <Tabs value={isDeletedRoute ? 'deleted' : 'available'} className='mb-4'>
                         <TabsList>
                             <TabsTrigger value='available' asChild>
-                                <Link href={categories.index().url}>
+                                <Link href={productCategories.index().url}>
                                     Tersedia
                                 </Link>
                             </TabsTrigger>
                             <TabsTrigger value="deleted" asChild>
-                                <Link href={categories.deleted().url}>
+                                <Link href={productCategories.deleted().url}>
                                     Terhapus
                                 </Link>
                             </TabsTrigger>

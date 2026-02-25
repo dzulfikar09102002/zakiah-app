@@ -21,7 +21,7 @@ import { useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Category } from '@/lib/model';
 import { SharedData } from '@/types';
-import productCategories from '@/routes/product-categories';
+import productUnits from '@/routes/product-units';
 
 
 export type ModalState = {
@@ -55,7 +55,7 @@ export default ({ modalState, tableData, onModalSuccess, onModalClose }: Props) 
         e.preventDefault();
 
         const action = modalState.dataId ? patch : post;
-        const url = modalState.dataId ? productCategories.update(modalState.dataId).url : productCategories.store().url;
+        const url = modalState.dataId ? productUnits.update(modalState.dataId).url : productUnits.store().url;
 
         action(url, {
             only: ['pagination'],

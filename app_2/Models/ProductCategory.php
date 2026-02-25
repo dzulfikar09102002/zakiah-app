@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace App_2\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,9 +13,9 @@ class ProductCategory extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'parent_id',
         'name',
-        'status',
+        'search_name',
+        'updated_by',
     ];
 
     public function parent(): BelongsTo {

@@ -15,9 +15,11 @@ class ProductService
             ->where('entity_id', auth()->user()?->entity?->id)
             ->where(function ($q) use ($search) {
                 $q->whereLike('name', "%$search%")
-                    ->orWhereLike('code', "%$search%");
+                    ->orWhereLike('code', "%$search%")
+                    ->orWhereLike('sku', "%$search%")
+                    ->orWhereLike('barcode', "%$search%");
             })
-            ->withSum('locationStocks as total_stock', 'stock');
+            ->withSum('productLocationStocks as total_stock', 'stock');
 
         if ($product_category_id !== 'all') {
             $query->where('product_category_id', $product_category_id);

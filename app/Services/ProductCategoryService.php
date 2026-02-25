@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\ProductCategoryStatus;
+use App\Enums\StatusEnum;
 use App\Models\ProductCategory;
 use Illuminate\Support\Str;
 
@@ -35,7 +35,7 @@ class ProductCategoryService
         return ProductCategory::create([
             'name' => $name,
             'search_name' => Str::lower($name),
-            'status' => ProductCategoryStatus::ACTIVE,
+            'status' => StatusEnum::Active,
             'entity_id' => $user->entity?->id,
             'created_by' => $user->id,
             'updated_by' => $user->id,

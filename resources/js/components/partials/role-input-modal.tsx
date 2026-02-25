@@ -69,8 +69,7 @@ export default function RoleInputModal({
                                         >
                                             Batal
                                         </Button>
-
-                                        <Button
+                                         <Button
                                             type="submit"
                                             disabled={processing}
                                             className="flex items-center gap-2"

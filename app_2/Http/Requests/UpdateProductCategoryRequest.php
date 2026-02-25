@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App_2\Http\Requests;
 
 use App\Enums\StatusEnum;
 use App\Helpers\Constants\ActionConstants;

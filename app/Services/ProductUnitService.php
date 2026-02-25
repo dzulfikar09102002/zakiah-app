@@ -1,7 +1,9 @@
 <?php
 
 namespace App\Services;
+use App\Enums\StatusEnum;
 use App\Models\ProductUnit;
+use Illuminate\Support\Str;
 
 class ProductUnitService
 {
@@ -23,5 +25,33 @@ class ProductUnitService
 
             ->paginate(request('per_page', 10))
             ->withQueryString();
+    }
+
+    public function store(string $name)
+    {
+        $user = auth()->user();
+
+        return ProductUnit::create([
+            'name' => $name,
+            'search_name' => Str::lower($name),
+            'status' => StatusEnum::Active,
+            'entity_id' => $user->entity?->id,
+            'created_by' => $user->id,
+            'updated_by' => $user->id,
+        ]);
+    }
+
+    public function update(ProductUnit $units, string $name)
+    {
+        return $units->update([
+            'name' => $name,
+            'search_name' => Str::lower($name),
+            'updated_by' => auth()->user()->id,
+        ]);
+    }
+
+    public function delete(ProductUnit $unit)
+    {
+        return $unit->delete();
     }
 }

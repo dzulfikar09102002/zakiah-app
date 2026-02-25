@@ -10,16 +10,18 @@ import {
     UserCog
 } from 'lucide-react';
 import { dashboard } from '@/routes';
-import categories from '@/routes/categories';
+
 import employees from '@/routes/employees';
 import locations from '@/routes/locations';
 import paymentmethods from '@/routes/payment-methods';
 import products from '@/routes/products';
 import roles from '@/routes/roles';
 import sellings from '@/routes/sellings';
-import units from '@/routes/units';
+
 import type { NavItem } from '@/types';
 import stockRemaining from '@/routes/stock-remaining';
+import productCategories from '@/routes/product-categories';
+import productUnits from '@/routes/product-units';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -96,11 +98,11 @@ export const mainNavItems: NavItem[] = [
             },
             {
                 title: "Produk Kategori",
-                href: categories.index().url,
+                href: productCategories.index().url,
             },
             {
                 title: "Produk Unit",
-                href: units.index().url,
+                href: productUnits.index().url,
             },
         ],
     },

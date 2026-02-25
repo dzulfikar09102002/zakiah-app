@@ -27,9 +27,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 
 export type ModalState = {
     isOpen: boolean;
-    dataId: number | null;
-};
-
+    dataId: any;
+}
 type Props = {
     modalState: ModalState;
     tableData: any[];

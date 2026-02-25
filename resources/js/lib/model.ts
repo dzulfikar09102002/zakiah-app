@@ -1,6 +1,7 @@
 export type Role = {
     id: number
     name: string
+    parent_id: string
 }
 
 export interface PaymentMethod {

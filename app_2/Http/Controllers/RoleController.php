@@ -42,7 +42,6 @@ class RoleController extends Controller
 
     public function parent(IndexRoleRequest $request)
     {
-        //
         $params = $request->validated();
 
         $datas = Role::where('name', 'like', "%" . $request->keyword . "%")->where('entity_id', null);
@@ -50,16 +49,11 @@ class RoleController extends Controller
         if (array_key_exists('parent_ids', $params)) {
             $datas->whereIn('id', $params['parent_ids']);
         }
-
         return $datas->paginate($request->limit ?? PageConstants::DefaultLimit)->appends($params);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreRoleRequest $request)
     {
-        //
+        
         $params = $request->validated();
 
         $parentRole = Role::find($params['parent_id']);
@@ -79,24 +73,8 @@ class RoleController extends Controller
         return $response->response();
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Role $role)
-    {
-        //
-        $response = new BaseJsonResponse($role->load((['parentRole:id,name'])));
-        return $response->response();
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateRoleRequest $request, Role $role)
     {
-        //
-        # validate onlye entity_id != null
-
         $params = $request->validated();
 
         $parentRole = Role::find($params['parent_id']);
@@ -113,9 +91,6 @@ class RoleController extends Controller
         return $response->response();
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(DestroyRoleRequest $request, Role $role)
     {
         //
