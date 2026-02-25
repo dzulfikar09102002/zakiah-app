@@ -90,7 +90,7 @@ export default ({ pagination, categoryOptions, location, locations }: Props) => 
             href: stockRemaining.report(location.id).url
         }]}>
             <Head title={title} />
-            <div className="grid lg:flex gap-2">
+            <div className="grid lg:flex gap-2 mb-4">
                 <Dialog>
                     <DialogTrigger asChild>
                         <Button><MapPinPen /> Ganti Lokasi</Button>
@@ -111,7 +111,6 @@ export default ({ pagination, categoryOptions, location, locations }: Props) => 
                 </Dialog>
                 <Button variant={'outline'}><FileDown /> Export</Button>
             </div>
-            <Separator className="my-4" />
             <Card>
                 <CardHeader>
                     <Form method="GET" className="grid lg:flex gap-2">

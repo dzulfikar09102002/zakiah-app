@@ -104,7 +104,7 @@ export default ({ categoryOptions, pagination }: Props) => {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
-            <div className="grid lg:flex gap-2 flex-wrap">
+            <div className="grid lg:flex gap-2 flex-wrap mb-4">
                 <Button onClick={() => setIsModalOpen(true)}>
                     <Plus /> Produk Baru
                 </Button>
@@ -112,7 +112,6 @@ export default ({ categoryOptions, pagination }: Props) => {
                 <Button variant="outline"><FileDown /> Export</Button>
                 <Button variant="outline"><FileUp /> Import</Button>
             </div>
-            <Separator className="my-4" />
             <Card>
                 <CardHeader>
                     <Form method="GET" className="grid lg:flex gap-2">
