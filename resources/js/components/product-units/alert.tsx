@@ -6,13 +6,13 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle
-} from '@/components/ui/alert-dialog';
+} from '@/components/ui/alert-dialog'
 
-import { Button } from '../ui/button';
-import { toast } from 'sonner';
-import { router } from '@inertiajs/react';
-import { Spinner } from '../ui/spinner';
-import productUnits from '@/routes/product-units';
+import { Button } from '../ui/button'
+import { toast } from 'sonner'
+import { router } from '@inertiajs/react'
+import { Spinner } from '../ui/spinner'
+import productUnits from '@/routes/product-units'
 
 export type AlertState = {
     delete: boolean
@@ -27,7 +27,54 @@ type Props = {
     onAlertProccessing: () => void
 }
 
-export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
+export default function AlertDeleteRestore({
+    alertState,
+    onAlertClose,
+    onAlertProccessing
+}: Props) {
+
+    const handleAction = () => {
+
+        const options = {
+            only: ['pagination'],
+            preserveState: true,
+
+            onBefore: onAlertProccessing,
+
+            onError: (errors: any) => {
+                toast.error(
+                    alertState.delete
+                        ? 'Gagal menghapus data'
+                        : 'Gagal memulihkan data'
+                )
+
+                console.error(errors)
+            },
+
+            onSuccess: () => {
+                toast.success(
+                    alertState.delete
+                        ? 'Data berhasil dihapus'
+                        : 'Data berhasil dipulihkan'
+                )
+            },
+
+            onFinish: onAlertClose,
+        }
+
+        if (alertState.delete) {
+            router.delete(
+                productUnits.destroy(alertState.dataId).url,
+                options
+            )
+        } else {
+            router.post(
+                productUnits.restore(alertState.dataId).url,
+                {},
+                options
+            )
+        }
+    }
 
     return (
         <AlertDialog
@@ -38,11 +85,15 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
 
                 <AlertDialogHeader>
                     <AlertDialogTitle>
-                        Hapus Produk Unit
+                        {alertState.delete
+                            ? 'Hapus Produk Unit'
+                            : 'Pulihkan Produk Unit'}
                     </AlertDialogTitle>
 
                     <AlertDialogDescription>
-                        Apakah anda yakin ingin menghapus data ini?
+                        {alertState.delete
+                            ? 'Apakah anda yakin ingin menghapus data ini?'
+                            : 'Apakah anda yakin ingin memulihkan data ini?'}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
 
@@ -53,31 +104,9 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
                     </AlertDialogCancel>
 
                     <Button
-                        variant="destructive"
+                        variant={alertState.delete ? 'destructive' : 'default'}
                         disabled={alertState.proccessing}
-                        onClick={() => {
-
-                            router.delete(
-                                productUnits.destroy(alertState.dataId).url,
-                                {
-                                    only: ['pagination'],
-                                    preserveState: true,
-
-                                    onBefore: onAlertProccessing,
-
-                                    onError: (errors: any) => {
-                                        toast.error('Gagal menghapus data')
-                                        console.error(errors)
-                                    },
-
-                                    onSuccess: () => {
-                                        toast.success('Data berhasil dihapus')
-                                    },
-
-                                    onFinish: onAlertClose,
-                                }
-                            )
-                        }}
+                        onClick={handleAction}
                     >
                         <Spinner className={alertState.proccessing ? '' : 'hidden'} />
                         Ya

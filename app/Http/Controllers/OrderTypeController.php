@@ -5,62 +5,54 @@ namespace App\Http\Controllers;
 use App\Models\OrderType;
 use App\Http\Requests\StoreOrderTypeRequest;
 use App\Http\Requests\UpdateOrderTypeRequest;
+use App\Services\OrderTypeService;
+use Inertia\Inertia;
 
 class OrderTypeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct(
+        private OrderTypeService $service
+    ) {}
     public function index()
     {
-        //
+        $paymentMethods = $this->service->getPaymentMethods();
+        $pagination = $this->service->getOrderTypes();
+        return Inertia::render('order-types/index', compact('pagination', 'paymentMethods'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreOrderTypeRequest $request)
     {
-        //
+        $this->service->store($request->validated());
+        
+        return to_route('order-types.index')->with('success', 'Jenis pesanan berhasil ditambahkan');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(OrderType $orderType)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(OrderType $orderType)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateOrderTypeRequest $request, OrderType $orderType)
     {
-        //
+        $this->service->update($orderType, $request->validated());
+        
+        return to_route('order-types.index')->with('success', 'Jenis Pesanan berhasil diperbarui');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(OrderType $orderType)
     {
-        //
+        $this->service->delete($orderType);
+        
+        return to_route('order-types.index')->with('success', 'Jenis Pesanan berhasil dihapus');
+    }
+    public function restore(int $id)
+    {
+        $this->service->restore($id);
+        
+        return to_route('order-types.index')->with('success', 'Jenis Pesanan berhasil dipulihkan');
+    }
+
+    public function deleted()
+    {
+        $onlyTrashed = true;
+        $paymentMethods = $this->service->getPaymentMethods();
+        $pagination = $this->service->getDeletedOrderTypes();
+        
+        return Inertia::render('order-types/index', compact('pagination', 'onlyTrashed', 'paymentMethods'));
     }
 }

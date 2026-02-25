@@ -19,6 +19,13 @@ class ProductUnitController extends Controller
         return Inertia::render('units/index', compact('pagination'));
     }
     
+    public function deleted()
+    {
+        $onlyTrashed = true;
+        $pagination = $this->service->getDeletedUnits();
+        return Inertia::render('units/index', compact('pagination', 'onlyTrashed'));
+
+    }
     public function store(StoreProductUnitRequest $request)
     {
         $this->service->store($request->validated()['name']);
@@ -35,13 +42,15 @@ class ProductUnitController extends Controller
 
     public function destroy(ProductUnit $productUnit)
     {
-        dd($productUnit);
         $this->service->delete($productUnit);
         return to_route('product-units.index')->with('success', 'Produk unit berhasil dihapus');
     }
 
-    public function deleted()
+    public function restore(int $id)
     {
+        $this->service->restore($id);
 
+        return to_route('product-units.index')->with('success', 'Produk unit berhasil dipulihkan');
     }
+
 }

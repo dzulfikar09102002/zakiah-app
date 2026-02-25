@@ -20,5 +20,9 @@ class OrderType extends Model
         'created_by',
         'updated_by',
     ];
+    public function paymentMethod()
+    {
+        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
+    }
     
 }

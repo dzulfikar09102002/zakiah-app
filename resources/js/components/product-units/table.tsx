@@ -28,7 +28,6 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                 <TableRow>
                     <TableHead>No.</TableHead>
                     <TableHead>Nama</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead className="text-center">Aksi</TableHead>
                 </TableRow>
             </TableHeader>
@@ -41,13 +40,6 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                         </TableCell>
 
                         <TableCell>{unit.name}</TableCell>
-
-                        <TableCell>
-                            <Badge variant="secondary">
-                                {unit.status}
-                            </Badge>
-                        </TableCell>
-
                         <TableCell>
                             <div className="flex justify-center gap-2">
                                 <Button

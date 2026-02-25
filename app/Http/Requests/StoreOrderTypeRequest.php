@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreOrderTypeRequest extends FormRequest
 {
@@ -11,7 +12,7 @@ class StoreOrderTypeRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +23,16 @@ class StoreOrderTypeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            "name" => [
+            'required',
+            Rule::unique('order_types', 'name')
+                ->whereNull('deleted_at')
+                ->ignore($this->route('id')), 
+    ],
+            "fixed_fee" => 'required|integer|min:0',
+            "variable_fee" => 'required|integer|min:0',
+            "require_customer_data" => 'nullable|boolean',
+            "payment_method_id" => 'nullable|exists:payment_methods,id',
         ];
     }
 }
