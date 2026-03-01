@@ -22,6 +22,7 @@ import type { NavItem } from '@/types';
 import stockRemaining from '@/routes/stock-remaining';
 import productCategories from '@/routes/product-categories';
 import productUnits from '@/routes/product-units';
+import orderTypes from '@/routes/order-types';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -223,7 +224,7 @@ export const settingNavItems: NavItem[] = [
         items: [
             {
                 title: "Jenis Pesanan",
-                href: "#",
+                href: orderTypes.index().url,
             },
         ],
     },

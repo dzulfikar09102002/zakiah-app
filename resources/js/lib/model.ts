@@ -152,7 +152,23 @@ export interface Unit {
     updated_by?: number
     created_by?: number
 }
-
+export interface OrderType {
+    id: number
+    entity_id: number
+    payment_method_id: number
+    name: string
+    search_name: string
+    fixed_fee: number
+    variable_fee: number
+    require_customer_data: boolean
+    status: string
+    created_at: string
+    updated_at: string
+    deleted_at: string
+    updated_by: number
+    created_by: number
+    payment_method: PaymentMethod | null
+}
 export interface ProductStock {
     id: number
     product_id: number

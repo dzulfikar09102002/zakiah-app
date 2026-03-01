@@ -74,7 +74,7 @@ class RoleService
         throw new Exception('Parent role cannot be updated.');
     }
 
-    $parent = Role::findOrFail( $data['parent_id']);
+    $parent = Role::findOrFail((int) $data['parent_id']);
 
     return tap($role)->update([
         ...$data,

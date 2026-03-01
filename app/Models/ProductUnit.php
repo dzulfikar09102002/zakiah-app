@@ -16,6 +16,7 @@ class ProductUnit extends Model
         'status',
         'search_name',
         'updated_by',
-        'entity_id'
+        'entity_id',
+        'created_by'
     ];
 }

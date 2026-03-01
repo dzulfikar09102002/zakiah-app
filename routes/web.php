@@ -51,15 +51,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('employees', EmployeeController::class);
     Route::resource('products', ProductController::class);
     Route::resource('product-categories', ProductCategoryController::class)->except(['show']);
-    Route::resource('product-units', ProductUnitController::class);
+
+    Route::resource('product-units', ProductUnitController::class)->except(['show']);
     Route::get('product-units/deleted', [ProductUnitController::class, 'deleted'])
     ->name('product-units.deleted');
+    Route::post('product-units/{id}/restore', [ProductUnitController::class, 'restore'])
+    ->name('product-units.restore');
+
     Route::resource('locations', LocationController::class);
     // Payment Methods
     Route::get('payment-methods/deleted', [PaymentMethodController::class, 'deleted'])
         ->name('payment-methods.deleted');
     Route::resource('payment-methods', PaymentMethodController::class);
-    Route::resource('order-types', OrderTypeController::class);
+
+    Route::resource('order-types', OrderTypeController::class)->except(['show']);
+    Route::get('order-types/deleted', [OrderTypeController::class, 'deleted'])
+    ->name('order-types.deleted');
+    Route::post('order-types/{id}/restore', [OrderTypeController::class, 'restore'])
+        ->name('order-types.restore');
 
     // Selling Summary
     Route::get('sellings/summary', [SellingController::class, 'summary'])

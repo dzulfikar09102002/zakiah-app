@@ -10,6 +10,7 @@ import {
 import type { Pagination, PaymentMethod } from '@/lib/model';
 import { Button } from '../ui/button';
 import { usePage } from '@inertiajs/react';
+import { toRupiah } from '@/lib/utils';
 
 type Props = {
     pagination: Pagination<PaymentMethod>
@@ -35,6 +36,9 @@ export default ({
                 <TableRow>
                     <TableHead>No.</TableHead>
                     <TableHead>Nama</TableHead>
+                    <TableHead>Jenis</TableHead>
+                    <TableHead>Biaya Tetap</TableHead>
+                    <TableHead>Biaya (%)</TableHead>
                     <TableHead className="text-center">Aksi</TableHead>
                 </TableRow>
             </TableHeader>
@@ -49,11 +53,17 @@ export default ({
                         <TableCell>
                             {pmethod.name}
                         </TableCell>
-
+                        <TableCell>
+                            {pmethod.kind.charAt(0).toUpperCase() + pmethod.kind.slice(1)}
+                        </TableCell>
+                        <TableCell>
+                            {toRupiah(pmethod.fixed_fee)}
+                        </TableCell>
+                        <TableCell>
+                            {pmethod.variable_fee}
+                        </TableCell>
                         <TableCell>
                             <div className="flex justify-center gap-2">
-
-                                {/* EDIT (hanya kalau tidak deleted) */}
                                 {!pmethod.deleted_at && (
                                     <Button
                                         size="icon"

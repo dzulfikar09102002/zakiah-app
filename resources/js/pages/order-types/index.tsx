@@ -1,12 +1,10 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
-import Modal from '@/components/product-units/modal';
-import type { ModalState } from '@/components/product-units/modal';
-import Alert from '@/components/product-units/alert';
-import type { AlertState } from '@/components/product-units/alert';
+
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
+
 import {
     Card,
     CardContent,
@@ -15,27 +13,31 @@ import {
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
-import type { Pagination, Unit } from '@/lib/model';
+import type { Pagination, OrderType, PaymentMethod } from '@/lib/model';
+import ordertypes from '@/routes/order-types';
 import type { BreadcrumbItem } from '@/types';
-import Table from '@/components/product-units/table';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import productUnits from '@/routes/product-units';
 
-const title = 'Produk Unit';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Table from '@/components/order-types/table';
+import Modal, { ModalState } from '@/components/order-types/modal';
+import Alert, { AlertState } from '@/components/order-types/alert';
+
+const title = 'Jenis Pesanan';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title,
-        href: productUnits.index().url,
+        href: ordertypes.index().url,
     },
 ];
 
 type Props = {
-    pagination: Pagination<Unit>
+    pagination: Pagination<OrderType>
     onlyTrashed?: boolean
+    paymentMethods: PaymentMethod[]
 }
 
-export default ({ pagination, onlyTrashed }: Props) => {
+export default ({ pagination, onlyTrashed, paymentMethods }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined as unknown
@@ -49,11 +51,18 @@ export default ({ pagination, onlyTrashed }: Props) => {
     });
 
     const search = useQuery().search || '';
+
     const onModalSuccess = () =>
         setModal({ ...modal, isOpen: false, dataId: undefined });
 
     const onModalClose = () =>
         setModal({ ...modal, dataId: undefined, isOpen: false });
+
+    const onAlertlClose = () =>
+        setAlert({ isOpen: false, proccessing: false, dataId: undefined, delete: true });
+
+    const onAlertProccessing = () =>
+        setAlert({ ...alert, proccessing: true });
 
     const onEdit = (id: unknown) =>
         setModal({
@@ -61,25 +70,18 @@ export default ({ pagination, onlyTrashed }: Props) => {
             dataId: id,
             isOpen: true
         });
-    const onAlertClose = () =>
+
+    const onDeleteOrRestore = (id: unknown, action: boolean) =>
         setAlert({
-            isOpen: false,
-            proccessing: false,
-            dataId: undefined,
-            delete: true
+            ...alert,
+            dataId: id,
+            delete: action,
+            isOpen: true
         });
 
-    const onAlertProccessing = () =>
-        setAlert({ ...alert, proccessing: true });
+    const { url } = usePage();
+    const isDeletedRoute = url.includes('deleted');
 
-    const onDeleteOrRestore = (id: unknown, action: boolean) => setAlert({
-        ...alert,
-        dataId: id,
-        delete: action,
-        isOpen: true
-    })
-    const { url } = usePage()
-    const isDeletedRoute = url.includes('deleted')
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -89,34 +91,34 @@ export default ({ pagination, onlyTrashed }: Props) => {
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
                 tableData={pagination.data}
+                paymentMethods={paymentMethods}
             />
 
             <Alert
                 alertState={alert}
-                onAlertClose={onAlertClose}
+                onAlertClose={onAlertlClose}
                 onAlertProccessing={onAlertProccessing}
             />
 
             <div className="mb-4">
                 <Button
                     className="size-9 lg:size-auto"
-                    onClick={() =>
-                        setModal({
-                            isOpen: true,
-                            dataId: undefined
-                        })
-                    }
+                    onClick={() => setModal({ ...modal, isOpen: true })}
                 >
-                    <Plus /> <span className="hidden lg:inline">Unit Baru</span>
+                    <Plus /> <span className="hidden lg:inline">Jenis Pesanan Baru</span>
                 </Button>
             </div>
 
             <Card className="bg-background lg:bg-card p-0 lg:py-6 border-0 lg:border">
-                <CardHeader className='p-0 lg:px-6'>
-                    <Form method='GET'>
+                <CardHeader className="p-0 lg:px-6">
+                    <Form method="GET">
                         <div className="grid lg:flex gap-2">
                             <input type="hidden" name="page" value={1} />
-                            <Input defaultValue={search} name='search' placeholder='Cari...' />
+                            <Input
+                                defaultValue={search}
+                                name="search"
+                                placeholder="Cari..."
+                            />
                             <Button variant={'secondary'}>
                                 <Search /> Cari
                             </Button>
@@ -125,15 +127,18 @@ export default ({ pagination, onlyTrashed }: Props) => {
                 </CardHeader>
 
                 <CardContent className="p-0 lg:px-6 border-t lg:border-0">
-                    <Tabs value={isDeletedRoute ? 'deleted' : 'available'} className="mb-4">
+                    <Tabs
+                        value={isDeletedRoute ? 'deleted' : 'available'}
+                        className="mb-4"
+                    >
                         <TabsList>
                             <TabsTrigger value="available" asChild>
-                                <Link href={productUnits.index().url}>
+                                <Link href={ordertypes.index().url}>
                                     Tersedia
                                 </Link>
                             </TabsTrigger>
                             <TabsTrigger value="deleted" asChild>
-                                <Link href={productUnits.deleted().url}>
+                                <Link href={ordertypes.deleted().url}>
                                     Terhapus
                                 </Link>
                             </TabsTrigger>
@@ -145,6 +150,7 @@ export default ({ pagination, onlyTrashed }: Props) => {
                         onEdit={onEdit}
                         onDeleteOrRestore={onDeleteOrRestore}
                     />
+
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>
