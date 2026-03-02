@@ -45,6 +45,7 @@ export default ({
 
             <TableBody>
                 {pagination.data.map((pmethod: PaymentMethod, index: number) => (
+                    console.log('PMETHOD', pmethod.id, pmethod.deleted_at),
                     <TableRow key={pmethod.id ?? index}>
                         <TableCell>
                             {startIndex + index + 1}.
@@ -64,7 +65,7 @@ export default ({
                         </TableCell>
                         <TableCell>
                             <div className="flex justify-center gap-2">
-                                {!pmethod.deleted_at && (
+                                {pmethod.deleted_at == null && (
                                     <Button
                                         size="icon"
                                         variant="outline"

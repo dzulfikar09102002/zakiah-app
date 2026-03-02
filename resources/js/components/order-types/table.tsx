@@ -52,13 +52,13 @@ export default function OrderTypesTable({ pagination, onEdit, onDeleteOrRestore 
                         </TableCell>
                         <TableCell className="w-[20%]">
                             <div className="flex justify-center gap-2">
-                                <Button
+                                {!orderType.deleted_at && <Button
                                     size="icon"
                                     variant="outline"
                                     onClick={() => onEdit(orderType.id)}
                                 >
                                     <Pencil />
-                                </Button>
+                                </Button>}
                                 <Button
                                     size="icon"
                                     variant={isDeletedRoute ? "outline" : "destructive"}
