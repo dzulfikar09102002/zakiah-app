@@ -22,13 +22,16 @@ class StoreCustomerCategoryRequest extends FormRequest
     }
     public function rules(): array
     {
-        return [
-            'name' => [
+        $category = $this->route('customer_category');
+
+    return [
+        'name' => [
             'required',
             Rule::unique('customer_categories', 'name')
                 ->where(fn ($q) =>
                     $q->where('entity_id', $this->user()->entity->id)
-                ),
+                )
+                ->ignore($category),
         ],
             "reset_every" => ['nullable', Rule::enum(CustomerCategoryResetEveryEnum::class)],
             "customer_category_rule" => 'nullable',

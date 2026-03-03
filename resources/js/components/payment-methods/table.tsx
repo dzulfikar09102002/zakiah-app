@@ -98,7 +98,7 @@ export default ({
                 {!pagination.data.length && (
                     <TableRow>
                         <TableCell
-                            colSpan={3}
+                            colSpan={6}
                             className="text-center py-4 text-muted-foreground"
                         >
                             Data tidak ditemukan

@@ -95,6 +95,16 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                         </TableCell>
                     </TableRow>
                 ))}
+                {!pagination.data.length && (
+                    <TableRow>
+                        <TableCell
+                            colSpan={7}
+                            className="text-center py-4 text-muted-foreground"
+                        >
+                            Data tidak ditemukan
+                        </TableCell>
+                    </TableRow>
+                )}
             </TableBody>
         </Table>
     );

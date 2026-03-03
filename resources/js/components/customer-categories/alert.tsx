@@ -11,7 +11,7 @@ import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { router } from '@inertiajs/react';
 import { Spinner } from '../ui/spinner';
-import ordertypes from '@/routes/order-types';
+import customerCategories from '@/routes/customer-categories';
 
 export type AlertState = {
     delete: boolean;
@@ -79,14 +79,14 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
 
                             alertState.delete
                                 ? router.delete(
-                                      ordertypes.destroy(alertState.dataId).url,
-                                      options,
-                                  )
+                                    customerCategories.destroy(alertState.dataId).url,
+                                    options,
+                                )
                                 : router.post(
-                                      ordertypes.restore(alertState.dataId).url,
-                                      {},
-                                      options,
-                                  );
+                                    customerCategories.restore(alertState.dataId).url,
+                                    {},
+                                    options,
+                                );
                         }}
                     >
                         <Spinner

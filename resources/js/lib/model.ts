@@ -103,6 +103,32 @@ export type Pagination<T> = {
         active: boolean;
     }[];
 };
+
+export interface Customer {
+    id: number;
+    entity_id: number;
+    user_id: number;
+    customer_category_id: number;
+    location_id: number;
+    first_name: string;
+    last_name: string;
+    phone_number: string;
+    phone_number_country_code: string;
+    email: string;
+    last_visit_at: string;
+    last_spend_daily: number;
+    last_spend_weekly: number;
+    last_spend_monthly: number;
+    last_visit_location_id: number;
+    status: 'active' | 'inactive' | string;
+    deleted_at: string;
+    created_at: string;
+    updated_at: string;
+    updated_by: number;
+    created_by: number;
+    customer_category: CustomerCategory
+    location:Location
+}
 export interface Location {
     id: number;
     entity_id: number;
@@ -183,7 +209,7 @@ export interface CustomerCategory {
     created_at: string;
     updated_at: string;
     deleted_at: string;
-    customer_category_rule: CustomerCategoryRule;
+    customerCategoryRule: CustomerCategoryRule;
 }
 export interface CustomerCategoryRule {
     id: number;

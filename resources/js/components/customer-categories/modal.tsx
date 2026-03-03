@@ -134,20 +134,25 @@ export default ({
                         <Field>
                             <FieldLabel>Minimal Pembelian (Rp)</FieldLabel>
                             <Input
-                                type="number"
-                                min="0"
+                                type="text"
+                                inputMode="numeric"
                                 placeholder="0"
                                 readOnly={processing}
                                 value={
                                     data.customer_category_rule.minimal_spend
+                                        ? Number(
+                                            data.customer_category_rule.minimal_spend
+                                        ).toLocaleString('id-ID')
+                                        : ''
                                 }
                                 onChange={(e) => {
-                                    const value = e.target.value;
+                                    const raw = e.target.value.replace(/\./g, '');
+
+                                    if (!/^\d*$/.test(raw)) return;
 
                                     setData('customer_category_rule', {
                                         ...data.customer_category_rule,
-                                        minimal_spend:
-                                            value === '' ? '' : Number(value),
+                                        minimal_spend: raw === '' ? '' : Number(raw),
                                     });
                                 }}
                             />

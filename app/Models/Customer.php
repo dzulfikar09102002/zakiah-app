@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Customer extends Model
 {
+    use SoftDeletes;
     use HasFactory;
 
     protected $fillable = [
@@ -18,6 +20,9 @@ class Customer extends Model
         'phone_number',
         'phone_number_country_code',
         'email',
+        'entity_id',
+        'created_by',
+        'updated_by'
     ];
 
     public function customerPoint(): HasOne {

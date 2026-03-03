@@ -9,13 +9,31 @@ use Illuminate\Validation\Rule;
 
 class UpdateCustomerCategoryRequest extends BaseRequest
 {
-    protected $page = PageNameConstants::CustomerCategoryMenu;
-    protected $action = ActionConstants::UpdateAction;
+    public function authorize(): bool
+    {
+        return true; 
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'name' => trim($this->name),
+        ]);
+    }
     
     public function rules(): array
     {
+        $customerCategory = $this->route('customerCategory');
         return [
-            "name" => 'nullable',
+            'name' => [
+            'required',
+            Rule::unique('customer_categories', 'name')
+                ->where(fn ($q) => $q
+                    ->where('entity_id', auth()->user()->entity_id)
+                    ->whereNull('deleted_at')
+                )
+                ->ignore($customerCategory?->id),
+        ],
             "required" => 'nullable|boolean',
             "reset_every" => ['nullable', Rule::enum(CustomerCategoryResetEveryEnum::class)],
             // "status" => ['nullable', Rule::enum(StatusEnum::class)],

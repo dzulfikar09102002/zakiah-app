@@ -8,11 +8,11 @@ import {
     TableRow
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import type { Pagination, Unit } from '@/lib/model';
+import type { Customer, Pagination } from '@/lib/model';
 import { usePage } from '@inertiajs/react';
 
 type Props = {
-    pagination: Pagination<Unit>
+    pagination: Pagination<Customer>
     onEdit: (id: unknown) => void
     onDeleteOrRestore: (id: unknown, action: boolean) => void
 }
@@ -32,26 +32,25 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
             </TableHeader>
 
             <TableBody>
-                {pagination.data.map((unit: Unit, index: number) => (
-                    <TableRow key={unit.id ?? index}>
+                {pagination.data.map((customer: Customer, index: number) => (
+                    <TableRow key={customer.id ?? index}>
                         <TableCell>
                             {startIndex + index + 1}.
                         </TableCell>
-
-                        <TableCell>{unit.name}</TableCell>
+                        <TableCell>{customer.first_name + " " + customer.last_name}</TableCell>
                         <TableCell>
                             <div className="flex justify-center gap-2">
                                 <Button
                                     size="icon"
                                     variant="outline"
-                                    onClick={() => onEdit(unit.id)}
+                                    onClick={() => onEdit(customer.id)}
                                 >
                                     <Pencil />
                                 </Button>
                                 <Button
                                     size="icon"
                                     variant={isDeletedRoute ? "outline" : "destructive"}
-                                    onClick={() => onDeleteOrRestore(unit.id, !isDeletedRoute)}>
+                                    onClick={() => onDeleteOrRestore(customer.id, !isDeletedRoute)}>
                                     {isDeletedRoute ? <ArchiveRestore /> : <X />}
                                 </Button>
                             </div>
