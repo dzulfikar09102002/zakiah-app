@@ -7,7 +7,7 @@ import {
     CircleDollarSign,
     Cog,
     MonitorCog,
-    UserCog
+    UserCog,
 } from 'lucide-react';
 import { dashboard, settings } from '@/routes';
 
@@ -23,6 +23,8 @@ import stockRemaining from '@/routes/stock-remaining';
 import productCategories from '@/routes/product-categories';
 import productUnits from '@/routes/product-units';
 import orderTypes from '@/routes/order-types';
+import customers from '@/routes/customers';
+import customerCategories from '@/routes/customer-categories';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -31,169 +33,173 @@ export const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: "Laporan",
-        href: "#",
+        title: 'Laporan',
+        href: '#',
         icon: ChartNoAxesCombined,
         isActive: false,
         items: [
             {
-                title: "Penjualan",
-                href: "#",
+                title: 'Penjualan',
+                href: '#',
                 items: [
                     {
-                        title: "Ringkasan",
-                        href: sellings.summary().url
+                        title: 'Ringkasan',
+                        href: sellings.summary().url,
                     },
                     {
-                        title: "Per Product",
-                        href: "#"
+                        title: 'Per Product',
+                        href: '#',
                     },
                     {
-                        title: "Per Toko",
-                        href: "#"
-                    }
-                ]
+                        title: 'Per Toko',
+                        href: '#',
+                    },
+                ],
             },
             {
-                title: "Stok",
-                href: "/playground/starred",
+                title: 'Stok',
+                href: '/playground/starred',
                 items: [
                     {
-                        title: "Kartu Stok",
-                        href: "#"
+                        title: 'Kartu Stok',
+                        href: '#',
                     },
                     {
-                        title: "Pergerakan",
-                        href: "#"
+                        title: 'Pergerakan',
+                        href: '#',
                     },
                     {
-                        title: "Sisa Stok",
-                        href: stockRemaining.chooseLocation().url
-                    }
-                ]
+                        title: 'Sisa Stok',
+                        href: stockRemaining.chooseLocation().url,
+                    },
+                ],
             },
             {
-                title: "Sales",
-                href: "#",
+                title: 'Sales',
+                href: '#',
                 items: [
                     {
-                        title: "Perform",
-                        href: "/playground/settings/general",
+                        title: 'Perform',
+                        href: '/playground/settings/general',
                     },
                     {
-                        title: "Perform Detail",
-                        href: "/playground/settings/team",
+                        title: 'Perform Detail',
+                        href: '/playground/settings/team',
                     },
                 ],
             },
         ],
     },
     {
-        title: "Produk",
-        href: "#",
+        title: 'Produk',
+        href: '#',
         icon: ScanBarcode,
         items: [
             {
-                title: "Kelola Produk",
+                title: 'Kelola Produk',
                 href: products.index().url,
             },
             {
-                title: "Produk Kategori",
+                title: 'Produk Kategori',
                 href: productCategories.index().url,
             },
             {
-                title: "Produk Unit",
+                title: 'Produk Unit',
                 href: productUnits.index().url,
             },
         ],
     },
     {
-        title: "Stok",
-        href: "#",
+        title: 'Stok',
+        href: '#',
         icon: Warehouse,
         items: [
             {
-                title: "Stok Opname",
-                href: "#",
+                title: 'Stok Opname',
+                href: '#',
             },
             {
-                title: "Pindah Stok",
-                href: "#",
+                title: 'Pindah Stok',
+                href: '#',
             },
             {
-                title: "Penyesuaian Stok",
-                href: "#",
+                title: 'Penyesuaian Stok',
+                href: '#',
             },
         ],
     },
     {
-        title: "People",
-        href: "#",
+        title: 'People',
+        href: '#',
         icon: UsersRound,
         isActive: false,
         items: [
             {
-                title: "Pelanggan",
-                href: "/playground/history",
+                title: 'Pelanggan',
+                href: '/playground/history',
                 items: [
                     {
-                        title: "Loyalty",
-                        href: "#"
+                        title: 'Daftar Pelanggan',
+                        href: customers.index().url,
                     },
                     {
-                        title: "Kategori",
-                        href: "#"
+                        title: 'Kategori',
+                        href: customerCategories.index().url,
                     },
-                ]
+                    {
+                        title: 'Loyalty',
+                        href: '#',
+                    },
+                ],
             },
         ],
     },
     {
-        title: "Revenue Center",
-        href: "#",
+        title: 'Revenue Center',
+        href: '#',
         icon: CircleDollarSign,
         isActive: false,
         items: [
             {
-                title: "Penjualan",
-                href: "/playground/history",
+                title: 'Penjualan',
+                href: '/playground/history',
                 items: [
                     {
-                        title: "Rekapan",
-                        href: "#"
+                        title: 'Rekapan',
+                        href: '#',
                     },
                     {
-                        title: "Data Penjualan",
-                        href: "#"
+                        title: 'Data Penjualan',
+                        href: '#',
                     },
-                ]
+                ],
             },
             {
-                title: "Promosi",
-                href: "#"
-            }
+                title: 'Promosi',
+                href: '#',
+            },
         ],
     },
     {
-        title: "Administrasi",
-        href: "#",
+        title: 'Administrasi',
+        href: '#',
         icon: Cog,
         items: [
             {
-                title: "Entity",
-                href: "#",
+                title: 'Entity',
+                href: '#',
             },
             {
-                title: "Lokasi",
+                title: 'Lokasi',
                 href: locations.index().url,
             },
             {
-                title: "Karyawan",
+                title: 'Karyawan',
                 href: employees.index().url,
             },
             {
-                title: "Role",
-                href: roles.index().url
+                title: 'Role',
+                href: roles.index().url,
             },
         ],
     },
@@ -201,37 +207,37 @@ export const mainNavItems: NavItem[] = [
 
 export const settingNavItems: NavItem[] = [
     {
-        title: "Sistem",
-        href: "#",
+        title: 'Sistem',
+        href: '#',
         icon: MonitorCog,
         isActive: false,
         items: [
             {
-                title: "Pembayaran",
+                title: 'Pembayaran',
                 href: paymentmethods.index().url,
             },
             {
-                title: "Pajak",
-                href: "#"
-            }
+                title: 'Pajak',
+                href: '#',
+            },
         ],
     },
     {
-        title: "Konfigurasi",
-        href: "#",
+        title: 'Konfigurasi',
+        href: '#',
         icon: UserCog,
         isActive: false,
         items: [
             {
-                title: "Jenis Pesanan",
+                title: 'Jenis Pesanan',
                 href: orderTypes.index().url,
             },
             {
-                title: "Pengaturan",
+                title: 'Pengaturan',
                 href: settings().url,
             },
             {
-                title: "Kelola Akses",
+                title: 'Kelola Akses',
                 href: settings().url,
             },
         ],

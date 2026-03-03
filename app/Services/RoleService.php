@@ -42,7 +42,7 @@ class RoleService
         return Role::whereNull('entity_id')->get();
     }
     public function store(array $data)
-{
+    {
     $user = auth()->user();
 
     $parent = Role::findOrFail((int) $data['parent_id']);
@@ -69,7 +69,7 @@ class RoleService
         ]);
     }
     public function update(Role $role, array $data)
-{
+    {
     if ($role->entity_id === null) {
         throw new Exception('Parent role cannot be updated.');
     }

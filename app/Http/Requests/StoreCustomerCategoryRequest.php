@@ -3,20 +3,33 @@
 namespace App\Http\Requests;
 
 use App\Enums\CustomerCategoryResetEveryEnum;
-use App\Helpers\Constants\ActionConstants;
-use App\Helpers\Constants\PageNameConstants;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreCustomerCategoryRequest extends BaseRequest
+class StoreCustomerCategoryRequest extends FormRequest
 {
-    protected $page = PageNameConstants::CustomerCategoryMenu;
-    protected $action = ActionConstants::StoreAction;
 
+ public function authorize(): bool
+    {
+        return true; 
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'name' => trim($this->name),
+        ]);
+    }
     public function rules(): array
     {
         return [
-            "name" => 'required',
-            "required" => 'required|boolean',
+            'name' => [
+            'required',
+            Rule::unique('customer_categories', 'name')
+                ->where(fn ($q) =>
+                    $q->where('entity_id', $this->user()->entity->id)
+                ),
+        ],
             "reset_every" => ['nullable', Rule::enum(CustomerCategoryResetEveryEnum::class)],
             "customer_category_rule" => 'nullable',
             "customer_category_rule.minimal_spend" => 'nullable|integer|min:0',

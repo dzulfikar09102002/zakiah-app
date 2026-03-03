@@ -5,15 +5,10 @@ import {
     DialogContent,
     DialogFooter,
     DialogHeader,
-    DialogTitle
+    DialogTitle,
 } from '@/components/ui/dialog';
 
-import {
-    Field,
-    FieldError,
-    FieldLabel,
-    FieldSet
-} from '@/components/ui/field';
+import { Field, FieldError, FieldLabel, FieldSet } from '@/components/ui/field';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,7 +23,7 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue
+    SelectValue,
 } from '../ui/select';
 import { PaymentMethod } from '@/lib/model';
 
@@ -50,9 +45,8 @@ export default ({
     tableData,
     paymentMethods,
     onModalSuccess,
-    onModalClose
+    onModalClose,
 }: Props) => {
-
     const { auth } = usePage<SharedData>().props;
 
     const {
@@ -63,7 +57,7 @@ export default ({
         errors,
         data,
         setData,
-        clearErrors
+        clearErrors,
     } = useForm({
         name: '',
         payment_method_id: '' as string | number,
@@ -85,21 +79,21 @@ export default ({
             preserveState: true,
             onSuccess: () => {
                 toast.success(
-                    `Data berhasil ${modalState.dataId ? 'diperbarui' : 'ditambahkan'}`
+                    `Data berhasil ${modalState.dataId ? 'diperbarui' : 'ditambahkan'}`,
                 );
                 onModalSuccess();
                 reset();
             },
             onError: () => {
                 toast.error(
-                    `Gagal ${modalState.dataId ? 'memperbarui' : 'menambahkan'} data`
+                    `Gagal ${modalState.dataId ? 'memperbarui' : 'menambahkan'} data`,
                 );
-            }
+            },
         });
     };
 
     useEffect(() => {
-        const existing = tableData.find(el => el.id === modalState.dataId);
+        const existing = tableData.find((el) => el.id === modalState.dataId);
 
         if (existing) {
             setData({
@@ -107,7 +101,9 @@ export default ({
                 payment_method_id: existing.payment_method_id ?? '',
                 fixed_fee: existing.fixed_fee ?? 0,
                 variable_fee: existing.variable_fee ?? 0,
-                require_customer_data: existing.require_customer_data ? '1' : '0',
+                require_customer_data: existing.require_customer_data
+                    ? '1'
+                    : '0',
                 entity_id: existing.entity_id ?? auth.user.entity.id,
             });
         } else {
@@ -131,11 +127,13 @@ export default ({
                     <DialogCancel />
                     <DialogHeader>
                         <DialogTitle>
-                            {modalState.dataId ? 'Edit Tipe Order' : 'Tipe Order Baru'}
+                            {modalState.dataId
+                                ? 'Edit Jenis Pesanan'
+                                : 'Jenis Pesanan Baru'}
                         </DialogTitle>
                     </DialogHeader>
 
-                    <FieldSet className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <FieldSet className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         <Field className="lg:col-span-1">
                             <FieldLabel htmlFor="name">Nama</FieldLabel>
                             <Input
@@ -143,7 +141,9 @@ export default ({
                                 placeholder="Masukkan nama"
                                 readOnly={processing}
                                 value={data.name}
-                                onChange={e => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                             />
                             <FieldError>{errors.name}</FieldError>
                         </Field>
@@ -162,7 +162,10 @@ export default ({
                                 </SelectTrigger>
                                 <SelectContent>
                                     {paymentMethods.map((pm) => (
-                                        <SelectItem key={pm.id} value={String(pm.id)}>
+                                        <SelectItem
+                                            key={pm.id}
+                                            value={String(pm.id)}
+                                        >
                                             {pm.name}
                                         </SelectItem>
                                     ))}
@@ -179,9 +182,12 @@ export default ({
                                 placeholder="0"
                                 readOnly={processing}
                                 value={data.fixed_fee}
-                                onChange={e => {
+                                onChange={(e) => {
                                     const value = e.target.value;
-                                    setData('fixed_fee', value === '' ? '' : Number(value));
+                                    setData(
+                                        'fixed_fee',
+                                        value === '' ? '' : Number(value),
+                                    );
                                 }}
                             />
                             <FieldError>{errors.fixed_fee}</FieldError>
@@ -204,7 +210,9 @@ export default ({
                                     <SelectItem value="0">Tidak</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <FieldError>{errors.require_customer_data}</FieldError>
+                            <FieldError>
+                                {errors.require_customer_data}
+                            </FieldError>
                         </Field>
 
                         <Field className="lg:col-span-1">
@@ -216,9 +224,12 @@ export default ({
                                 placeholder="0"
                                 readOnly={processing}
                                 value={data.variable_fee}
-                                onChange={e => {
+                                onChange={(e) => {
                                     const value = e.target.value;
-                                    setData('variable_fee', value === '' ? '' : Number(value));
+                                    setData(
+                                        'variable_fee',
+                                        value === '' ? '' : Number(value),
+                                    );
                                 }}
                             />
                             <FieldError>{errors.variable_fee}</FieldError>
@@ -239,4 +250,4 @@ export default ({
             </DialogContent>
         </Dialog>
     );
-}
+};

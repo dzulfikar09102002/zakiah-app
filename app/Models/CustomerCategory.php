@@ -21,6 +21,10 @@ class CustomerCategory extends Model
         'status',
         'required',
         'reset_every',
+        'created_by',
+        'updated_by',
+        'entity_id'
+
     ];
 
     /**

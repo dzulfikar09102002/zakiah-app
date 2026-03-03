@@ -137,17 +137,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         | CUSTOMER CATEGORY
         |--------------------------------------------------------------------------
         */
+        Route::resource('customers', CustomerController::class)
+        ->except(['show']);
+        
         Route::resource('customer-categories', CustomerCategoryController::class)
-        ->except(['destroy']);
+        ->except(['show']);
 
-        Route::patch('customer-categories/{id}/activate', [CustomerCategoryController::class, 'activate'])
-        ->name('customer-categories.activate');
+        Route::post('customer-categories/{id}/restore', [CustomerCategoryController::class, 'restore'])
+        ->name('customer-categories.restore');
 
-        Route::patch('customer-categories/{id}/archive', [CustomerCategoryController::class, 'archive'])
-        ->name('customer-categories.archive');
-
-        Route::get('customer-categories-dropdown', [CustomerCategoryController::class, 'dropdown'])
-        ->name('customer-categories.dropdown');
+        Route::get('customer-categories/deleted', [CustomerCategoryController::class, 'deleted'])
+        ->name('customer-categories.deleted');
 
         /*
         |--------------------------------------------------------------------------
@@ -214,14 +214,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('sale-transactions/{id}/void', [SaleTransactionController::class, 'void'])
         ->name('sale-transactions.void');
 
-        Route::resource('customers', CustomerController::class)
-        ->only(['index', 'show']);
 
         Route::patch('customers/{id}/activate', [CustomerController::class, 'activate'])
         ->name('customers.activate');
-
-        Route::patch('customers/{id}/archive', [CustomerController::class, 'archive'])
-        ->name('customers.archive');
 
         Route::resource('customer-point-movements', CustomerPointMovementController::class)
         ->only(['index']);

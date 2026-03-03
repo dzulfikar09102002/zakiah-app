@@ -4,12 +4,13 @@ import type { AppLayoutProps } from '@/types';
 
 export default ({ children, breadcrumbs, ...props }: AppLayoutProps) => (
     <AppLayoutTemplate breadcrumbs={breadcrumbs} {...props}>
-        <div className="p-4 pb-12">
-            {children}
-        </div>
-        <footer className="border-t py-4 text-sm text-center">
-            Copyright &copy; {new Date().getFullYear()}. All rights reserved
+        <main className="flex-1 p-4 pb-12">{children}</main>
+
+        <footer className="border-t py-4 text-center text-sm">
+            Copyright &copy; {new Date().getFullYear()} Zakiah Group. All rights
+            reserved
         </footer>
+
         <Toaster />
     </AppLayoutTemplate>
 );

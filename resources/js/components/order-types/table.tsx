@@ -5,7 +5,7 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow
+    TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import type { Pagination, OrderType } from '@/lib/model';
@@ -13,15 +13,15 @@ import { usePage } from '@inertiajs/react';
 import { toRupiah } from '@/lib/utils';
 
 type Props = {
-    pagination: Pagination<OrderType>
-    onEdit: (id: unknown) => void
-    onDeleteOrRestore: (id: unknown, action: boolean) => void
-}
+    pagination: Pagination<OrderType>;
+    onEdit: (id: unknown) => void;
+    onDeleteOrRestore: (id: unknown, action: boolean) => void;
+};
 
-export default function OrderTypesTable({ pagination, onEdit, onDeleteOrRestore }: Props) {
-    const startIndex = (pagination.current_page - 1) * pagination.per_page
-    const { url } = usePage()
-    const isDeletedRoute = url.includes('deleted')
+export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
+    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const { url } = usePage();
+    const isDeletedRoute = url.includes('deleted');
 
     return (
         <Table className="stripped">
@@ -43,30 +43,53 @@ export default function OrderTypesTable({ pagination, onEdit, onDeleteOrRestore 
                         <TableCell className="w-[8%]">
                             {startIndex + index + 1}.
                         </TableCell>
-                        <TableCell className="w-[32%] font-medium">{orderType.name}</TableCell>
-                        <TableCell className="w-[12%]">{toRupiah(orderType.fixed_fee)}</TableCell>
-                        <TableCell className="w-[8%]">{orderType.variable_fee}%</TableCell>
-                        <TableCell className="w-[12%]">{orderType.payment_method?.name || "-"}</TableCell>
+                        <TableCell className="w-[32%] font-medium">
+                            {orderType.name}
+                        </TableCell>
+                        <TableCell className="w-[12%]">
+                            {toRupiah(orderType.fixed_fee)}
+                        </TableCell>
                         <TableCell className="w-[8%]">
-                            {orderType.require_customer_data ? "Member" : "Reguler"}
+                            {orderType.variable_fee}%
+                        </TableCell>
+                        <TableCell className="w-[12%]">
+                            {orderType.payment_method?.name || '-'}
+                        </TableCell>
+                        <TableCell className="w-[8%]">
+                            {orderType.require_customer_data
+                                ? 'Member'
+                                : 'Reguler'}
                         </TableCell>
                         <TableCell className="w-[20%]">
                             <div className="flex justify-center gap-2">
-                                {!orderType.deleted_at && <Button
-                                    size="icon"
-                                    variant="outline"
-                                    onClick={() => onEdit(orderType.id)}
-                                >
-                                    <Pencil />
-                                </Button>}
+                                {!orderType.deleted_at && (
+                                    <Button
+                                        size="icon"
+                                        variant="outline"
+                                        onClick={() => onEdit(orderType.id)}
+                                    >
+                                        <Pencil />
+                                    </Button>
+                                )}
                                 <Button
                                     size="icon"
-                                    variant={isDeletedRoute ? "outline" : "destructive"}
+                                    variant={
+                                        isDeletedRoute
+                                            ? 'outline'
+                                            : 'destructive'
+                                    }
                                     onClick={() =>
-                                        onDeleteOrRestore(orderType.id, !isDeletedRoute)
+                                        onDeleteOrRestore(
+                                            orderType.id,
+                                            !isDeletedRoute,
+                                        )
                                     }
                                 >
-                                    {isDeletedRoute ? <ArchiveRestore /> : <X />}
+                                    {isDeletedRoute ? (
+                                        <ArchiveRestore />
+                                    ) : (
+                                        <X />
+                                    )}
                                 </Button>
                             </div>
                         </TableCell>
@@ -75,4 +98,4 @@ export default function OrderTypesTable({ pagination, onEdit, onDeleteOrRestore 
             </TableBody>
         </Table>
     );
-}
+};
