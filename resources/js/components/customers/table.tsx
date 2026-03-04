@@ -5,28 +5,31 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow
+    TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import type { Customer, Pagination } from '@/lib/model';
 import { usePage } from '@inertiajs/react';
 
 type Props = {
-    pagination: Pagination<Customer>
-    onEdit: (id: unknown) => void
-    onDeleteOrRestore: (id: unknown, action: boolean) => void
-}
+    pagination: Pagination<Customer>;
+    onEdit: (id: unknown) => void;
+    onDeleteOrRestore: (id: unknown, action: boolean) => void;
+};
 
 export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
-    const startIndex = (pagination.current_page - 1) * pagination.per_page
-    const { url } = usePage()
-    const isDeletedRoute = url.includes('deleted')
+    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const { url } = usePage();
+    const isDeletedRoute = url.includes('deleted');
     return (
-        <Table className='stripped'>
+        <Table className="stripped">
             <TableHeader>
                 <TableRow>
                     <TableHead>No.</TableHead>
                     <TableHead>Nama</TableHead>
+                    <TableHead>No Telepon</TableHead>
+                    <TableHead>Jenis</TableHead>
+                    <TableHead>Asal Toko</TableHead>
                     <TableHead className="text-center">Aksi</TableHead>
                 </TableRow>
             </TableHeader>
@@ -34,10 +37,17 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
             <TableBody>
                 {pagination.data.map((customer: Customer, index: number) => (
                     <TableRow key={customer.id ?? index}>
+                        <TableCell>{startIndex + index + 1}.</TableCell>
                         <TableCell>
-                            {startIndex + index + 1}.
+                            {customer.first_name + ' ' + customer.last_name}
                         </TableCell>
-                        <TableCell>{customer.first_name + " " + customer.last_name}</TableCell>
+                        <TableCell>
+                            {'+' +
+                                customer.phone_number_country_code +
+                                customer.phone_number}
+                        </TableCell>
+                        <TableCell>{customer.customer_category.name}</TableCell>
+                        <TableCell>{customer.location.name}</TableCell>
                         <TableCell>
                             <div className="flex justify-center gap-2">
                                 <Button
@@ -49,9 +59,23 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                                 </Button>
                                 <Button
                                     size="icon"
-                                    variant={isDeletedRoute ? "outline" : "destructive"}
-                                    onClick={() => onDeleteOrRestore(customer.id, !isDeletedRoute)}>
-                                    {isDeletedRoute ? <ArchiveRestore /> : <X />}
+                                    variant={
+                                        isDeletedRoute
+                                            ? 'outline'
+                                            : 'destructive'
+                                    }
+                                    onClick={() =>
+                                        onDeleteOrRestore(
+                                            customer.id,
+                                            !isDeletedRoute,
+                                        )
+                                    }
+                                >
+                                    {isDeletedRoute ? (
+                                        <ArchiveRestore />
+                                    ) : (
+                                        <X />
+                                    )}
                                 </Button>
                             </div>
                         </TableCell>
@@ -61,7 +85,7 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                     <TableRow>
                         <TableCell
                             colSpan={3}
-                            className="text-center py-4 text-muted-foreground"
+                            className="py-4 text-center text-muted-foreground"
                         >
                             Data tidak ditemukan
                         </TableCell>
@@ -70,4 +94,4 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
             </TableBody>
         </Table>
     );
-}
+};

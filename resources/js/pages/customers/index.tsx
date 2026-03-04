@@ -7,7 +7,12 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
-import type { Pagination, Customer } from '@/lib/model';
+import type {
+    Pagination,
+    Customer,
+    CustomerCategory,
+    Location,
+} from '@/lib/model';
 import type { BreadcrumbItem } from '@/types';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import customers from '@/routes/customers';
@@ -27,9 +32,20 @@ const breadcrumbs: BreadcrumbItem[] = [
 type Props = {
     pagination: Pagination<Customer>;
     onlyTrashed?: boolean;
+    customerCategories: CustomerCategory[];
+    phoneCountryCodes: {
+        value: string;
+        label: string;
+    }[];
+    locations: Location[];
 };
 
-export default ({ pagination }: Props) => {
+export default ({
+    pagination,
+    customerCategories,
+    phoneCountryCodes,
+    locations,
+}: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined as unknown,
@@ -86,6 +102,9 @@ export default ({ pagination }: Props) => {
                 modalState={modal}
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
+                customerCategories={customerCategories}
+                phoneCountryCodes={phoneCountryCodes}
+                locations={locations}
                 tableData={pagination.data}
             />
 
@@ -101,9 +120,7 @@ export default ({ pagination }: Props) => {
                     onClick={() => setModal({ ...modal, isOpen: true })}
                 >
                     <Plus />{' '}
-                    <span className="hidden lg:inline">
-                        Pelanggan Baru
-                    </span>
+                    <span className="hidden lg:inline">Pelanggan Baru</span>
                 </Button>
             </div>
 

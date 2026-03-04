@@ -19,8 +19,10 @@ class Customer extends Model
         'last_name',
         'phone_number',
         'phone_number_country_code',
+        'customer_category_id',
         'email',
         'entity_id',
+        'user_id',
         'created_by',
         'updated_by'
     ];
@@ -35,5 +37,10 @@ class Customer extends Model
 
     public function customerCategory(): BelongsTo {
         return $this->belongsTo(CustomerCategory::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
