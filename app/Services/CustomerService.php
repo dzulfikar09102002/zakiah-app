@@ -81,7 +81,6 @@ class CustomerService
     }
     public function update(Customer $customer, array $data)
     {
-        dd($customer);
         return DB::transaction(function () use ($customer, $data) {
 
             $authUser = auth()->user();
@@ -104,5 +103,42 @@ class CustomerService
 
             return $customer->fresh(['customerCategory', 'location']);
         });
+    }
+
+    public function delete(Customer $customer)
+    {
+        return $customer->delete();
+    }
+
+    public function restore(int $id)
+    {
+        $customer = Customer::withTrashed()->findOrFail($id);
+        return $customer->restore();
+    }
+
+    public function getDeletedCustomers()
+    {
+        $entityId = auth()->user()?->entity?->id;
+
+        return Customer::onlyTrashed()
+            ->with([
+                'customerCategory:id,name',
+                'location:id,name',
+            ])
+            ->where('entity_id', $entityId)
+            ->when(request('search'), function (Builder $query, $search) {
+                $query->where(function (Builder $builder) use ($search) {
+                    $builder
+                        ->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%");
+                });
+            })
+
+            ->when(request('phone_number'), function (Builder $query, $phone) {
+                $query->where('phone_number', $phone);
+            })
+             ->orderByDesc('id') 
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
     }
 }

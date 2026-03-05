@@ -140,10 +140,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('customers', CustomerController::class)
         ->except(['show']);
         
-        Route::post('customers/{id}/restore', [CustomerCategoryController::class, 'restore'])
+        Route::post('customers/{id}/restore', [CustomerController::class, 'restore'])
         ->name('customers.restore');
 
-        Route::get('customers/deleted', [CustomerCategoryController::class, 'deleted'])
+        Route::get('customers/deleted', [CustomerController::class, 'deleted'])
         ->name('customers.deleted');
         
         Route::resource('customer-categories', CustomerCategoryController::class)

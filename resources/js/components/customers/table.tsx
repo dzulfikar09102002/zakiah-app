@@ -42,21 +42,40 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                             {customer.first_name + ' ' + customer.last_name}
                         </TableCell>
                         <TableCell>
-                            {'+' +
-                                customer.phone_number_country_code +
-                                customer.phone_number}
+                            {(() => {
+                                const cleanNumber =
+                                    `${customer.phone_number_country_code}${customer.phone_number}`.replace(
+                                        /\D/g,
+                                        '',
+                                    );
+
+                                return (
+                                    <a
+                                        href={`https://wa.me/${cleanNumber}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="cursor-pointer hover:underline"
+                                    >
+                                        {'+' +
+                                            customer.phone_number_country_code +
+                                            customer.phone_number}
+                                    </a>
+                                );
+                            })()}
                         </TableCell>
                         <TableCell>{customer.customer_category.name}</TableCell>
                         <TableCell>{customer.location.name}</TableCell>
                         <TableCell>
                             <div className="flex justify-center gap-2">
-                                <Button
-                                    size="icon"
-                                    variant="outline"
-                                    onClick={() => onEdit(customer.id)}
-                                >
-                                    <Pencil />
-                                </Button>
+                                {!customer.deleted_at && (
+                                    <Button
+                                        size="icon"
+                                        variant="outline"
+                                        onClick={() => onEdit(customer.id)}
+                                    >
+                                        <Pencil />
+                                    </Button>
+                                )}
                                 <Button
                                     size="icon"
                                     variant={

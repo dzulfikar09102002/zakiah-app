@@ -25,6 +25,8 @@ import productUnits from '@/routes/product-units';
 import orderTypes from '@/routes/order-types';
 import customers from '@/routes/customers';
 import customerCategories from '@/routes/customer-categories';
+import loyalties from '@/routes/loyalties';
+import taxes from '@/routes/taxes';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -148,7 +150,7 @@ export const mainNavItems: NavItem[] = [
                     },
                     {
                         title: 'Loyalty',
-                        href: '#',
+                        href: loyalties.index().url,
                     },
                 ],
             },
@@ -218,7 +220,7 @@ export const settingNavItems: NavItem[] = [
             },
             {
                 title: 'Pajak',
-                href: '#',
+                href: taxes.index().url,
             },
         ],
     },

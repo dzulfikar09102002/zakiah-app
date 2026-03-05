@@ -19,7 +19,9 @@ class PaymentMethod extends Model
         'status',
         'fixed_fee',
         'variable_fee',
-        'create_by'
+        'create_by',
+        'updated_by',
+        'entity_id'
     ];
 
     /**

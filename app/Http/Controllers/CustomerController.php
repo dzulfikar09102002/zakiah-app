@@ -32,7 +32,15 @@ class CustomerController extends Controller
         $pagination = $this->service->getCustomers();
         return Inertia::render("customers/index", compact("pagination", "customerCategories", "phoneCountryCodes", "locations"));
     }
-   
+   public function deleted()
+   {
+    $onlyTrashed = true;
+    $pagination = $this->service->getDeletedCustomers();
+    $locations = $this->service->getLocations();
+    $phoneCountryCodes = PhoneNumberCountryCodeEnum::options();
+    $customerCategories = $this->service->getCustomerCategories();
+    return Inertia::render("customers/index", compact("pagination", "customerCategories", "phoneCountryCodes", "locations", "onlyTrashed"));
+   }
     public function store(StoreCustomerRequest $request)
     {
         $this->service->store($request->validated());
@@ -41,6 +49,20 @@ class CustomerController extends Controller
 
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
+        $this->service->update($customer, $request->validated());
         return to_route('customers.index')->with('success', 'Pelanggan berhasil diperbarui');
+    }
+
+    public function destroy(Customer $customer)
+    {
+        $this->service->delete($customer);
+        return to_route('customers.index')->with('success', 'Pelanggan berhasil dihapus');
+
+    }
+
+    public function restore(int $id)
+    {
+        $this->service->restore($id);
+        return to_route('customers.index')->with('success', 'Pelanggan berhasil dipulihkan');
     }
 }
