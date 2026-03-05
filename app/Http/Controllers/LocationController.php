@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PhoneNumberCountryCodeEnum;
 use App\Services\LocationService;
 use App\Models\location;
 use App\Http\Requests\StorelocationRequest;
@@ -15,49 +16,23 @@ class LocationController extends Controller
     ) {}
     public function index()
     {
+        $phoneCountryCodes = PhoneNumberCountryCodeEnum::options();
         $pagination = $this->service->getLocations();
-        return Inertia::render('locations/index', compact('pagination'));
-    }
-
-    public function create()
-    {
-        //
+        return Inertia::render('locations/index', compact('pagination', 'phoneCountryCodes'));
     }
 
     public function store(StorelocationRequest $request)
     {
-        //
+        
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(location $location)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(location $location)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdatelocationRequest $request, location $location)
     {
-        //
+        
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(location $location)
     {
-        //
+        
     }
 }

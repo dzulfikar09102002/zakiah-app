@@ -13,8 +13,8 @@ import { usePage } from '@inertiajs/react';
 
 type Props = {
     pagination: Pagination<Customer>;
-    onEdit: (id: unknown) => void;
-    onDeleteOrRestore: (id: unknown, action: boolean) => void;
+    onEdit: (id: any) => void;
+    onDeleteOrRestore: (id: any, action: boolean) => void;
 };
 
 export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {

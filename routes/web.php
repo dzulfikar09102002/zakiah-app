@@ -28,6 +28,7 @@ use App\Http\Controllers\Report\ReportSalesController;
 use App\Http\Controllers\Report\ReportStockCardController;
 use App\Http\Controllers\Report\ReportStockMovementController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\SaleTransactionController;
 use App\Http\Controllers\SellingController;
 use App\Http\Controllers\StockRemainingController;
@@ -251,7 +252,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::prefix('report')->group(function () {
 
         Route::resource('report-by-products', ReportByProductController::class)->only(['index']);
-        Route::resource('report-sales', ReportSalesController::class)->only(['index']);
+        Route::resource('report-sales', SalesReportController::class)->only(['index']);
         Route::resource('report-sales-by-location', ReportSalesByLocationController::class)->only(['index']);
         Route::resource('report-stock-movement', ReportStockMovementController::class)->only(['index']);
         Route::resource('report-stock-card', ReportStockCardController::class)->only(['index']);
