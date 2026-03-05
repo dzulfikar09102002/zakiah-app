@@ -126,8 +126,8 @@ export interface Customer {
     updated_at: string;
     updated_by: number;
     created_by: number;
-    customer_category: CustomerCategory
-    location:Location
+    customer_category: CustomerCategory;
+    location: Location;
 }
 export interface Location {
     id: number;
@@ -144,7 +144,7 @@ export interface Location {
     contact_phone_number?: string;
     contact_phone_number_country_code?: string;
     contact_email?: string;
-    kind: string;
+    kind: 'main_office' | 'outlet' | 'warehouse';
     warehouse: boolean;
     full_address?: string;
     postal_code?: string;

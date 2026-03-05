@@ -14,13 +14,14 @@ import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Spinner } from '../ui/spinner';
 
-import { SubmitEventHandler, useEffect } from 'react';
+import { SubmitEventHandler, useEffect, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 
-import { Customer, CustomerCategory, Location } from '@/lib/model';
+import { Location } from '@/lib/model';
 import { SharedData } from '@/types';
 import customers from '@/routes/customers';
+
 import {
     Select,
     SelectContent,
@@ -58,8 +59,8 @@ export default ({
         name: '',
         contact_email: '',
         backoffice_email: '',
-        contact_phone_number_country_code: '+62',
-        contact_phone_number: '',
+        backoffice_phone_number_country_code: '+62',
+        backoffice_phone_number: '',
         kind: '',
         status: 'active',
         full_address: '',
@@ -69,6 +70,41 @@ export default ({
         country: '',
         footer: '',
     });
+    useEffect(() => {
+        if (!modalState.dataId) return;
+
+        const selected = tableData.find(
+            (item) => item.id === modalState.dataId,
+        );
+
+        if (!selected) return;
+
+        setData({
+            name: selected.name ?? '',
+            contact_email: selected.contact_email ?? '',
+            backoffice_email: selected.backoffice_email ?? '',
+            backoffice_phone_number_country_code:
+                selected.backoffice_phone_number_country_code ?? '+62',
+            backoffice_phone_number: selected.backoffice_phone_number ?? '',
+            kind: selected.kind ?? '',
+            status: selected.status ?? 'active',
+            full_address: selected.full_address ?? '',
+            postal_code: selected.postal_code ?? '',
+            city: selected.city ?? '',
+            province: selected.province ?? '',
+            country: selected.country ?? '',
+            footer: selected.footer ?? '',
+        });
+    }, [modalState.dataId]);
+
+    const [provinces, setProvinces] = useState<any[]>([]);
+    const [regencies, setRegencies] = useState<any[]>([]);
+    const [districts, setDistricts] = useState<any[]>([]);
+
+    const [selectedProvinceId, setSelectedProvinceId] = useState('');
+    const [selectedRegencyId, setSelectedRegencyId] = useState('');
+    const [selectedRegencyName, setSelectedRegencyName] = useState('');
+
     const submit: SubmitEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
@@ -89,42 +125,33 @@ export default ({
             },
             onError: () => {
                 toast.error(
-                    `Gagal ${modalState.dataId ? 'memperbarui' : 'menambahkan'} data`,
+                    `Gagal ${modalState.dataId ? 'memperbarui' : 'menambahkan'}`,
                 );
             },
         });
     };
+
     useEffect(() => {
-        if (!modalState.dataId) {
-            reset();
-            return;
-        }
+        fetch('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json')
+            .then((res) => res.json())
+            .then((data) => setProvinces(data));
+    }, []);
 
-        const selected = tableData.find((el) => el.id == modalState.dataId);
+    const fetchRegencies = (provinceId: string) => {
+        fetch(
+            `https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinceId}.json`,
+        )
+            .then((res) => res.json())
+            .then((data) => setRegencies(data));
+    };
 
-        if (selected) {
-            const countryCode =
-                selected.contact_phone_number_country_code ?? '+62';
-
-            setData({
-                name: selected.name ?? '',
-                contact_email: selected.contact_email ?? '',
-                backoffice_email: selected.backoffice_email ?? '',
-                contact_phone_number_country_code: countryCode.startsWith('+')
-                    ? countryCode
-                    : `+${countryCode}`,
-                contact_phone_number: selected.contact_phone_number ?? '',
-                kind: selected.kind ?? '',
-                status: selected.status ?? 'active',
-                full_address: selected.full_address ?? '',
-                postal_code: selected.postal_code ?? '',
-                city: selected.city ?? '',
-                province: selected.province ?? '',
-                country: selected.country ?? '',
-                footer: selected.footer ?? '',
-            });
-        }
-    }, [modalState]);
+    const fetchDistricts = (regencyId: string) => {
+        fetch(
+            `https://www.emsifa.com/api-wilayah-indonesia/api/districts/${regencyId}.json`,
+        )
+            .then((res) => res.json())
+            .then((data) => setDistricts(data));
+    };
 
     return (
         <Dialog
@@ -139,16 +166,20 @@ export default ({
             >
                 <form onSubmit={submit}>
                     <DialogCancel />
+
                     <DialogHeader>
                         <DialogTitle>
                             {modalState.dataId ? 'Edit Lokasi' : 'Lokasi Baru'}
                         </DialogTitle>
                     </DialogHeader>
+
                     <FieldSet className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         {/* Nama */}
                         <Field>
                             <FieldLabel>Nama</FieldLabel>
                             <Input
+                                type="email"
+                                placeholder="Store"
                                 value={data.name}
                                 onChange={(e) =>
                                     setData('name', e.target.value)
@@ -161,24 +192,25 @@ export default ({
                         <Field>
                             <FieldLabel>Backoffice Email</FieldLabel>
                             <Input
+                                type="email"
+                                placeholder="email@example.com"
                                 value={data.backoffice_email}
                                 onChange={(e) =>
                                     setData('backoffice_email', e.target.value)
                                 }
                             />
-                            <FieldError>{errors.backoffice_email}</FieldError>
                         </Field>
 
                         {/* Contact Email */}
                         <Field>
                             <FieldLabel>Contact Email</FieldLabel>
                             <Input
+                                placeholder="email@example.com"
                                 value={data.contact_email}
                                 onChange={(e) =>
                                     setData('contact_email', e.target.value)
                                 }
                             />
-                            <FieldError>{errors.contact_email}</FieldError>
                         </Field>
 
                         {/* Nomor Telepon */}
@@ -189,11 +221,11 @@ export default ({
                                 <div className="col-span-1">
                                     <Select
                                         value={
-                                            data.contact_phone_number_country_code
+                                            data.backoffice_phone_number_country_code
                                         }
                                         onValueChange={(val) =>
                                             setData(
-                                                'contact_phone_number_country_code',
+                                                'backoffice_phone_number_country_code',
                                                 val,
                                             )
                                         }
@@ -201,7 +233,7 @@ export default ({
                                         <SelectTrigger className="h-9 w-full">
                                             <span>
                                                 {
-                                                    data.contact_phone_number_country_code
+                                                    data.backoffice_phone_number_country_code
                                                 }
                                             </span>
                                         </SelectTrigger>
@@ -211,11 +243,6 @@ export default ({
                                                 <SelectItem
                                                     key={code.value}
                                                     value={code.value}
-                                                    className={
-                                                        code.value === '+62'
-                                                            ? 'font-semibold'
-                                                            : ''
-                                                    }
                                                 >
                                                     {code.label}
                                                 </SelectItem>
@@ -228,55 +255,46 @@ export default ({
                                     <Input
                                         type="number"
                                         placeholder="8123456789"
-                                        value={data.contact_phone_number}
+                                        value={data.backoffice_phone_number}
                                         onChange={(e) =>
                                             setData(
-                                                'contact_phone_number',
+                                                'backoffice_phone_number',
                                                 e.target.value,
                                             )
                                         }
                                     />
                                 </div>
                             </div>
-
-                            <FieldError>
-                                {errors.contact_phone_number}
-                            </FieldError>
                         </Field>
 
                         {/* Jenis Lokasi */}
                         <Field>
                             <FieldLabel>Jenis Lokasi</FieldLabel>
-                            <Input
-                                value={data.kind}
-                                onChange={(e) =>
-                                    setData('kind', e.target.value)
-                                }
-                            />
-                        </Field>
-
-                        {/* Status */}
-                        <Field>
-                            <FieldLabel>Status</FieldLabel>
                             <Select
-                                value={data.status}
+                                value={data.kind}
                                 onValueChange={(val) =>
                                     setData(
-                                        'status',
-                                        val as 'active' | 'inactive',
+                                        'kind',
+                                        val as
+                                            | 'main_office'
+                                            | 'outlet'
+                                            | 'warehouse',
                                     )
                                 }
                             >
                                 <SelectTrigger className="h-9 w-full">
-                                    <SelectValue placeholder="Pilih Status" />
+                                    <SelectValue placeholder="Pilih Jenis" />
                                 </SelectTrigger>
 
                                 <SelectContent>
-                                    <SelectItem value="active">
-                                        Active
+                                    <SelectItem value="main_office">
+                                        Office
                                     </SelectItem>
-                                    <SelectItem value="inactive">
-                                        Inactive
+                                    <SelectItem value="outlet">
+                                        Outlet
+                                    </SelectItem>
+                                    <SelectItem value="warehouse">
+                                        Gudang
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -286,6 +304,7 @@ export default ({
                         <Field>
                             <FieldLabel>Alamat</FieldLabel>
                             <Input
+                                placeholder="Alamat lengkap (Jalan/Gang/No. Rumah/RT/RW)"
                                 value={data.full_address}
                                 onChange={(e) =>
                                     setData('full_address', e.target.value)
@@ -297,6 +316,7 @@ export default ({
                         <Field>
                             <FieldLabel>Kode Pos</FieldLabel>
                             <Input
+                                placeholder="00000"
                                 value={data.postal_code}
                                 onChange={(e) =>
                                     setData('postal_code', e.target.value)
@@ -304,36 +324,125 @@ export default ({
                             />
                         </Field>
 
-                        {/* Kota */}
-                        <Field>
-                            <FieldLabel>Kota</FieldLabel>
-                            <Input
-                                value={data.city}
-                                onChange={(e) =>
-                                    setData('city', e.target.value)
-                                }
-                            />
-                        </Field>
-
-                        {/* Provinsi */}
+                        {/* PROVINSI */}
                         <Field>
                             <FieldLabel>Provinsi</FieldLabel>
-                            <Input
-                                value={data.province}
-                                onChange={(e) =>
-                                    setData('province', e.target.value)
-                                }
-                            />
+
+                            <Select
+                                onValueChange={(val) => {
+                                    setSelectedProvinceId(val);
+
+                                    const province = provinces.find(
+                                        (p) => p.id === val,
+                                    );
+
+                                    setData('province', province?.name || '');
+                                    setData('country', 'INDONESIA');
+
+                                    fetchRegencies(val);
+                                }}
+                            >
+                                <SelectTrigger className="h-9 w-full">
+                                    <SelectValue placeholder="Pilih Provinsi" />
+                                </SelectTrigger>
+
+                                <SelectContent>
+                                    {provinces.map((prov) => (
+                                        <SelectItem
+                                            key={prov.id}
+                                            value={prov.id}
+                                        >
+                                            {prov.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </Field>
 
-                        {/* Negara */}
+                        {/* KABUPATEN */}
+                        <Field>
+                            <FieldLabel>Kabupaten / Kota</FieldLabel>
+
+                            <Select
+                                value={selectedRegencyId}
+                                disabled={!selectedProvinceId}
+                                onValueChange={(val) => {
+                                    setSelectedRegencyId(val);
+
+                                    const regency = regencies.find(
+                                        (r) => r.id === val,
+                                    );
+
+                                    setSelectedRegencyName(regency?.name || '');
+
+                                    fetchDistricts(val);
+                                }}
+                            >
+                                <SelectTrigger className="h-9 w-full">
+                                    <SelectValue
+                                        placeholder={
+                                            !selectedProvinceId
+                                                ? 'Pilih provinsi dulu'
+                                                : 'Pilih Kabupaten / Kota'
+                                        }
+                                    />
+                                </SelectTrigger>
+
+                                <SelectContent>
+                                    {regencies.map((reg) => (
+                                        <SelectItem key={reg.id} value={reg.id}>
+                                            {reg.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </Field>
+
+                        {/* KECAMATAN */}
+                        <Field>
+                            <FieldLabel>Kecamatan</FieldLabel>
+
+                            <Select
+                                disabled={!selectedRegencyId}
+                                onValueChange={(val) => {
+                                    const district = districts.find(
+                                        (d) => d.id === val,
+                                    );
+
+                                    const cityValue = `${district?.name} ${selectedRegencyName}`;
+
+                                    setData('city', cityValue);
+                                }}
+                            >
+                                <SelectTrigger className="h-9 w-full">
+                                    <SelectValue
+                                        placeholder={
+                                            !selectedRegencyId
+                                                ? 'Pilih kabupaten dulu'
+                                                : 'Pilih Kecamatan'
+                                        }
+                                    />
+                                </SelectTrigger>
+
+                                <SelectContent>
+                                    {districts.map((dist) => (
+                                        <SelectItem
+                                            key={dist.id}
+                                            value={dist.id}
+                                        >
+                                            {dist.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </Field>
+                        {/* Country */}
                         <Field>
                             <FieldLabel>Negara</FieldLabel>
                             <Input
+                                placeholder="Indonesia"
                                 value={data.country}
-                                onChange={(e) =>
-                                    setData('country', e.target.value)
-                                }
+                                readOnly
                             />
                         </Field>
 
@@ -341,6 +450,7 @@ export default ({
                         <Field>
                             <FieldLabel>Footer</FieldLabel>
                             <Input
+                                placeholder="IG: secaca.idsedangcantikcantiknya Phone: 08224444890"
                                 value={data.footer}
                                 onChange={(e) =>
                                     setData('footer', e.target.value)
@@ -348,6 +458,7 @@ export default ({
                             />
                         </Field>
                     </FieldSet>
+
                     <DialogFooter>
                         <DialogClose asChild disabled={processing}>
                             <Button variant="outline">Batal</Button>
