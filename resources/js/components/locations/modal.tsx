@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 
 import { Location } from '@/lib/model';
 import { SharedData } from '@/types';
-import customers from '@/routes/customers';
+
 
 import {
     Select,
@@ -29,6 +29,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '../ui/select';
+import locations from '@/routes/locations';
 
 export type ModalState = {
     isOpen: boolean;
@@ -110,8 +111,8 @@ export default ({
 
         const action = modalState.dataId ? patch : post;
         const url = modalState.dataId
-            ? customers.update(modalState.dataId).url
-            : customers.store().url;
+            ? locations.update(modalState.dataId).url
+            : locations.store().url;
 
         action(url, {
             only: ['pagination'],
@@ -177,8 +178,7 @@ export default ({
                         {/* Nama */}
                         <Field>
                             <FieldLabel>Nama</FieldLabel>
-                            <Input
-                                type="email"
+                            <Input    
                                 placeholder="Store"
                                 value={data.name}
                                 onChange={(e) =>
@@ -205,6 +205,7 @@ export default ({
                         <Field>
                             <FieldLabel>Contact Email</FieldLabel>
                             <Input
+                            type="email"
                                 placeholder="email@example.com"
                                 value={data.contact_email}
                                 onChange={(e) =>
@@ -298,6 +299,7 @@ export default ({
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
+                            <FieldError>{errors.kind}</FieldError>
                         </Field>
 
                         {/* Alamat */}

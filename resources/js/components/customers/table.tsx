@@ -63,7 +63,7 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                                 );
                             })()}
                         </TableCell>
-                        <TableCell>{customer.customer_category.name}</TableCell>
+                        <TableCell>{customer.customer_category?.name ?? "-"}</TableCell>
                         <TableCell>{customer.location.name}</TableCell>
                         <TableCell>
                             <div className="flex justify-center gap-2">
@@ -103,7 +103,7 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                 {!pagination.data.length && (
                     <TableRow>
                         <TableCell
-                            colSpan={3}
+                            colSpan={6}
                             className="py-4 text-center text-muted-foreground"
                         >
                             Data tidak ditemukan

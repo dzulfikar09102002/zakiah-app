@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\SaleTransaction;
+use Carbon\Carbon;
 
 class SaleReportService
 {
@@ -11,8 +12,8 @@ class SaleReportService
         $search = request('search', '');
         $entityId = auth()->user()?->entity?->id;
 
-        $startAt = request('start_at');
-        $endAt = request('end_at');
+        $startAt = request('start_at') ?? Carbon::now()->subDays(7)->startOfDay();
+        $endAt = request('end_at') ?? Carbon::now()->endOfDay();
 
         $statuses = request('statuses', ['ok']);
 

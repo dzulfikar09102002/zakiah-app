@@ -23,7 +23,9 @@ class LocationController extends Controller
 
     public function store(StorelocationRequest $request)
     {
-        
+        dd($request);
+        $this->service->store($request->validated());
+        return to_route('locations.index')->with('success', 'Lokasi berhasil ditambahkan');
     }
 
     public function update(UpdatelocationRequest $request, location $location)

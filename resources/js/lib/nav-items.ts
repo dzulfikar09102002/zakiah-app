@@ -27,6 +27,7 @@ import customers from '@/routes/customers';
 import customerCategories from '@/routes/customer-categories';
 import loyalties from '@/routes/loyalties';
 import taxes from '@/routes/taxes';
+import reportSales from '@/routes/report-sales';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -46,7 +47,7 @@ export const mainNavItems: NavItem[] = [
                 items: [
                     {
                         title: 'Ringkasan',
-                        href: sellings.summary().url,
+                        href: reportSales.index().url,
                     },
                     {
                         title: 'Per Product',

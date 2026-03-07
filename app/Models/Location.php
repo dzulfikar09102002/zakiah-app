@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\LocationKindEnum;
+use App\Enums\StatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -26,6 +28,7 @@ class Location extends Model
         'warehouse',
         'full_address',
         'postal_code',
+        'district',
         'city',
         'province',
         'country',
@@ -37,5 +40,28 @@ class Location extends Model
         'status',
         'created_by',
         'updated_by',
+    ];
+    protected function casts(): array
+    {
+        return [
+            'id' => 'integer',
+            'allow_transfer_stock' => 'boolean',
+            'allow_external_supplier' => 'boolean',
+            'franchise' => 'boolean',
+            'kind' => LocationKindEnum::class,
+            'status' => StatusEnum::class,
+        ];
+    }
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'checksum',
+        'search_name',
     ];
 }

@@ -60,6 +60,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ->name('product-units.restore');
 
     Route::resource('locations', LocationController::class);
+    Route::get('locations/deleted', [LocationController::class, 'deleted'])
+    ->name('locations.deleted');
+    Route::post('locations/{id}/restore', [LocationController::class, 'restore'])
+        ->name('locations.restore');
     // Payment Methods
     Route::get('payment-methods/deleted', [PaymentMethodController::class, 'deleted'])
         ->name('payment-methods.deleted');
@@ -244,13 +248,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('loyalties/{id}/archive', [LoyaltyController::class, 'archive'])
         ->name('loyalties.archive');
 
-        /*
-        |--------------------------------------------------------------------------
-        | REPORT
-        |--------------------------------------------------------------------------
-        */
-        Route::prefix('report')->group(function () {
-
         Route::resource('report-by-products', ReportByProductController::class)->only(['index']);
         Route::resource('report-sales', SalesReportController::class)->only(['index']);
         Route::resource('report-sales-by-location', ReportSalesByLocationController::class)->only(['index']);
@@ -258,7 +255,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('report-stock-card', ReportStockCardController::class)->only(['index']);
         Route::resource('report-employee-summary', ReportEmployeeSummaryController::class)->only(['index']);
         Route::resource('report-employee-detail', ReportEmployeeDetailController::class)->only(['index']);
-        });
 });
 
 require __DIR__.'/settings.php';
