@@ -6,15 +6,15 @@ use App\Models\SaleTransaction;
 
 class SaleReportService
 {
-    public function getSaleReports(array $params)
+    public function getSaleReports()
     {
         $search = request('search', '');
         $entityId = auth()->user()?->entity?->id;
 
-        $startAt = $params['start_at'];
-        $endAt = $params['end_at'];
+        $startAt = request('start_at');
+        $endAt = request('end_at');
 
-        $statuses = $params['statuses'] ?? ['ok'];
+        $statuses = request('statuses', ['ok']);
 
         $query = SaleTransaction::query()
             ->with([
@@ -23,7 +23,7 @@ class SaleReportService
                 'orderType',
                 'saleTransactionPayments.paymentMethod',
                 'saleTransactionDetails',
-                'saleTransactionPromos.promo'
+                'saleTransactionPromos.promo',
             ])
             ->where('entity_id', $entityId)
             ->whereBetween('created_at', [$startAt, $endAt])
@@ -39,20 +39,20 @@ class SaleReportService
         $query->whereIn('location_id', $locationIds);
 
         // filter lokasi tertentu
-        if (!empty($params['locs']) && $params['select_all_location'] === false) {
-            $query->whereIn('location_id', $params['locs']);
+        if (! empty(request('locs')) && request('select_all_location') === false) {
+            $query->whereIn('location_id', request('locs'));
         }
 
         // exclude lokasi
-        if (!empty($params['exclude_locs'])) {
-            $query->whereNotIn('location_id', $params['exclude_locs']);
+        if (! empty(request('exclude_locs'))) {
+            $query->whereNotIn('location_id', request('exclude_locs'));
         }
 
         // search
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%$search%")
-                  ->orWhere('invoice_number', 'like', "%$search%");
+                    ->orWhere('invoice_number', 'like', "%$search%");
             });
         }
 

@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Services\SaleReportService;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SalesReportController extends Controller
@@ -13,12 +11,12 @@ class SalesReportController extends Controller
         protected SaleReportService $service
     ) {}
 
-    public function index(Request $request)
+    public function index()
     {
-        $pagination = $this->service->getSaleReports($request->all());
+        $pagination = $this->service->getSaleReports();
 
         return Inertia::render('reports/sellings/summary', [
-            'pagination' => $pagination
+            'pagination' => $pagination,
         ]);
     }
 }
