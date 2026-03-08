@@ -4,12 +4,18 @@ namespace App\Models;
 
 use App\Enums\LocationKindEnum;
 use App\Enums\StatusEnum;
+use App\Observers\LocationObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([LocationObserver::class])]
 class Location extends Model
 {
+    use HasFactory;
     use SoftDeletes;
+
     protected $fillable = [
         'entity_id',
         'code',
@@ -41,6 +47,11 @@ class Location extends Model
         'created_by',
         'updated_by',
     ];
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
     protected function casts(): array
     {
         return [

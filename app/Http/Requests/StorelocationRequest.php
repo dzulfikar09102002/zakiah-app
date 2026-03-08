@@ -13,7 +13,18 @@ class StorelocationRequest extends FormRequest
     {
         return true;
     }
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'backoffice_phone_number_country_code' => $this->backoffice_phone_number_country_code
+                ? ltrim($this->backoffice_phone_number_country_code, '+')
+                : null,
 
+            'contact_phone_number_country_code' => $this->contact_phone_number_country_code
+                ? ltrim($this->contact_phone_number_country_code, '+')
+                : null,
+        ]);
+    }
     public function rules(): array
     {
         return [
@@ -35,6 +46,7 @@ class StorelocationRequest extends FormRequest
             "country" => 'nullable|max:255',
             "timezone" => 'nullable|timezone',
             "location_hours" => 'nullable|array',
+            "footer" => 'nullable|string|max:255',
         ];
     }
 }

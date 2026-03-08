@@ -36,6 +36,7 @@ class LocationService
 
     public function store(array $data)
 {
+    dd($data);
     return DB::transaction(function () use ($data) {
 
         $authUser = auth()->user();
