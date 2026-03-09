@@ -28,7 +28,8 @@ class StockRemainingService
             ->whereHas('location', function ($q) use ($entityId) {
                 $q->where('entity_id', $entityId);
             })
-            ->where('location_id', $locationId);
+            ->where('location_id', $locationId)
+            ->where('stock', '>', 0);
 
         return $query
             ->paginate(request('per_page', 10))

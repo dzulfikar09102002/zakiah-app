@@ -86,8 +86,8 @@ export default ({
                 <AlertDialogHeader>
                     <AlertDialogTitle>
                         {alertState.delete
-                            ? 'Hapus Produk Unit'
-                            : 'Pulihkan Produk Unit'}
+                            ? 'Hapus Pelanggan'
+                            : 'Pulihkan Pelanggan'}
                     </AlertDialogTitle>
 
                     <AlertDialogDescription>

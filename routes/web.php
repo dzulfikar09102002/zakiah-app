@@ -59,7 +59,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('product-units/{id}/restore', [ProductUnitController::class, 'restore'])
     ->name('product-units.restore');
 
-    Route::resource('locations', LocationController::class);
+    Route::resource('locations', LocationController::class)->except('show');
     Route::get('locations/deleted', [LocationController::class, 'deleted'])
     ->name('locations.deleted');
     Route::post('locations/{id}/restore', [LocationController::class, 'restore'])

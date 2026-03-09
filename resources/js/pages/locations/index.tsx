@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import TablePagination from '@/components/table-pagination';
@@ -13,6 +13,7 @@ import type { BreadcrumbItem } from '@/types';
 import Table from '@/components/locations/table';
 import Alert, { AlertState } from '@/components/locations/alert';
 import Modal, { ModalState } from '@/components/locations/modal';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const title = 'Lokasi';
 
@@ -77,6 +78,8 @@ export default ({ pagination, phoneCountryCodes }: Props) => {
             delete: action,
             isOpen: true,
         });
+        const { url } = usePage();
+        const isDeletedRoute = url.includes('deleted');
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -120,13 +123,29 @@ export default ({ pagination, phoneCountryCodes }: Props) => {
                     </Form>
                 </CardHeader>
                 <CardContent className="border-t p-0 lg:border-0 lg:px-6">
-                    <div className="relative w-full overflow-auto">
+                <Tabs
+                        value={isDeletedRoute ? 'deleted' : 'available'}
+                        className="mb-4"
+                    >
+                        <TabsList>
+                            <TabsTrigger value="available" asChild>
+                                <Link href={locations.index().url}>
+                                    Tersedia
+                                </Link>
+                            </TabsTrigger>
+                            <TabsTrigger value="deleted" asChild>
+                                <Link href={locations.deleted().url}>
+                                    Terhapus
+                                </Link>
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
                         <Table
                             pagination={pagination}
                             onEdit={onEdit}
                             onDeleteOrRestore={onDeleteOrRestore}
                         ></Table>
-                    </div>
+                    
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

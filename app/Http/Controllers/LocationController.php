@@ -21,20 +21,34 @@ class LocationController extends Controller
         return Inertia::render('locations/index', compact('pagination', 'phoneCountryCodes'));
     }
 
+    public function deleted()
+    {
+        $onlyTrashed = true;
+        $phoneCountryCodes = PhoneNumberCountryCodeEnum::options();
+        $pagination = $this->service->getDeletedLocations();
+        return Inertia::render('locations/index', compact('pagination', 'onlyTrashed', 'phoneCountryCodes'));
+    }
     public function store(StorelocationRequest $request)
     {
-        dd($request);
         $this->service->store($request->validated());
         return to_route('locations.index')->with('success', 'Lokasi berhasil ditambahkan');
     }
 
     public function update(UpdatelocationRequest $request, location $location)
     {
-        
+        $this->service->update($request->validated(), $location);
+        return to_route('locations.index')->with('success', 'Lokasi berhasil diperbarui');
     }
 
-    public function destroy(location $location)
+    public function destroy(Location $location)
     {
-        
+        $this->service->delete($location);
+        return to_route('locations.index')->with('success', 'Lokasi berhasil dihapus');
+    }
+
+    public function restore(int $id)
+    {
+        $this->service->restore($id);
+        return to_route('locations.index')->with('success', 'Lokasi berhasil dipulihkan');
     }
 }

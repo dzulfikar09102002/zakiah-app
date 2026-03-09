@@ -29,6 +29,7 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                     <TableHead>Nama</TableHead>
                     <TableHead>Jenis</TableHead>
                     <TableHead>Alamat</TableHead>
+                    <TableHead>Kecamatan</TableHead>
                     <TableHead>Kota</TableHead>
                     <TableHead className="text-center">Aksi</TableHead>
                 </TableRow>
@@ -38,24 +39,30 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                 {pagination.data.map((location, index) => (
                     <TableRow key={location.id ?? index}>
                         <TableCell>{startIndex + index + 1}.</TableCell>
-                        <TableCell>{location.initial}</TableCell>
-                        <TableCell>{location.name}</TableCell>
-                        <TableCell>{location.kind}</TableCell>
-                        <TableCell>{location.full_address}</TableCell>
-                        <TableCell>{location.city}</TableCell>
+                        <TableCell>{location.initial ?? "-"}</TableCell>
+                        <TableCell>{location.name ?? "-"}</TableCell>
+                        <TableCell>{location.kind ?? "-"}</TableCell>
+                        <TableCell>{location.full_address ?? "-"}</TableCell>
+                        <TableCell>{location.district ?? "-"}</TableCell>
+                        <TableCell>{location.city ?? "-"}</TableCell>
                         <TableCell>
                             <div className="flex justify-center gap-2">
+                            {!location.deleted_at && (
+                                    <Button
+                                        size="icon"
+                                        variant="outline"
+                                        onClick={() => onEdit(location.id)}
+                                    >
+                                        <Pencil />
+                                    </Button>
+                                )}
                                 <Button
                                     size="icon"
-                                    variant="outline"
-                                    onClick={() => onEdit(location.id)}
-                                >
-                                    <Pencil />
-                                </Button>
-
-                                <Button
-                                    size="icon"
-                                    variant="destructive"
+                                    variant={
+                                        isDeletedRoute
+                                            ? 'outline'
+                                            : 'destructive'
+                                    }
                                     onClick={() =>
                                         onDeleteOrRestore(
                                             location.id,
@@ -63,7 +70,11 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                                         )
                                     }
                                 >
-                                    <X />
+                                    {isDeletedRoute ? (
+                                        <ArchiveRestore />
+                                    ) : (
+                                        <X />
+                                    )}
                                 </Button>
                             </div>
                         </TableCell>

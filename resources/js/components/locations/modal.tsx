@@ -66,6 +66,7 @@ export default ({
         status: 'active',
         full_address: '',
         postal_code: '',
+        district: '',
         city: '',
         province: '',
         country: '',
@@ -91,6 +92,7 @@ export default ({
             status: selected.status ?? 'active',
             full_address: selected.full_address ?? '',
             postal_code: selected.postal_code ?? '',
+            district:selected.district ?? '',
             city: selected.city ?? '',
             province: selected.province ?? '',
             country: selected.country ?? '',
@@ -108,7 +110,7 @@ export default ({
 
     const submit: SubmitEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
-
+        console.log(data);
         const action = modalState.dataId ? patch : post;
         const url = modalState.dataId
             ? locations.update(modalState.dataId).url
@@ -199,6 +201,7 @@ export default ({
                                     setData('backoffice_email', e.target.value)
                                 }
                             />
+                            <FieldError>{errors.backoffice_email}</FieldError>
                         </Field>
 
                         {/* Contact Email */}
@@ -212,6 +215,7 @@ export default ({
                                     setData('contact_email', e.target.value)
                                 }
                             />
+                            <FieldError>{errors.contact_email}</FieldError>
                         </Field>
 
                         {/* Nomor Telepon */}
@@ -264,6 +268,7 @@ export default ({
                                             )
                                         }
                                     />
+                                    <FieldError>{errors.backoffice_phone_number}</FieldError>
                                 </div>
                             </div>
                         </Field>
@@ -312,6 +317,7 @@ export default ({
                                     setData('full_address', e.target.value)
                                 }
                             />
+                            <FieldError>{errors.full_address}</FieldError>
                         </Field>
 
                         {/* Kode Pos */}
@@ -324,6 +330,7 @@ export default ({
                                     setData('postal_code', e.target.value)
                                 }
                             />
+                            <FieldError>{errors.postal_code}</FieldError>
                         </Field>
 
                         {/* PROVINSI */}
@@ -359,6 +366,7 @@ export default ({
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <FieldError>{errors.province}</FieldError>
                         </Field>
 
                         {/* KABUPATEN */}
@@ -376,6 +384,8 @@ export default ({
                                     );
 
                                     setSelectedRegencyName(regency?.name || '');
+
+                                    setData('city', regency?.name || ''); // isi city
 
                                     fetchDistricts(val);
                                 }}
@@ -398,6 +408,7 @@ export default ({
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <FieldError>{errors.city}</FieldError>
                         </Field>
 
                         {/* KECAMATAN */}
@@ -411,9 +422,7 @@ export default ({
                                         (d) => d.id === val,
                                     );
 
-                                    const cityValue = `${district?.name} ${selectedRegencyName}`;
-
-                                    setData('city', cityValue);
+                                    setData('district', district?.name || ''); // isi district
                                 }}
                             >
                                 <SelectTrigger className="h-9 w-full">
@@ -428,15 +437,13 @@ export default ({
 
                                 <SelectContent>
                                     {districts.map((dist) => (
-                                        <SelectItem
-                                            key={dist.id}
-                                            value={dist.id}
-                                        >
+                                        <SelectItem key={dist.id} value={dist.id}>
                                             {dist.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <FieldError>{errors.district}</FieldError>
                         </Field>
                         {/* Country */}
                         <Field>
@@ -446,6 +453,7 @@ export default ({
                                 value={data.country}
                                 readOnly
                             />
+                            <FieldError>{errors.country}</FieldError>
                         </Field>
 
                         {/* Footer */}
@@ -458,6 +466,7 @@ export default ({
                                     setData('footer', e.target.value)
                                 }
                             />
+                            <FieldError>{errors.footer}</FieldError>
                         </Field>
                     </FieldSet>
 

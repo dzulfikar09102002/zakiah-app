@@ -12,7 +12,7 @@ import { Button } from '../ui/button'
 import { toast } from 'sonner'
 import { router } from '@inertiajs/react'
 import { Spinner } from '../ui/spinner'
-import customers from '@/routes/customers'
+import locations from '@/routes/locations'
 
 export type AlertState = {
     delete: boolean
@@ -64,12 +64,12 @@ export default ({
 
         if (alertState.delete) {
             router.delete(
-                customers.destroy(alertState.dataId).url,
+                locations.destroy(alertState.dataId).url,
                 options
             )
         } else {
             router.post(
-                customers.restore(alertState.dataId).url,
+                locations.restore(alertState.dataId).url,
                 {},
                 options
             )
@@ -86,8 +86,8 @@ export default ({
                 <AlertDialogHeader>
                     <AlertDialogTitle>
                         {alertState.delete
-                            ? 'Hapus Produk Unit'
-                            : 'Pulihkan Produk Unit'}
+                            ? 'Hapus Lokasi'
+                            : 'Pulihkan Lokasi'}
                     </AlertDialogTitle>
 
                     <AlertDialogDescription>
