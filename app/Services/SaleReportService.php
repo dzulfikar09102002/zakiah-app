@@ -12,8 +12,12 @@ class SaleReportService
         $search = request('search', '');
         $entityId = auth()->user()?->entity?->id;
 
-        $startAt = request('start_at') ?? Carbon::now()->subDays(7)->startOfDay();
-        $endAt = request('end_at') ?? Carbon::now()->endOfDay();
+        // $startAt = request('start_at') ?? Carbon::now()->subDays(7)->startOfDay();
+        // $endAt = request('end_at') ?? Carbon::now()->endOfDay();
+
+        // simulasi tanggal 1 januari 2026 sampai 8 januari 2026
+        $startAt = request('start_at') ?? Carbon::create(2026, 1, 1)->startOfDay();
+        $endAt = request('end_at') ?? Carbon::create(2026, 1, 8)->endOfDay();
 
         $statuses = request('statuses', ['ok']);
 
@@ -60,6 +64,19 @@ class SaleReportService
         return $query
             ->orderByDesc('created_at')
             ->paginate(request('per_page', 10))
+            ->through(function ($t) {
+                return [
+                    'transaction_no' => $t->sales_no,
+                    'location' => $t->location_name,
+                    'date' => $t->local_sales_at,
+                    'member' => $t->customer_first_name,
+                    'subtotal' => $t->subtotal,
+                    'discount' => $t->discount_amount,
+                    'adjustment' => $t->surcharge_amount,
+                    'total' => $t->net_sales_after_tax,
+                    'profit' => $t->net_profit,
+                ];
+            })
             ->withQueryString();
     }
 }

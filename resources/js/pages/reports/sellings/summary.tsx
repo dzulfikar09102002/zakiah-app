@@ -4,7 +4,7 @@ import type { BreadcrumbItem } from '@/types';
 import sellings from '@/routes/sellings';
 import { Card, CardContent } from '@/components/ui/card';
 import { capitalize, toRupiah } from '@/lib/utils';
-import { getCoreRowModel, useReactTable, VisibilityState, type ColumnDef } from '@tanstack/react-table';
+import { createColumnHelper, getCoreRowModel, useReactTable, VisibilityState, type ColumnDef } from '@tanstack/react-table';
 import { useEffect, useState } from 'react';
 import ColumnVisibilityDropdown from '@/components/column-visibility-dropdown';
 import DataTable from '@/components/data-table';
@@ -12,181 +12,68 @@ import TablePagination from '@/components/table-pagination';
 import { Pagination } from '@/lib/model';
 
 type SalesData = {
-    nomorTransaksi: string;
-    lokasi: string;
-    tanggal: string;
-    kasir: string;
-    sales: string;
-    member: string;
-    subtotal: number;
-    totalDiskon: number;
-    totalPenyesuaian: number;
-    total: number;
-    laba: number;
+    transaction_no: string
+    location: string
+    date: string
+    member: string | null
+    subtotal: number
+    discount: number
+    adjustment: number
+    total: number
+    profit: number
 };
 
+const columnHelper = createColumnHelper<SalesData>()
 
-const salesData = [
-    {
-        nomorTransaksi: "20260223/tul/00001",
-        lokasi: "STORE TULANGAN",
-        tanggal: "2026-02-23 08:34:46.000000",
-        kasir: "Putri Kasir",
-        sales: "Nilta Sales",
-        member: "",
-        subtotal: 573000,
-        totalDiskon: 0,
-        totalPenyesuaian: 0,
-        total: 573000,
-        laba: 202500
-    },
-    {
-        nomorTransaksi: "20260223/por/00001",
-        lokasi: "STORE PORONG",
-        tanggal: "2026-02-23 08:51:25.000000",
-        kasir: "Erinindya Porong Kasir",
-        sales: "Selvia Porong Sales",
-        member: "",
-        subtotal: 156000,
-        totalDiskon: 0,
-        totalPenyesuaian: 0,
-        total: 156000,
-        laba: 44739
-    },
-    {
-        nomorTransaksi: "20260223/por/00002",
-        lokasi: "STORE PORONG",
-        tanggal: "2026-02-23 08:53:05.000000",
-        kasir: "Erinindya Porong Kasir",
-        sales: "Selvia Porong Sales",
-        member: "",
-        subtotal: 132000,
-        totalDiskon: 0,
-        totalPenyesuaian: 0,
-        total: 132000,
-        laba: 37000
-    },
-    {
-        nomorTransaksi: "20260223/tul/00002",
-        lokasi: "STORE TULANGAN",
-        tanggal: "2026-02-23 08:58:38.000000",
-        kasir: "Putri Kasir",
-        sales: "Nilta Sales",
-        member: "",
-        subtotal: 99000,
-        totalDiskon: 0,
-        totalPenyesuaian: 0,
-        total: 99000,
-        laba: 35500
-    },
-    {
-        nomorTransaksi: "20260223/tul/00003",
-        lokasi: "STORE TULANGAN",
-        tanggal: "2026-02-23 09:09:28.000000",
-        kasir: "Putri Kasir",
-        sales: "Nilta Sales",
-        member: "",
-        subtotal: 54000,
-        totalDiskon: 0,
-        totalPenyesuaian: 0,
-        total: 54000,
-        laba: 23000
-    },
-    {
-        nomorTransaksi: "20260223/moj/00001",
-        lokasi: "STORE MOJOSARI",
-        tanggal: "2026-02-23 09:10:14.000000",
-        kasir: "dea.kasir Kasir",
-        sales: "rachman.sl Sales",
-        member: "",
-        subtotal: 374000,
-        totalDiskon: 22000,
-        totalPenyesuaian: 0,
-        total: 352000,
-        laba: 90946
-    },
-    {
-        nomorTransaksi: "20260223/tul/00004",
-        lokasi: "STORE TULANGAN",
-        tanggal: "2026-02-23 09:23:51.000000",
-        kasir: "Putri Kasir",
-        sales: "Nilta Sales",
-        member: "",
-        subtotal: 285000,
-        totalDiskon: 0,
-        totalPenyesuaian: 0,
-        total: 285000,
-        laba: 100000
-    },
-    {
-        nomorTransaksi: "20260223/tul/00005",
-        lokasi: "STORE TULANGAN",
-        tanggal: "2026-02-23 09:26:48.000000",
-        kasir: "Putri Kasir",
-        sales: "Nilta Sales",
-        member: "",
-        subtotal: 38000,
-        totalDiskon: 0,
-        totalPenyesuaian: 0,
-        total: 38000,
-        laba: 14000
-    }
-];
-
-const columns: ColumnDef<SalesData>[] = [
-    {
-        accessorKey: "nomorTransaksi",
+export const columns = [
+    columnHelper.accessor("transaction_no", {
         header: "Nomor Transaksi",
-    },
-    {
-        accessorKey: "lokasi",
+        cell: info => info.getValue(),
+    }),
+
+    columnHelper.accessor("location", {
         header: "Lokasi",
-        cell: ({ getValue }) => capitalize(getValue() as string),
-    },
-    {
-        accessorKey: "tanggal",
+        cell: info => capitalize(info.getValue()),
+    }),
+
+    columnHelper.accessor("date", {
         header: "Tanggal",
-        cell: ({ getValue }) => new Date(getValue() as string).toLocaleDateString('id-ID')
-    },
-    {
-        accessorKey: "kasir",
-        header: "Kasir",
-    },
-    {
-        accessorKey: "sales",
-        header: "Sales",
-    },
-    {
-        accessorKey: "member",
+        cell: info => {
+            const date = new Date(info.getValue())
+            return date.toLocaleDateString("id-ID")
+        },
+    }),
+
+    columnHelper.accessor("member", {
         header: "Member",
-        cell: ({ getValue }) => getValue() || '-'
-    },
-    {
-        accessorKey: "subtotal",
+        cell: info => info.getValue() ?? "-",
+    }),
+
+    columnHelper.accessor("subtotal", {
         header: "Subtotal",
-        cell: ({ getValue }) => toRupiah(getValue() as number),
-    },
-    {
-        accessorKey: "totalDiskon",
+        cell: info => toRupiah(info.getValue())
+    }),
+
+    columnHelper.accessor("discount", {
         header: "Diskon",
-        cell: ({ getValue }) => toRupiah(getValue() as number),
-    },
-    {
-        accessorKey: "totalPenyesuaian",
+        cell: info => toRupiah(info.getValue())
+    }),
+
+    columnHelper.accessor("adjustment", {
         header: "Penyesuaian",
-        cell: ({ getValue }) => toRupiah(getValue() as number),
-    },
-    {
-        accessorKey: "total",
+        cell: info => toRupiah(info.getValue())
+    }),
+
+    columnHelper.accessor("total", {
         header: "Total",
-        cell: ({ getValue }) => toRupiah(getValue() as number),
-    },
-    {
-        accessorKey: "laba",
+        cell: info => toRupiah(info.getValue())
+    }),
+
+    columnHelper.accessor("profit", {
         header: "Laba",
-        cell: ({ getValue }) => toRupiah(getValue() as number),
-    }
-];
+        cell: info => toRupiah(info.getValue())
+    }),
+] as ColumnDef<SalesData>[]
 
 const title = 'Ringkasan Penjualan'
 
@@ -205,15 +92,16 @@ const cachedColumnKey = 'salesSummaryColumnVisibility'
 const cachedColumn = JSON.parse(localStorage.getItem(cachedColumnKey) || JSON.stringify(defaultColumn))
 
 type Props = {
-    pagination: Pagination<unknown>
+    pagination: Pagination<SalesData>
 }
 
-export default (props: Props) => {
-    console.log(props.pagination);
+export default ({ pagination }: Props) => {
+
+    const { data } = pagination
 
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(cachedColumn)
     const table = useReactTable({
-        data: salesData,
+        data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
@@ -235,7 +123,7 @@ export default (props: Props) => {
             <Card>
                 <CardContent>
                     <DataTable columns={columns} table={table} />
-                    {/* <TablePagination pagination={}/> */}
+                    <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>
         </AppLayout>
