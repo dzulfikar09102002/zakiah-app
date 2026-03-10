@@ -148,7 +148,7 @@ export interface Location {
     warehouse: boolean;
     full_address?: string;
     postal_code?: string;
-    district?:string;
+    district?: string;
     city?: string;
     province?: string;
     country?: string;

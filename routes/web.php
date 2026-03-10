@@ -49,7 +49,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ->name('dashboard');
     
     Route::resource('roles', RoleController::class);
-    Route::resource('employees', EmployeeController::class);
+
+    Route::resource('employees', EmployeeController::class)->except('show');
+        Route::get('employees/deleted', [EmployeeController::class, 'deleted'])
+    ->name('employees.deleted');
+    Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
+    ->name('employees.restore');
+    
     Route::resource('products', ProductController::class);
     Route::resource('product-categories', ProductCategoryController::class)->except(['show']);
 
