@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 
-import type { Pagination, Employee, Role } from '@/lib/model';
+import type { Pagination, Employee, Role, Location } from '@/lib/model';
 import employees from '@/routes/employees';
 import type { BreadcrumbItem } from '@/types';
 
@@ -42,9 +42,10 @@ type Props = {
     pagination: Pagination<Employee>;
     onlyTrashed?: boolean;
     roles: Role[];
+    locations: Location[];
 };
 
-export default ({ pagination, roles }: Props) => {
+export default ({ pagination, roles, locations }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined,
@@ -178,6 +179,7 @@ export default ({ pagination, roles }: Props) => {
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
                 roles={roles}
+                locations={locations}
                 tableData={pagination.data}
             />
 

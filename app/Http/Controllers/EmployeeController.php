@@ -25,15 +25,9 @@ class EmployeeController extends Controller
  
     public function store(StoreemployeeRequest $request)
     {
-        $entityId = auth()->user()?->entity?->id;
-
-        $this->service->store(
-            $request->validated(),
-            $entityId,
-            auth()->id()
-        );
-
-        return redirect()->route('employees.index')->with('success', 'Karyawan berhasil ditambahkan');
+        dd($request->validated());
+        $this->service->store($request->validated());
+        return to_route('employees.index')->with('success', 'Karyawan berhasil ditambahkan');
     }
 
     public function update(UpdateemployeeRequest $request, Employee $employee)
