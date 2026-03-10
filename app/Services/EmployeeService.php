@@ -28,12 +28,14 @@ class EmployeeService
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }
-    public function getFormOptions()
+    public function getRoles()
     {
-        return [
-            'roles' => Role::select('id', 'name')->get(),
-            'locations' => Location::select('id', 'name')->get(),
-        ];
+        return Role::select('id', 'name')->get();
+    }
+
+    public function getLocations()
+    {
+        return Location::select('id', 'name')->get();
     }
 
     public function store(array $data, int $entityId, int $userId)

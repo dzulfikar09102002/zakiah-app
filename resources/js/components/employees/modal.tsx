@@ -25,7 +25,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '../ui/select';
-import { PaymentMethod } from '@/lib/model';
+import { Role } from '@/lib/model';
 
 export type ModalState = {
     isOpen: boolean;
@@ -35,6 +35,7 @@ export type ModalState = {
 type Props = {
     modalState: ModalState;
     tableData: any[];
+    roles: Role[];
     onModalSuccess: () => void;
     onModalClose: () => void;
 };
@@ -44,6 +45,7 @@ export default ({
     tableData,
     onModalSuccess,
     onModalClose,
+    roles,
 }: Props) => {
     const { auth } = usePage<SharedData>().props;
 
@@ -57,12 +59,12 @@ export default ({
         setData,
         clearErrors,
     } = useForm({
-        name: '',
-        payment_method_id: '' as string | number,
-        fixed_fee: '' as number | '',
-        variable_fee: '' as number | '',
-        require_customer_data: '1',
-        entity_id: auth.user.entity.id,
+        first_name: '',
+        last_name: '',
+        email: '',
+        role_id: '',
+        password: '',
+        password_confirmation: '',
     });
 
     const submit: SubmitEventHandler<HTMLFormElement> = (e) => {
@@ -95,18 +97,15 @@ export default ({
 
         if (existing) {
             setData({
-                name: existing.name ?? '',
-                payment_method_id: existing.payment_method_id ?? '',
-                fixed_fee: existing.fixed_fee ?? 0,
-                variable_fee: existing.variable_fee ?? 0,
-                require_customer_data: existing.require_customer_data
-                    ? '1'
-                    : '0',
-                entity_id: existing.entity_id ?? auth.user.entity.id,
+                first_name: existing.first_name ?? '',
+                last_name: existing.last_name ?? '',
+                email: existing.email ?? '',
+                role_id: String(existing.role_id ?? ''),
+                password: '',
+                password_confirmation: '',
             });
         } else {
             reset();
-            setData('entity_id', auth.user.entity.id);
         }
     }, [modalState.dataId]);
 
@@ -126,85 +125,115 @@ export default ({
                     <DialogHeader>
                         <DialogTitle>
                             {modalState.dataId
-                                ? 'Edit Jenis Pesanan'
-                                : 'Jenis Pesanan Baru'}
+                                ? 'Edit Karyawan'
+                                : 'Karyawan Baru'}
                         </DialogTitle>
                     </DialogHeader>
 
                     <FieldSet className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                        <Field className="lg:col-span-1">
-                            <FieldLabel htmlFor="name">Nama</FieldLabel>
+                        {/* Nama Depan */}
+                        <Field>
+                            <FieldLabel>Nama Depan</FieldLabel>
                             <Input
-                                id="name"
-                                placeholder="Masukkan nama"
+                                placeholder="Masukkan nama depan"
                                 readOnly={processing}
-                                value={data.name}
+                                value={data.first_name}
                                 onChange={(e) =>
-                                    setData('name', e.target.value)
+                                    setData('first_name', e.target.value)
                                 }
                             />
-                            <FieldError>{errors.name}</FieldError>
+                            <FieldError>{errors.first_name}</FieldError>
                         </Field>
 
-                        <Field className="lg:col-span-1">
-                            <FieldLabel>Biaya Tetap (Rp)</FieldLabel>
+                        {/* Nama Belakang */}
+                        <Field>
+                            <FieldLabel>Nama Belakang</FieldLabel>
                             <Input
-                                type="number"
-                                min="0"
-                                placeholder="0"
+                                placeholder="Masukkan nama belakang"
                                 readOnly={processing}
-                                value={data.fixed_fee}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setData(
-                                        'fixed_fee',
-                                        value === '' ? '' : Number(value),
-                                    );
-                                }}
+                                value={data.last_name}
+                                onChange={(e) =>
+                                    setData('last_name', e.target.value)
+                                }
                             />
-                            <FieldError>{errors.fixed_fee}</FieldError>
+                            <FieldError>{errors.last_name}</FieldError>
                         </Field>
 
-                        <Field className="lg:col-span-1">
-                            <FieldLabel>Data Member</FieldLabel>
-                            <Select
-                                value={data.require_customer_data}
-                                onValueChange={(val) =>
-                                    setData('require_customer_data', val)
+                        {/* Email */}
+                        <Field>
+                            <FieldLabel>Email</FieldLabel>
+                            <Input
+                                type="email"
+                                placeholder="Masukkan email"
+                                readOnly={processing}
+                                value={data.email}
+                                onChange={(e) =>
+                                    setData('email', e.target.value)
                                 }
+                            />
+                            <FieldError>{errors.email}</FieldError>
+                        </Field>
+
+                        {/* Role */}
+                        <Field>
+                            <FieldLabel>Role</FieldLabel>
+                            <Select
+                                value={data.role_id}
+                                onValueChange={(val) => setData('role_id', val)}
                                 disabled={processing}
                             >
-                                <SelectTrigger className="h-9 w-full">
-                                    <SelectValue />
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih Role" />
                                 </SelectTrigger>
+
                                 <SelectContent>
-                                    <SelectItem value="1">Iya</SelectItem>
-                                    <SelectItem value="0">Tidak</SelectItem>
+                                    {roles.map((r) => (
+                                        <SelectItem
+                                            key={r.id}
+                                            value={String(r.id)}
+                                        >
+                                            {r.name}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
-                            <FieldError>
-                                {errors.require_customer_data}
-                            </FieldError>
+
+                            <FieldError>{errors.role_id}</FieldError>
                         </Field>
 
-                        <Field className="lg:col-span-1">
-                            <FieldLabel>Biaya (%)</FieldLabel>
+                        {/* Password */}
+                        <Field>
+                            <FieldLabel>Password</FieldLabel>
                             <Input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                placeholder="0"
+                                type="password"
+                                placeholder="Masukkan password"
                                 readOnly={processing}
-                                value={data.variable_fee}
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setData(
-                                        'variable_fee',
-                                        value === '' ? '' : Number(value),
-                                    );
-                                }}
+                                value={data.password}
+                                onChange={(e) =>
+                                    setData('password', e.target.value)
+                                }
                             />
-                            <FieldError>{errors.variable_fee}</FieldError>
+                            <FieldError>{errors.password}</FieldError>
+                        </Field>
+
+                        {/* Confirm Password */}
+                        <Field>
+                            <FieldLabel>Konfirmasi Password</FieldLabel>
+                            <Input
+                                type="password"
+                                placeholder="Masukkan konfirmasi password"
+                                readOnly={processing}
+                                value={data.password_confirmation}
+                                onChange={(e) =>
+                                    setData(
+                                        'password_confirmation',
+                                        e.target.value,
+                                    )
+                                }
+                            />
+                            <FieldError>
+                                {errors.password_confirmation}
+                            </FieldError>
                         </Field>
                     </FieldSet>
 

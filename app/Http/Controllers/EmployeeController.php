@@ -18,14 +18,11 @@ class EmployeeController extends Controller
     public function index()
     {
         $pagination = $this->service->getEmployees();
-        return Inertia::render('employees/index', compact('pagination'));
+        $roles = $this->service->getRoles();
+        $locations = $this->service->getLocations();
+        return Inertia::render('employees/index', compact('pagination', 'roles','locations'));
     }
  
-    public function create()
-    {
-        return Inertia::render('employees/create', $this->service->getFormOptions());
-    }
-
     public function store(StoreemployeeRequest $request)
     {
         $entityId = auth()->user()?->entity?->id;
@@ -53,7 +50,6 @@ class EmployeeController extends Controller
     public function destroy(Employee $employee)
     {
         $this->service->delete($employee);
-
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil dihapus');
     }
 }

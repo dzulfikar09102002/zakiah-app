@@ -62,7 +62,7 @@ class SaleReportService
         }
 
         return $query
-            ->orderByDesc('created_at')
+            ->orderBy('created_at')
             ->paginate(request('per_page', 10))
             ->through(function ($t) {
                 return [
