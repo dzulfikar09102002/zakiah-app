@@ -16,7 +16,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { SubmitEventHandler, useEffect, useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import { toast } from 'sonner';
-import ordertypes from '@/routes/order-types';
 import {
     Select,
     SelectContent,
@@ -26,6 +25,7 @@ import {
 } from '../ui/select';
 import { Role, Location } from '@/lib/model';
 import { Eye, EyeOff, Plus, Save, X } from 'lucide-react';
+import employees from '@/routes/employees';
 
 export type ModalState = {
     isOpen: boolean;
@@ -72,11 +72,21 @@ export default ({
         role_id: '',
         password: '',
         password_confirmation: '',
+        select_all_location: false,
+        locations: [] as {
+            location_id: string;
+            role_id: string;
+            entity_permission: any[];
+            location_permission: any[];
+        }[],
     });
 
     const [locationRoles, setLocationRoles] = useState<LocationRoleRow[]>([
         { location: '', role: '', saved: false },
     ]);
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const addLocation = () => {
         setLocationRoles((prev) => [
@@ -84,13 +94,7 @@ export default ({
             { location: '', role: '', saved: false },
         ]);
     };
-    const validatePassword = (password: string, confirmation: string) => {
-        if (confirmation && password !== confirmation) {
-            setError('password_confirmation', 'Konfirmasi password tidak sama');
-        } else {
-            clearErrors('password_confirmation');
-        }
-    };
+
     const removeLocation = (index: number) => {
         setLocationRoles((prev) => prev.filter((_, i) => i !== index));
     };
@@ -118,20 +122,42 @@ export default ({
     const getLocationName = (id: string) =>
         locations.find((l) => String(l.id) === id)?.name ?? '-';
 
-    const [showPassword, setShowPassword] = useState(false);
-
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
     const getRoleName = (id: string) =>
         roles.find((r) => String(r.id) === id)?.name ?? '-';
+
+    const validatePassword = (password: string, confirmation: string) => {
+        if (confirmation && password !== confirmation) {
+            setError('password_confirmation', 'Konfirmasi password tidak sama');
+        } else {
+            clearErrors('password_confirmation');
+        }
+    };
+
+    useEffect(() => {
+        const mapped = locationRoles
+            .filter((x) => x.saved)
+            .map((x) => ({
+                location_id: x.location,
+                role_id: x.role,
+                entity_permission: [],
+                location_permission: [],
+            }));
+
+        setData('locations', mapped);
+    }, [locationRoles]);
 
     const submit: SubmitEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
+        if (locationRoles.some((r) => !r.saved)) {
+            toast.error('Masih ada lokasi yang belum disimpan');
+            return;
+        }
+
         const action = modalState.dataId ? patch : post;
         const url = modalState.dataId
-            ? ordertypes.update(modalState.dataId).url
-            : ordertypes.store().url;
+            ? employees.update(modalState.dataId).url
+            : employees.store().url;
 
         action(url, {
             preserveState: true,
@@ -161,6 +187,8 @@ export default ({
                 role_id: String(existing.role_id ?? ''),
                 password: '',
                 password_confirmation: '',
+                select_all_location: false,
+                locations: [],
             });
         } else {
             reset();
@@ -190,6 +218,7 @@ export default ({
                                 : 'Karyawan Baru'}
                         </DialogTitle>
                     </DialogHeader>
+
                     <FieldSet className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         <Field>
                             <FieldLabel>Nama Depan</FieldLabel>
@@ -289,6 +318,7 @@ export default ({
                             </div>
                             <FieldError>{errors.password}</FieldError>
                         </Field>
+
                         <Field>
                             <FieldLabel>Konfirmasi Password</FieldLabel>
                             <div className="relative">
@@ -329,148 +359,158 @@ export default ({
                             </FieldError>
                         </Field>
                     </FieldSet>
-                    <div className="mt-3 space-y-3">
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            size="sm"
-                            onClick={addLocation}
-                        >
-                            <Plus />
-                            Tambah Lokasi & Role
-                        </Button>
 
-                        <div className="overflow-hidden rounded-lg border">
-                            {/* Header */}
-                            <div className="grid grid-cols-12 gap-3 border-b bg-muted/30 px-3 py-2 text-sm font-medium text-muted-foreground">
-                                <div className="col-span-5">Lokasi</div>
-                                <div className="col-span-5">Role</div>
-                                <div className="col-span-2 text-center">
-                                    Aksi
+                    <Field className="mt-4">
+                        <FieldLabel>Lokasi & Role</FieldLabel>
+
+                        <div className="mt-3 space-y-3">
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={addLocation}
+                            >
+                                <Plus />
+                                Tambah Lokasi & Role
+                            </Button>
+
+                            <div className="overflow-hidden rounded-lg border">
+                                <div className="grid grid-cols-12 gap-3 border-b bg-muted/30 px-3 py-2 text-sm font-medium text-muted-foreground">
+                                    <div className="col-span-5">Lokasi</div>
+                                    <div className="col-span-5">Role</div>
+                                    <div className="col-span-2 text-center">
+                                        Aksi
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Rows */}
-                            {locationRoles.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="grid grid-cols-12 items-center gap-3 border-b px-3 py-2 last:border-b-0"
-                                >
-                                    {/* Lokasi */}
-                                    <div className="col-span-5">
-                                        {item.saved ? (
-                                            <div className="text-sm">
-                                                {getLocationName(item.location)}
-                                            </div>
-                                        ) : (
-                                            <Select
-                                                value={item.location}
-                                                onValueChange={(val) =>
-                                                    updateLocation(
-                                                        index,
-                                                        'location',
-                                                        val,
-                                                    )
-                                                }
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Pilih Lokasi" />
-                                                </SelectTrigger>
-                                                <SelectContent className="max-h-60 overflow-y-auto">
-                                                    {locations.map((r) => (
-                                                        <SelectItem
-                                                            key={r.id}
-                                                            value={String(r.id)}
-                                                        >
-                                                            {r.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    </div>
-
-                                    {/* Role */}
-                                    <div className="col-span-5">
-                                        {item.saved ? (
-                                            <div className="text-sm">
-                                                {getRoleName(item.role)}
-                                            </div>
-                                        ) : (
-                                            <Select
-                                                value={item.role}
-                                                onValueChange={(val) =>
-                                                    updateLocation(
-                                                        index,
-                                                        'role',
-                                                        val,
-                                                    )
-                                                }
-                                            >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Pilih Role" />
-                                                </SelectTrigger>
-                                                <SelectContent className="max-h-60 overflow-y-auto">
-                                                    {roles.map((r) => (
-                                                        <SelectItem
-                                                            key={r.id}
-                                                            value={String(r.id)}
-                                                        >
-                                                            {r.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                        )}
-                                    </div>
-
-                                    {/* Aksi */}
-                                    <div className="col-span-2 flex justify-center gap-2">
-                                        {!item.saved ? (
-                                            <>
-                                                <Button
-                                                    type="button"
-                                                    size="icon"
-                                                    variant="default"
-                                                    disabled={
-                                                        !item.location ||
-                                                        !item.role
-                                                    }
-                                                    onClick={() =>
-                                                        saveRow(index)
+                                {locationRoles.map((item, index) => (
+                                    <div
+                                        key={index}
+                                        className="grid grid-cols-12 items-center gap-3 border-b px-3 py-2 last:border-b-0"
+                                    >
+                                        <div className="col-span-5">
+                                            {item.saved ? (
+                                                <div className="text-sm">
+                                                    {getLocationName(
+                                                        item.location,
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <Select
+                                                    value={item.location}
+                                                    onValueChange={(val) =>
+                                                        updateLocation(
+                                                            index,
+                                                            'location',
+                                                            val,
+                                                        )
                                                     }
                                                 >
-                                                    <Save className="h-4 w-4" />
-                                                </Button>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Pilih Lokasi" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="max-h-60 overflow-y-auto">
+                                                        {locations.map((r) => (
+                                                            <SelectItem
+                                                                key={r.id}
+                                                                value={String(
+                                                                    r.id,
+                                                                )}
+                                                            >
+                                                                {r.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        </div>
 
+                                        <div className="col-span-5">
+                                            {item.saved ? (
+                                                <div className="text-sm">
+                                                    {getRoleName(item.role)}
+                                                </div>
+                                            ) : (
+                                                <Select
+                                                    value={item.role}
+                                                    onValueChange={(val) =>
+                                                        updateLocation(
+                                                            index,
+                                                            'role',
+                                                            val,
+                                                        )
+                                                    }
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Pilih Role" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="max-h-60 overflow-y-auto">
+                                                        {roles.map((r) => (
+                                                            <SelectItem
+                                                                key={r.id}
+                                                                value={String(
+                                                                    r.id,
+                                                                )}
+                                                            >
+                                                                {r.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+                                        </div>
+
+                                        <div className="col-span-2 flex justify-center gap-2">
+                                            {!item.saved ? (
+                                                <>
+                                                    <Button
+                                                        type="button"
+                                                        size="icon"
+                                                        variant="default"
+                                                        disabled={
+                                                            !item.location ||
+                                                            !item.role
+                                                        }
+                                                        onClick={() =>
+                                                            saveRow(index)
+                                                        }
+                                                    >
+                                                        <Save className="h-4 w-4" />
+                                                    </Button>
+
+                                                    <Button
+                                                        type="button"
+                                                        size="icon"
+                                                        variant="destructive"
+                                                        onClick={() =>
+                                                            removeLocation(
+                                                                index,
+                                                            )
+                                                        }
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </>
+                                            ) : (
                                                 <Button
                                                     type="button"
                                                     size="icon"
-                                                    variant="destructive"
+                                                    variant="outline"
                                                     onClick={() =>
                                                         removeLocation(index)
                                                     }
                                                 >
-                                                    <X className="h-4 w-4" />
+                                                    <X className="h-4 w-4 text-red-500" />
                                                 </Button>
-                                            </>
-                                        ) : (
-                                            <Button
-                                                type="button"
-                                                size="icon"
-                                                variant="outline"
-                                                onClick={() =>
-                                                    removeLocation(index)
-                                                }
-                                            >
-                                                <X className="h-4 w-4 text-red-500" />
-                                            </Button>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+
+                            <FieldError>{errors.locations}</FieldError>
                         </div>
-                    </div>
+                    </Field>
 
                     <DialogFooter>
                         <DialogClose asChild disabled={processing}>

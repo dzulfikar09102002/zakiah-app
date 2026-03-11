@@ -42,6 +42,21 @@ export interface Employee {
     };
 }
 
+export interface EmployeeLocation {
+    id: number;
+    employee_id: number;
+    location_id: number;
+    role_id: number;
+    code: string;
+    entity_permission: Record<string, any>;
+    location_permission: Record<string, any>;
+    created_at: string;
+    updated_at: string;
+    updated_by?: number;
+    created_by?: number;
+    deleted_at?: string;
+}
+
 export type Category = {
     id: number;
     name: string;
