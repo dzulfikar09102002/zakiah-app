@@ -7,7 +7,7 @@ export default function <T>({ table }: { table: Table<T> }) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant={'outline'}>Pilih Kolom <ChevronDown /></Button>
+                <Button variant={'outline'} className='flex justify-between'>Kolom<ChevronDown /></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 {{ ...table }

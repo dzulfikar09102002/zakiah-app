@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\SaleTransaction;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class SaleReportService
 {
@@ -16,8 +17,8 @@ class SaleReportService
         // $endAt = request('end_at') ?? Carbon::now()->endOfDay();
 
         // simulasi tanggal 1 januari 2026 sampai 8 januari 2026
-        $startAt = request('start_at') ?? Carbon::create(2026, 1, 1)->startOfDay();
-        $endAt = request('end_at') ?? Carbon::create(2026, 1, 8)->endOfDay();
+        $startAt = request('start_at') ?? (env('APP_ENV') !== 'production' ? Carbon::create(2026, 1, 1)->startOfDay() : Carbon::now()->subDays(7)->startOfDay());
+        $endAt = request('end_at') ?? (env('APP_ENV') !== 'production' ? Carbon::create(2026, 1, 8)->endOfDay() : Carbon::now()->endOfDay());
 
         $statuses = request('statuses', ['ok']);
 
@@ -69,7 +70,9 @@ class SaleReportService
                     'transaction_no' => $t->sales_no,
                     'location' => $t->location_name,
                     'date' => $t->local_sales_at,
-                    'member' => $t->customer_first_name,
+                    'cashier' => Str::replace('_', ' ', $t->cashier_first_name.($t->cashier_last_name === 'Kasir' ? '' : $t->cashier_last_name)),
+                    'sales' => Str::replace('_', '', $t->employee_sales_first_name.($t->employee_sales_last_name === 'Sales' ? '' : $t->employee_sales_last_name)),
+                    'member' => $t->customer_first_name.' - '.$t->customer_last_name,
                     'subtotal' => $t->subtotal,
                     'discount' => $t->discount_amount,
                     'adjustment' => $t->surcharge_amount,

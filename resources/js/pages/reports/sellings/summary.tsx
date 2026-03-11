@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Form, Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import sellings from '@/routes/sellings';
@@ -10,12 +10,19 @@ import ColumnVisibilityDropdown from '@/components/column-visibility-dropdown';
 import DataTable from '@/components/data-table';
 import TablePagination from '@/components/table-pagination';
 import { Pagination } from '@/lib/model';
+import Autocomplete from '@/components/autocomplete';
+import DateRangePicker from '@/components/date-range-picker';
+import { Button } from '@/components/ui/button';
+import { Search } from 'lucide-react';
+import Select from '@/components/select';
 
 type SalesData = {
     transaction_no: string
     location: string
     date: string
-    member: string | null
+    cashier: string
+    sales: string
+    member?: string
     subtotal: number
     discount: number
     adjustment: number
@@ -44,9 +51,19 @@ export const columns = [
         },
     }),
 
+    columnHelper.accessor("cashier", {
+        header: "Kasir",
+        cell: info => capitalize(info.getValue()),
+    }),
+
+    columnHelper.accessor("sales", {
+        header: "Sales",
+        cell: info => capitalize(info.getValue()),
+    }),
+
     columnHelper.accessor("member", {
         header: "Member",
-        cell: info => info.getValue() ?? "-",
+        cell: info => capitalize(info.getValue() ?? "-"),
     }),
 
     columnHelper.accessor("subtotal", {
@@ -85,11 +102,27 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const defaultColumn = {
-    kasir: false,
+    cashier: false,
     sales: false
 }
+
 const cachedColumnKey = 'salesSummaryColumnVisibility'
 const cachedColumn = JSON.parse(localStorage.getItem(cachedColumnKey) || JSON.stringify(defaultColumn))
+
+const discountOption = [
+    {
+        label: 'Semua Diskon',
+        value: 'all',
+    },
+    {
+        label: 'Diskon',
+        value: 'available'
+    },
+    {
+        label: 'Tanpa Diskon',
+        value: 'none'
+    },
+]
 
 type Props = {
     pagination: Pagination<SalesData>
@@ -117,11 +150,17 @@ export default ({ pagination }: Props) => {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
-            <div className="mb-4">
-                <ColumnVisibilityDropdown table={table} />
-            </div>
             <Card>
                 <CardContent>
+                    <Form className="mb-4 grid gap-2 lg:flex lg:justify-between">
+                        <ColumnVisibilityDropdown table={table} />
+                        <div className="grid lg:flex gap-2">
+                            <DateRangePicker onValueChange={() => { }} />
+                            <Select onValueChange={() => { }} options={discountOption} placeholder='Pilih diskon'></Select>
+                            <Autocomplete placeholder='Pilih lokasi' options={[]} />
+                            <Button type='submit'><Search /> Cari</Button>
+                        </div>
+                    </Form>
                     <DataTable columns={columns} table={table} />
                     <TablePagination pagination={pagination} />
                 </CardContent>

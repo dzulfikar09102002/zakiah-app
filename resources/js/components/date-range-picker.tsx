@@ -1,22 +1,28 @@
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
-import { Field, FieldLabel } from "@/components/ui/field"
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { addDays, format } from "date-fns"
+import { format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { DateRange } from "react-day-picker"
 
+type Props = {
+    onValueChange?: (value?: DateRange) => void
+}
 
-export default () => {
+export default ({ onValueChange }: Props) => {
     const [date, setDate] = useState<DateRange | undefined>({
-        from: new Date(new Date().getFullYear(), 0, 20),
-        to: addDays(new Date(new Date().getFullYear(), 0, 20), 20),
+        from: new Date(),
+        to: new Date(),
     })
+
+    useEffect(() => {
+        if (onValueChange) onValueChange(date)
+    }, [date]);
 
     return (
         <Popover>

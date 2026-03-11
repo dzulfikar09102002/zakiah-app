@@ -2,7 +2,7 @@ import { Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem } from '@/types';
-import RangeDatePicker from '@/components/range-date-picker';
+import RangeDatePicker from '@/components/date-range-picker';
 import { useState } from "react"
 import {
     Select,
