@@ -40,7 +40,8 @@ class EmployeeService
 
     public function getLocations()
     {
-        return Location::select('id', 'name')->get();
+        $entityId = auth()->user()?->entity?->id;
+        return Location::select('id', 'name')->where('entity_id', $entityId)->get();
     }
 
     public function store(array $data): Employee

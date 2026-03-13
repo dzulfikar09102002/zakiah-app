@@ -16,7 +16,7 @@ class StoreemployeeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email',
+            'email' => 'required|email|unique:users,email',
             'first_name' => 'required|max:255',
             'last_name' => 'required|max:255',
             'select_all_location' => 'required|boolean',

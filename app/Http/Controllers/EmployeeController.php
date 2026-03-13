@@ -25,7 +25,6 @@ class EmployeeController extends Controller
  
     public function store(StoreemployeeRequest $request)
     {
-        dd($request->validated());
         $this->service->store($request->validated());
         return to_route('employees.index')->with('success', 'Karyawan berhasil ditambahkan');
     }
