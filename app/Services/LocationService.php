@@ -13,47 +13,42 @@ class LocationService
     {
         $search = request('search', '');
 
-    return Location::query()
-        ->where('entity_id', auth()->user()?->entity?->id)
+        return Location::query()
+            ->where('entity_id', auth()->user()?->entity?->id)
 
-        ->when($search, function ($query) use ($search) {
-            $query->where(function (Builder $q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
-            });
-        })
+            ->when($search, function ($query) use ($search) {
+                $query->where(function (Builder $q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
 
-        ->when(request('statuses'), fn ($query, $statuses) =>
-            $query->whereIn('status', (array) $statuses)
-        )
-
-        ->orderBy('id')
-
-        ->paginate(request('per_page', 10))
-        ->withQueryString();
+            ->when(request('statuses'), fn ($query, $statuses) => $query->whereIn('status', (array) $statuses)
+            )
+            ->orderBy('id');
     }
+
     public function getDeletedLocations()
     {
         $search = request('search', '');
 
-    return Location::query()
-        ->where('entity_id', auth()->user()?->entity?->id)
-        ->onlyTrashed()
-        ->when($search, function ($query) use ($search) {
-            $query->where(function (Builder $q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%");
-            });
-        })
+        return Location::query()
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->onlyTrashed()
+            ->when($search, function ($query) use ($search) {
+                $query->where(function (Builder $q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('code', 'like', "%{$search}%");
+                });
+            })
 
-        ->when(request('statuses'), fn ($query, $statuses) =>
-            $query->whereIn('status', (array) $statuses)
-        )
+            ->when(request('statuses'), fn ($query, $statuses) => $query->whereIn('status', (array) $statuses)
+            )
 
-        ->orderBy('id')
+            ->orderBy('id')
 
-        ->paginate(request('per_page', 10))
-        ->withQueryString();
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
     }
 
     public function store(array $data)
@@ -62,7 +57,7 @@ class LocationService
 
             $authUser = auth()->user();
 
-            $location = new Location();
+            $location = new Location;
 
             $location->entity_id = $authUser->entity->id;
             $location->code = UniqueCodeGenerator::generateCode();
@@ -90,12 +85,13 @@ class LocationService
             return $location;
         });
     }
-    public function update (array $data, Location $location)
+
+    public function update(array $data, Location $location)
     {
         return DB::transaction(function () use ($data, $location) {
 
             $authUser = auth()->user();
-    
+
             $location->updated_by = $authUser->id;
             $location->name = $data['name'] ?? $location->name;
             $location->backoffice_email = $data['backoffice_email'] ?? $location->backoffice_email;
@@ -119,14 +115,16 @@ class LocationService
             return $location;
         });
     }
+
     public function delete(Location $location)
     {
         return $location->delete();
     }
 
-    public function restore (int $id)
+    public function restore(int $id)
     {
         $location = Location::withTrashed()->findOrFail($id);
+
         return $location->restore();
     }
 }

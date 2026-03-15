@@ -6,52 +6,63 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Entity extends Base
+class EntityCopy extends Base
 {
     use HasFactory;
     use SoftDeletes;
 
-    public function employees(): HasMany {
+    public function employees(): HasMany
+    {
         return $this->hasMany(Employee::class);
     }
 
-    public function locations(): HasMany {
+    public function locations(): HasMany
+    {
         return $this->hasMany(Location::class);
     }
 
-    public function customerCategories(): HasMany {
+    public function customerCategories(): HasMany
+    {
         return $this->hasMany(CustomerCategory::class);
     }
 
-    public function products(): HasMany {
+    public function products(): HasMany
+    {
         return $this->hasMany(Product::class);
     }
 
-    public function brands(): HasMany {
+    public function brands(): HasMany
+    {
         return $this->hasMany(Brand::class);
     }
 
-    public function productUnits(): HasMany {
+    public function productUnits(): HasMany
+    {
         return $this->hasMany(ProductUnit::class);
     }
 
-    public function taxes(): HasMany {
+    public function taxes(): HasMany
+    {
         return $this->hasMany(Tax::class);
     }
 
-    public function orderTypes(): HasMany {
+    public function orderTypes(): HasMany
+    {
         return $this->hasMany(OrderType::class);
     }
 
-    public function productCategories(): HasMany {
+    public function productCategories(): HasMany
+    {
         return $this->hasMany(ProductCategory::class);
     }
 
-    public function roles(): HasMany {
+    public function roles(): HasMany
+    {
         return $this->hasMany(Role::class);
     }
 
-    public function paymentMethods(): HasMany {
+    public function paymentMethods(): HasMany
+    {
         return $this->hasMany(PaymentMethod::class);
     }
 

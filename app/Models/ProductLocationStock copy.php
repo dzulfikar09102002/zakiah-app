@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ObservedBy([ProductLocationStockObserver::class])]
-class ProductLocationStock extends Model
+class ProductLocationStockCopy extends Model
 {
     use HasFactory;
     use SoftDeletes;
@@ -40,15 +40,18 @@ class ProductLocationStock extends Model
         'buying_price' => 'integer',
     ];
 
-    public function product(): BelongsTo {
+    public function product(): BelongsTo
+    {
         return $this->belongsTo(Product::class);
     }
 
-    public function productUnit(): BelongsTo {
+    public function productUnit(): BelongsTo
+    {
         return $this->belongsTo(ProductUnit::class);
     }
 
-    public function location(): BelongsTo {
+    public function location(): BelongsTo
+    {
         return $this->belongsTo(Location::class);
     }
 }
