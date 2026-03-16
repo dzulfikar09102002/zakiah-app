@@ -22,7 +22,7 @@ class Location extends Model
         'code',
         'initial',
     ];
-
+ 
     /**
      * Get the attributes that should be cast.
      *

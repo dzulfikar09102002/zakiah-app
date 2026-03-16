@@ -12,6 +12,13 @@ class StoreemployeeRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'first_name' => strtoupper(trim($this->first_name)),
+            'last_name'  => strtoupper(trim($this->last_name)),
+        ]);
+    }
 
     public function rules(): array
     {

@@ -20,7 +20,6 @@ class EmployeeService
                 'user:id,email',
                 'employeeLocations:id,employee_id,location_id,role_id,entity_permission'
             ])
-            ->withTrashed()
             ->where('entity_id', $entityId)
             ->when(request('search'), fn(Builder $query, $search) => 
                 $query->where(function ($q) use ($search) {
@@ -45,7 +44,7 @@ class EmployeeService
     }
 
     public function store(array $data): Employee
-    {
+    { 
         $entity = auth()->user()?->entity;
 
         return DB::transaction(function () use ($data, $entity) {

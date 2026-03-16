@@ -20,6 +20,7 @@ class EmployeeController extends Controller
         $pagination = $this->service->getEmployees();
         $roles = $this->service->getRoles();
         $locations = $this->service->getLocations();
+        dd($pagination);
         return Inertia::render('employees/index', compact('pagination', 'roles','locations'));
     }
  
