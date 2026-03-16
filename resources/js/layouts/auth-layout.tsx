@@ -7,13 +7,12 @@ export default function AuthLayout({
     ...props
 }: {
     children: React.ReactNode;
-    title: string;
-    description: string;
+    title: React.ReactNode;
+    description: React.ReactNode;
 }) {
     return (
         <AuthLayoutTemplate title={title} description={description} {...props}>
             {children}
         </AuthLayoutTemplate>
-
     );
 }

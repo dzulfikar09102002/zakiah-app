@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class EmployeeService
 {
-    public function getEmployees()
+    public function getEmployees(): mixed
     {
         $entityId = auth()->user()?->entity?->id;
         return Employee::with([
@@ -43,7 +43,7 @@ class EmployeeService
         return Location::select('id', 'name')->where('entity_id', $entityId)->get();
     }
 
-    public function store(array $data): Employee
+    public function store(array $data)
     { 
         $entity = auth()->user()?->entity;
 
@@ -111,14 +111,13 @@ class EmployeeService
         });
     }
 
-    public function update(Employee $employee, array $data, int $userId)
+    public function update(Employee $employee, array $data)
     {
         return $employee->update([
             'name' => $data['name'],
             'email' => $data['email'] ?? null,
             'role_id' => $data['role_id'],
             'location_id' => $data['location_id'] ?? null,
-            'updated_by' => $userId,
         ]);
     }
 
