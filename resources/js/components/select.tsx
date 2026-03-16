@@ -14,14 +14,15 @@ type Option = {
 }
 
 type Props = {
+    name?: string
     placeholder?: string
     options: Option[]
-    onValueChange: (value: string) => void
+    onValueChange?: (value: string) => void
 }
 
-export default ({ placeholder, options, onValueChange }: Props) => {
+export default ({ placeholder, options, name, onValueChange }: Props) => {
     return (
-        <Select onValueChange={onValueChange}>
+        <Select onValueChange={onValueChange} name={name}>
             <SelectTrigger className="w-full">
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>

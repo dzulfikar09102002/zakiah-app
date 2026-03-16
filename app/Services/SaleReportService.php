@@ -2,12 +2,21 @@
 
 namespace App\Services;
 
+use App\Models\Location;
 use App\Models\SaleTransaction;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 class SaleReportService
 {
+    public function getLocationOptions()
+    {
+        return (new LocationService)->getLocations()->get()->map(fn (Location $location) => [
+            'label' => Str::title(Str::lower($location->name)),
+            'value' => $location->id,
+        ]);
+    }
+
     public function getSaleReports()
     {
         $search = request('search', '');

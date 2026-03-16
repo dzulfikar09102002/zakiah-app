@@ -109,7 +109,12 @@ const defaultColumn = {
 const cachedColumnKey = 'salesSummaryColumnVisibility'
 const cachedColumn = JSON.parse(localStorage.getItem(cachedColumnKey) || JSON.stringify(defaultColumn))
 
-const discountOption = [
+type Option = {
+    value: string
+    label: string
+}
+
+const discountOption: Option[] = [
     {
         label: 'Semua Diskon',
         value: 'all',
@@ -125,10 +130,11 @@ const discountOption = [
 ]
 
 type Props = {
-    pagination: Pagination<SalesData>
+    pagination: Pagination<SalesData>,
+    locationOptions: Option[]
 }
 
-export default ({ pagination }: Props) => {
+export default ({ pagination, locationOptions }: Props) => {
 
     const { data } = pagination
 
@@ -155,9 +161,14 @@ export default ({ pagination }: Props) => {
                     <Form className="mb-4 grid gap-2 lg:flex lg:justify-between">
                         <ColumnVisibilityDropdown table={table} />
                         <div className="grid lg:flex gap-2">
-                            <DateRangePicker onValueChange={() => { }} />
-                            <Select onValueChange={() => { }} options={discountOption} placeholder='Pilih diskon'></Select>
-                            <Autocomplete placeholder='Pilih lokasi' options={[]} />
+                            <DateRangePicker />
+                            <Select name='discount' options={discountOption} placeholder='Pilih diskon'></Select>
+                            <Autocomplete
+                                name='location'
+                                placeholder='Pilih lokasi'
+                                options={[{ label: 'Semua lokasi', value: 'all' }, ...locationOptions]}
+                                defaultValue='all'
+                            />
                             <Button type='submit'><Search /> Cari</Button>
                         </div>
                     </Form>

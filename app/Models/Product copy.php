@@ -3,15 +3,15 @@
 namespace App\Models;
 
 use App\Enums\TaxSettingEnum;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Product extends Model
+class ProductCopy extends Model
 {
     use HasFactory;
     use SoftDeletes;
@@ -74,39 +74,48 @@ class Product extends Model
         ];
     }
 
-    public function productLocations(): HasMany {
+    public function productLocations(): HasMany
+    {
         return $this->hasMany(ProductLocation::class);
     }
 
-    public function productSellPrices(): HasMany {
+    public function productSellPrices(): HasMany
+    {
         return $this->hasMany(ProductSellPrice::class);
     }
 
-    public function productSellPrice(): HasOne {
+    public function productSellPrice(): HasOne
+    {
         return $this->hasOne(ProductSellPrice::class);
     }
 
-    public function productLocationStocks(): HasMany {
+    public function productLocationStocks(): HasMany
+    {
         return $this->hasMany(ProductLocationStock::class);
     }
 
-    public function productLocationStock(): HasOne {
+    public function productLocationStock(): HasOne
+    {
         return $this->hasOne(ProductLocationStock::class);
     }
 
-    public function productUnit(): BelongsTo {
+    public function productUnit(): BelongsTo
+    {
         return $this->belongsTo(ProductUnit::class);
     }
 
-    public function productSellUnit(): BelongsTo {
+    public function productSellUnit(): BelongsTo
+    {
         return $this->belongsTo(ProductUnit::class, 'product_sell_unit_id');
     }
 
-    public function productCategory(): BelongsTo {
+    public function productCategory(): BelongsTo
+    {
         return $this->belongsTo(ProductCategory::class);
     }
 
-    public function location(): BelongsTo {
+    public function location(): BelongsTo
+    {
         return $this->belongsTo(Location::class);
     }
 
