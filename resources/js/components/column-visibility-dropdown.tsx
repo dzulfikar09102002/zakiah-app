@@ -2,6 +2,7 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { Button } from '@/components/ui/button';
 import { Table } from '@tanstack/react-table';
 import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 export default function <T>({ table }: { table: Table<T> }) {
     return (
@@ -9,7 +10,7 @@ export default function <T>({ table }: { table: Table<T> }) {
             <DropdownMenuTrigger asChild>
                 <Button variant={'outline'} className='flex justify-between'>Kolom<ChevronDown /></Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent>
                 {{ ...table }
                     .getAllColumns().map((column) => {
                         return (

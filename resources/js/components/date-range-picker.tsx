@@ -27,8 +27,8 @@ export default ({ onValueChange, prefix }: Props) => {
 
     return (
         <>
-            <input type="hidden" name={`${prefix ? prefix + '_' : ''}start_at}`} defaultValue={date?.from?.toISOString()} />
-            <input type="hidden" name={`${prefix ? prefix + '_' : ''}end_at}`} defaultValue={date?.to?.toISOString()} />
+            <input type="hidden" name={`${prefix ? prefix + '_' : ''}start_at`} defaultValue={date?.from?.toISOString()} />
+            <input type="hidden" name={`${prefix ? prefix + '_' : ''}end_at`} defaultValue={date?.to?.toISOString()} />
             <Popover>
                 <PopoverTrigger asChild>
                     <Button

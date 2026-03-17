@@ -45,7 +45,7 @@ export default function <T>({ table, columns }: Props<T>) {
                 ) : (
                     <TableRow>
                         <TableCell colSpan={columns.length} className="text-center">
-                            No results.
+                            Data tidak ditemukan
                         </TableCell>
                     </TableRow>
                 )}

@@ -10,11 +10,12 @@ import ColumnVisibilityDropdown from '@/components/column-visibility-dropdown';
 import DataTable from '@/components/data-table';
 import TablePagination from '@/components/table-pagination';
 import { Pagination } from '@/lib/model';
-import Autocomplete from '@/components/autocomplete';
 import DateRangePicker from '@/components/date-range-picker';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
 import Select from '@/components/select';
+import MultiSelect from '@/components/multi-select';
+import QueryString from 'qs';
 
 type SalesData = {
     transaction_no: string
@@ -120,7 +121,7 @@ const discountOption: Option[] = [
         value: 'all',
     },
     {
-        label: 'Diskon',
+        label: 'Dengan Diskon',
         value: 'available'
     },
     {
@@ -134,9 +135,18 @@ type Props = {
     locationOptions: Option[]
 }
 
+type Params = {
+    discount: string
+    locations: string[]
+    start_at: string
+    end_at: string
+}
+
 export default ({ pagination, locationOptions }: Props) => {
 
     const { data } = pagination
+
+    const query = QueryString.parse(window.location.search, { ignoreQueryPrefix: true }) as Partial<Params>
 
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(cachedColumn)
     const table = useReactTable({
@@ -148,6 +158,16 @@ export default ({ pagination, locationOptions }: Props) => {
             columnVisibility
         }
     })
+
+    const multiSelectPlaceholder = (values: string[]) => {
+        if (values.length === 0) {
+            return 'Pilih lokasi'
+        } else if (values.length >= locationOptions.length) {
+            return 'Semua lokasi'
+        } else {
+            return `${values.length} lokasi`
+        }
+    }
 
     useEffect(() => {
         localStorage.setItem(cachedColumnKey, JSON.stringify(columnVisibility))
@@ -162,12 +182,17 @@ export default ({ pagination, locationOptions }: Props) => {
                         <ColumnVisibilityDropdown table={table} />
                         <div className="grid lg:flex gap-2">
                             <DateRangePicker />
-                            <Select name='discount' options={discountOption} placeholder='Pilih diskon'></Select>
-                            <Autocomplete
-                                name='location'
-                                placeholder='Pilih lokasi'
+                            <Select
+                                defaultValue={query.discount || 'all'}
+                                name='discount'
+                                options={discountOption}
+                                placeholder='Pilih diskon'
+                            />
+                            <MultiSelect
+                                name='locations[]'
                                 options={[{ label: 'Semua lokasi', value: 'all' }, ...locationOptions]}
-                                defaultValue='all'
+                                defaultValues={query.locations || [{ label: 'Semua lokasi', value: 'all' }, ...locationOptions].map(el => el.value)}
+                                placeholder={multiSelectPlaceholder}
                             />
                             <Button type='submit'><Search /> Cari</Button>
                         </div>
