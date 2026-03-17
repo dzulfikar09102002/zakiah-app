@@ -9,8 +9,8 @@ export type AppLayoutProps = {
 export type AuthLayoutProps = {
     children?: ReactNode;
     name?: string;
-    title?: string;
-    description?: string;
+    title?: React.ReactNode;
+    description?: React.ReactNode;
 };
 
 export type Option = {

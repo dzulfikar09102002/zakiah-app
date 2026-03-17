@@ -91,7 +91,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('stock-remaining/{location}', [StockRemainingController::class, 'report'])
         ->name('stock-remaining.report');
-
+Route::get('/stock-remaining/{location}/export', [StockRemainingController::class, 'export'])
+    ->name('stock-remaining.export');
     // Categories
     Route::get('product-categories/deleted', [ProductCategoryController::class, 'deleted'])
         ->name('product-categories.deleted');

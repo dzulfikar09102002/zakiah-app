@@ -15,7 +15,7 @@ class StockRemainingService
         $search = request('search', '');
         $query = ProductLocationStock::query()
             ->with([
-                'product:id,name,product_category_id',
+                'product',
                 'product.productCategory:id,name',
                 'location:id,name',
             ])
@@ -58,4 +58,35 @@ class StockRemainingService
 
         return $options;
     }
+    public function getAllStockForExport(int $locationId)
+{
+    $entityId = auth()->user()?->entity?->id;
+    $product_category_id = request('product_category_id', 'all');
+
+    $query = ProductLocationStock::query()
+        ->with(['product', 'product.productCategory'])
+        ->whereHas('product', function ($q) use ($entityId, $product_category_id) {
+            $q->where('entity_id', $entityId)
+              ->when($product_category_id !== 'all', fn($q) => $q->where('product_category_id', $product_category_id));
+        })
+        ->whereHas('location', function ($q) use ($entityId) {
+            $q->where('entity_id', $entityId);
+        })
+        ->where('location_id', $locationId)
+        ->where('stock', '>', 0);
+
+    $stocks = $query->get();
+
+    return $stocks->map(function ($pls) {
+        return [
+            'SKU' => $pls->product?->sku ?? '-',
+            'Barcode' => $pls->product?->barcode ?? '-',
+            'Nama' => $pls->product?->name ?? '-',
+            'Kategori' => $pls->product->productCategory?->name ?? '-',
+            'Stok' => $pls->stock,
+            'HPP' => $pls->product?->cost_of_goods_sold ?? 0,
+            'Harga Jual' => $pls->product?->sell_price ?? 0,
+        ];
+    });
+}
 }

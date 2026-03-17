@@ -32,11 +32,7 @@ class EmployeeController extends Controller
 
     public function update(UpdateemployeeRequest $request, Employee $employee)
     {
-        $this->service->update(
-            $employee,
-            $request->validated(),
-            auth()->id()
-        );
+        $this->service->update($employee, $request->validated());
 
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil diperbarui');
     }
