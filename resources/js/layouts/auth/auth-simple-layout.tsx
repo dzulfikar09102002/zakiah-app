@@ -3,18 +3,6 @@ import AppLogoIcon from '@/components/app-logo-icon';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
-/* ─── Particle config ─── */
-const PARTICLES = [
-    { left: '8%', delay: '0s', dur: '14s', size: 4, type: 'a' },
-    { left: '18%', delay: '2s', dur: '18s', size: 3, type: 'b' },
-    { left: '30%', delay: '4.5s', dur: '13s', size: 5, type: 'a' },
-    { left: '44%', delay: '1.2s', dur: '16s', size: 3, type: 'c' },
-    { left: '58%', delay: '6s', dur: '12s', size: 4, type: 'b' },
-    { left: '70%', delay: '3.2s', dur: '15s', size: 3, type: 'a' },
-    { left: '82%', delay: '8s', dur: '17s', size: 5, type: 'c' },
-    { left: '91%', delay: '5s', dur: '11s', size: 3, type: 'b' },
-];
-
 export default function AuthSimpleLayout({
     children,
     title,
@@ -183,7 +171,7 @@ export default function AuthSimpleLayout({
 
                 {/* ── Rings pojok kanan bawah ── */}
                 <div
-                    className="auth-spin absolute -right-20 -bottom-20 h-[26rem] w-[26rem] rounded-full opacity-20"
+                    className="auth-spin absolute -right-20 -bottom-20 h-104 w-104 rounded-full opacity-20"
                     style={{ border: '2px solid #c4866a' }}
                 />
                 <div
@@ -224,26 +212,6 @@ export default function AuthSimpleLayout({
                     }}
                 />
 
-                {/* ── Floating particles ── */}
-                {PARTICLES.map((p, i) => (
-                    <div
-                        key={i}
-                        className="absolute bottom-0 rounded-full"
-                        style={{
-                            left: p.left,
-                            width: p.size,
-                            height: p.size,
-                            background:
-                                i % 3 === 0
-                                    ? '#c4866a'
-                                    : i % 3 === 1
-                                      ? '#e8b49a'
-                                      : '#b87058',
-                            animation: `auth-particle-${p.type} ${p.dur} ${p.delay} ease-in-out infinite`,
-                        }}
-                    />
-                ))}
-
                 {/* ── Diagonal texture ── */}
                 <div
                     className="absolute inset-0 opacity-[0.035]"
@@ -281,7 +249,7 @@ export default function AuthSimpleLayout({
 
                     {/* Animated shimmer line */}
                     <div
-                        className="auth-fade-up-3 mx-auto mt-5 mb-5 h-[2px] w-28 overflow-hidden rounded-full"
+                        className="auth-fade-up-3 mx-auto mt-5 mb-5 h-0.5 w-28 overflow-hidden rounded-full"
                         style={{ background: 'rgba(196,134,106,0.2)' }}
                     >
                         <div
@@ -290,22 +258,19 @@ export default function AuthSimpleLayout({
                                 background:
                                     'linear-gradient(90deg, transparent 0%, #e8b49a 30%, #c4866a 50%, #e8b49a 70%, transparent 100%)',
                                 backgroundSize: '300% 100%',
-                                animation: 'auth-shimmer 2.8s linear infinite',
                             }}
                         />
                     </div>
 
                     <p
-                        className="auth-fade-up-4 mx-auto max-w-[200px] text-[13px] leading-relaxed"
+                        className="auth-fade-up-4 mx-auto text-[13px] leading-relaxed"
                         style={{
                             color: '#9e5f48',
                             fontFamily: '"Lato", sans-serif',
                             fontWeight: 300,
                         }}
                     >
-                        Solusi anggun hijabmu sejak 2014.
-                        <br />
-                        Pusat Fashion Viral ✨
+                        Pusat fashion viral, solusi anggun hijab sejak 2014.
                     </p>
 
                     {/* Animated ornament dots */}
@@ -319,24 +284,20 @@ export default function AuthSimpleLayout({
                                         i === 2
                                             ? 9
                                             : i === 1 || i === 3
-                                              ? 6
-                                              : 4,
+                                                ? 6
+                                                : 4,
                                     height:
                                         i === 2
                                             ? 9
                                             : i === 1 || i === 3
-                                              ? 6
-                                              : 4,
+                                                ? 6
+                                                : 4,
                                     background:
                                         i === 2
                                             ? '#c4866a'
                                             : i === 1 || i === 3
-                                              ? '#d4956e'
-                                              : '#e8c4aa',
-                                    animation:
-                                        i === 2
-                                            ? 'auth-pulse 2.5s ease-in-out infinite'
-                                            : undefined,
+                                                ? '#d4956e'
+                                                : '#e8c4aa',
                                 }}
                             />
                         ))}
@@ -406,22 +367,6 @@ export default function AuthSimpleLayout({
                     }}
                 />
 
-                {/* Spinning corner rings */}
-                <div
-                    className="auth-spin absolute top-5 right-5 h-14 w-14 rounded-full"
-                    style={{
-                        border: '1px dashed rgba(255,255,255,0.45)',
-                        animationDuration: '16s',
-                    }}
-                />
-                <div
-                    className="auth-spin-rev absolute bottom-5 left-5 h-10 w-10 rounded-full"
-                    style={{
-                        border: '1px solid rgba(255,255,255,0.35)',
-                        animationDuration: '20s',
-                    }}
-                />
-
                 {/* Mobile-only floral accent */}
                 <div
                     className="auth-breathe absolute top-0 right-0 h-36 w-36 opacity-20 lg:hidden"
@@ -433,7 +378,7 @@ export default function AuthSimpleLayout({
 
                 {/* ── PREMIUM FORM CARD ── */}
                 <div
-                    className="auth-fade-up-1 relative z-10 w-full max-w-[340px] overflow-hidden"
+                    className="auth-fade-up-1 relative z-10 w-full max-w-85 overflow-hidden"
                     style={{
                         borderRadius: '24px',
                         background: 'rgba(255,252,250,0.92)',
@@ -447,16 +392,6 @@ export default function AuthSimpleLayout({
                         `,
                     }}
                 >
-                    {/* Shimmer top border */}
-                    <div
-                        style={{
-                            height: '2px',
-                            background:
-                                'linear-gradient(90deg, transparent, #e8b49a, #c4866a, #f0c4a8, #c4866a, #e8b49a, transparent)',
-                            backgroundSize: '300% 100%',
-                            animation: 'auth-shimmer 3s linear infinite',
-                        }}
-                    />
 
                     {/* Card inner glow */}
                     <div
@@ -495,7 +430,6 @@ export default function AuthSimpleLayout({
                                     style={{
                                         fontFamily:
                                             '"Playfair Display", Georgia, serif',
-                                        fontStyle: 'italic',
                                         color: '#6b3320',
                                         letterSpacing: '-0.02em',
                                         textShadow:
@@ -519,7 +453,7 @@ export default function AuthSimpleLayout({
                                     }}
                                 />
                                 <div
-                                    className="auth-pulse h-1.5 w-1.5 rounded-full"
+                                    className="h-1.5 w-1.5 rounded-full"
                                     style={{ background: '#c4866a' }}
                                 />
                                 <div

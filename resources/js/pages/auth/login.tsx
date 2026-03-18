@@ -10,6 +10,7 @@ import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import AuthSimpleLayout from '@/layouts/auth/auth-simple-layout';
 
 type Props = {
     status?: string;
@@ -20,7 +21,7 @@ export default function Login({ status, canResetPassword }: Props) {
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <AuthLayout
+        <AuthSimpleLayout
             title="Selamat Datang"
             description="Masukkan email dan password untuk masuk ke akun Anda"
         >
@@ -171,6 +172,6 @@ export default function Login({ status, canResetPassword }: Props) {
                     {status}
                 </div>
             )}
-        </AuthLayout>
+        </AuthSimpleLayout>
     );
 }
