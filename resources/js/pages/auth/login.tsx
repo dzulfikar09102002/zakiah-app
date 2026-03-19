@@ -39,7 +39,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             <div className="grid gap-1.5">
                                 <Label
                                     htmlFor="email"
-                                    className="text-[12px] font-bold tracking-wide uppercase"
+                                    className="text-[12px] font-bold tracking-wide"
                                     style={{ color: '#9e5f48' }}
                                 >
                                     Alamat Email
@@ -67,7 +67,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                 <div className="flex items-center justify-between">
                                     <Label
                                         htmlFor="password"
-                                        className="text-[12px] font-bold tracking-wide uppercase"
+                                        className="text-[12px] font-bold tracking-wide"
                                         style={{ color: '#9e5f48' }}
                                     >
                                         Password
@@ -125,7 +125,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={4}
                                     disabled={processing}
                                     data-test="login-button"
-                                    className="relative h-11 w-full overflow-hidden rounded-xl border-none text-[13px] font-bold tracking-widest text-white uppercase transition-all duration-200 active:scale-[0.98]"
+                                    className="relative h-11 w-full overflow-hidden rounded-xl border-none text-[13px] font-bold tracking-widest text-white transition-all duration-200 active:scale-[0.98]"
                                     style={{
                                         background: processing
                                             ? '#d9a48a'
