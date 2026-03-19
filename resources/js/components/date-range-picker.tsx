@@ -34,7 +34,7 @@ export default ({ onValueChange, prefix }: Props) => {
                     <Button
                         variant="outline"
                         id="date-picker-range"
-                        className="justify-start px-2.5 font-normal"
+                        className="justify-start px-2.5"
                     >
                         <CalendarIcon />
                         {date?.from ? (
