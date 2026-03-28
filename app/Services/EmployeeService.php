@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class EmployeeService
 {
-    public function getEmployees(): mixed
+    public function getEmployees()
     {
         $entityId = auth()->user()?->entity?->id;
         return Employee::with([
@@ -113,16 +113,106 @@ class EmployeeService
 
     public function update(Employee $employee, array $data)
     {
-        return $employee->update([
-            'name' => $data['name'],
-            'email' => $data['email'] ?? null,
-            'role_id' => $data['role_id'],
-            'location_id' => $data['location_id'] ?? null,
-        ]);
+        return DB::transaction(function () use ($employee, $data) {
+
+            $user = $employee->user;
+
+            // Update basic info
+            $user->name = $data['first_name'] . ' ' . $data['last_name'];
+            $user->email = $data['email'];
+
+            // Update password kalau diisi
+            if (!empty($data['password'])) {
+                $user->password = bcrypt($data['password']);
+            }
+
+            $user->save();
+
+            $employee->fill($data);
+
+            $role = Role::find($data['role_id']);
+
+            // entity_permission
+            if (array_key_exists('entity_permission', $data)) {
+                $employee->entity_permission = array_merge(
+                    $data['entity_permission'],
+                    $role->entity_permission
+                );
+            } else {
+                $employee->entity_permission = $role->entity_permission;
+            }
+
+            // location_permission
+            if (array_key_exists('location_permission', $data)) {
+                $employee->location_permission = array_merge(
+                    $data['location_permission'],
+                    $role->location_permission
+                );
+            } else {
+                $employee->location_permission = $role->location_permission;
+            }
+
+            $employee->save();
+
+            if (isset($data['locations'])) {
+
+                $employee->employeeLocations()->delete();
+
+                $employeeLocations = [];
+
+                foreach ($data['locations'] as $location) {
+
+                    $role = Role::find($location['role_id']);
+
+                    $employeeLocations[] = [
+                        'location_id' => $location['location_id'],
+                        'role_id' => $location['role_id'],
+                        'code' => UniqueCodeGenerator::generateCode(),
+                        'pin' => '1234',
+                        'entity_permission' => array_merge(
+                            $role->entity_permission,
+                            $location['entity_permission'] ?? []
+                        ),
+                        'location_permission' => array_merge(
+                            $role->location_permission,
+                            $location['location_permission'] ?? []
+                        ),
+                    ];
+                }
+
+                $employee->employeeLocations()->createMany($employeeLocations);
+            }
+
+            return $employee->fresh(['user', 'employeeLocations']);
+        });
     }
 
     public function delete(Employee $employee)
     {
         return $employee->delete();
+    }
+    public function getDeletedEmployees()
+    {
+        $entityId = auth()->user()?->entity?->id;
+        return Employee::with([
+                'role:id,name',
+                'user:id,email',
+                'employeeLocations:id,employee_id,location_id,role_id,entity_permission'
+            ])->onlyTrashed()
+            ->where('entity_id', $entityId)
+            ->when(request('search'), fn(Builder $query, $search) => 
+                $query->where(function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%");
+                })
+            )
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
+    }
+    public function restore(int $id)
+    {
+        $employees = Employee::withTrashed()->findOrFail($id);
+
+        return $employees->restore();
     }
 }

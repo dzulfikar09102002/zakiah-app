@@ -145,7 +145,7 @@ type Params = {
 export default ({ pagination, locationOptions }: Props) => {
 
     const { data } = pagination
-
+    console.log(pagination);
     const query = QueryString.parse(window.location.search, { ignoreQueryPrefix: true }) as Partial<Params>
 
     const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(cachedColumn)

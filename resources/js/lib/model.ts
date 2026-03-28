@@ -40,6 +40,14 @@ export interface Employee {
         id: number;
         name: string;
     };
+    user?: {
+        id: number;
+        email: string;
+    }
+    employeeLocation?:{
+        location_id:number;
+        role_id:number;
+    }
 }
 
 export interface EmployeeLocation {

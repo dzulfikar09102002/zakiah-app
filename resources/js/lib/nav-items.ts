@@ -9,7 +9,7 @@ import {
     MonitorCog,
     UserCog,
 } from 'lucide-react';
-import { dashboard, settings } from '@/routes';
+import {  dashboard, settings } from '@/routes';
 
 import employees from '@/routes/employees';
 import locations from '@/routes/locations';
@@ -28,6 +28,7 @@ import customerCategories from '@/routes/customer-categories';
 import loyalties from '@/routes/loyalties';
 import taxes from '@/routes/taxes';
 import reportSales from '@/routes/report-sales';
+import comingsoon from '@/routes/comingsoon';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -51,11 +52,11 @@ export const mainNavItems: NavItem[] = [
                     },
                     {
                         title: 'Per Product',
-                        href: '#',
+                        href: comingsoon.index().url,
                     },
                     {
                         title: 'Per Toko',
-                        href: '#',
+                        href: comingsoon.index().url,
                     },
                 ],
             },
@@ -65,11 +66,11 @@ export const mainNavItems: NavItem[] = [
                 items: [
                     {
                         title: 'Kartu Stok',
-                        href: '#',
+                        href: comingsoon.index().url,
                     },
                     {
                         title: 'Pergerakan',
-                        href: '#',
+                        href: comingsoon.index().url,
                     },
                     {
                         title: 'Sisa Stok',
@@ -119,15 +120,15 @@ export const mainNavItems: NavItem[] = [
         items: [
             {
                 title: 'Stok Opname',
-                href: '#',
+                href: comingsoon.index().url,
             },
             {
                 title: 'Pindah Stok',
-                href: '#',
+                href: comingsoon.index().url,
             },
             {
                 title: 'Penyesuaian Stok',
-                href: '#',
+                href: comingsoon.index().url,
             },
         ],
     },
@@ -169,17 +170,17 @@ export const mainNavItems: NavItem[] = [
                 items: [
                     {
                         title: 'Rekapan',
-                        href: '#',
+                        href: comingsoon.index().url,
                     },
                     {
                         title: 'Data Penjualan',
-                        href: '#',
+                        href: comingsoon.index().url,
                     },
                 ],
             },
             {
                 title: 'Promosi',
-                href: '#',
+                href: comingsoon.index().url,
             },
         ],
     },
@@ -190,7 +191,7 @@ export const mainNavItems: NavItem[] = [
         items: [
             {
                 title: 'Entity',
-                href: '#',
+                href: comingsoon.index().url,
             },
             {
                 title: 'Lokasi',

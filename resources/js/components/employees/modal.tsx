@@ -45,7 +45,7 @@ type Props = {
     locations: Location[];
     onModalSuccess: () => void;
     onModalClose: () => void;
-};
+}; 
 
 export default ({
     modalState,
@@ -178,20 +178,30 @@ export default ({
 
     useEffect(() => {
         const existing = tableData.find((el) => el.id === modalState.dataId);
-
+    
         if (existing) {
             setData({
                 first_name: existing.first_name ?? '',
                 last_name: existing.last_name ?? '',
-                email: existing.email ?? '',
+                email: existing.user.email ?? '',
                 role_id: String(existing.role_id ?? ''),
                 password: '',
                 password_confirmation: '',
                 select_all_location: false,
                 locations: [],
             });
+    
+            const mappedLocationRoles = existing.employee_locations?.map((el:any) => ({
+                location: String(el.location_id),
+                role: String(el.role_id),
+                saved: true,
+            })) ?? [];
+    
+            setLocationRoles(mappedLocationRoles);
+    
         } else {
             reset();
+            setLocationRoles([]);
         }
     }, [modalState.dataId]);
 

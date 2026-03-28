@@ -1,4 +1,4 @@
-import { Form, Head } from "@inertiajs/react";
+import { Form, Head, router } from "@inertiajs/react";
 import {
     Plus,
     FileDown,
@@ -7,11 +7,12 @@ import {
     SearchIcon,
     X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { debounce } from "lodash";
+
 import TablePagination from "@/components/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
 import {
     Card,
     CardContent,
@@ -40,14 +41,6 @@ import {
     FieldSet
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import {
     Table,
     TableBody,
@@ -62,7 +55,6 @@ import type { Pagination, Product } from "@/lib/model";
 import { toRupiah } from "@/lib/utils";
 import products from "@/routes/products"
 import type { BreadcrumbItem } from "@/types"
-import { Separator } from "@/components/ui/separator";
 
 const title = 'Kelola Produk'
 
@@ -73,20 +65,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     }
 ]
 
-const stockData = [
-    { lokasi: "STORE PANDAAN", sekarang: 0, stok: 0 },
-    { lokasi: "STORE JOMBANG", sekarang: 0, stok: 0 },
-    { lokasi: "STORE MOJOKERTO", sekarang: 0, stok: 0 },
-    { lokasi: "STORE MOJOSARI", sekarang: 0, stok: 0 },
-    { lokasi: "STORE PORONG", sekarang: 0, stok: 0 },
-    { lokasi: "ZAKIAH OFFICE", sekarang: 0, stok: 0 },
-    { lokasi: "GUDANG", sekarang: 0, stok: 0 },
-    { lokasi: "Zakiah Tulangan", sekarang: 0, stok: 0 },
-];
-
 type Option = {
     label: string
-    value: unknown
+    value: any
 }
 
 type Props = {
@@ -95,15 +76,42 @@ type Props = {
 }
 
 export default ({ categoryOptions, pagination }: Props) => {
+
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     const query = useQuery()
     const search = query.search || ''
     const product_category_id = query.product_category_id || 'all'
+
+    const [searchValue, setSearchValue] = useState(search)
+    const [categoryValue, setCategoryValue] = useState(product_category_id)
+
     const startIndex = (pagination.current_page - 1) * pagination.per_page
+
+    const debouncedSearch = useCallback(
+        debounce((value: string, category: any) => {
+            router.get(products.index().url, {
+                search: value,
+                product_category_id: category,
+                page: 1
+            }, {
+                preserveState: true,
+                replace: true
+            })
+        }, 500),
+        []
+    )
+
+    useEffect(() => {
+        return () => {
+            debouncedSearch.cancel()
+        }
+    }, [debouncedSearch])
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
+
             <div className="grid lg:flex gap-2 flex-wrap mb-4">
                 <Button onClick={() => setIsModalOpen(true)}>
                     <Plus /> Produk Baru
@@ -112,15 +120,28 @@ export default ({ categoryOptions, pagination }: Props) => {
                 <Button variant="outline"><FileDown /> Export</Button>
                 <Button variant="outline"><FileUp /> Import</Button>
             </div>
+
             <Card>
                 <CardHeader>
-                    <Form method="GET" className="grid lg:flex gap-2">
+                    <div className="grid lg:flex gap-2">
                         <Combobox
                             items={categoryOptions}
-                            name="product_category_id"
-                            defaultValue={categoryOptions.find(el => el.value == product_category_id)}
+                            value={categoryOptions.find(el => el.value == categoryValue)}
+                            onValueChange={(val: Option | null) => {
+                                const newValue = val?.value ?? 'all'
+
+                                setCategoryValue(newValue)
+                                router.get(products.index().url, {
+                                    search: searchValue,
+                                    product_category_id: newValue,
+                                    page: 1
+                                }, {
+                                    preserveState: true,
+                                    replace: true
+                                })
+                            }}
                         >
-                            <ComboboxInput placeholder="Pilih Kategori" className={'w-full'} />
+                            <ComboboxInput placeholder="Pilih Kategori" className="w-full" />
                             <ComboboxContent>
                                 <ComboboxEmpty>Tidak ditemukan</ComboboxEmpty>
                                 <ComboboxList>
@@ -132,11 +153,26 @@ export default ({ categoryOptions, pagination }: Props) => {
                                 </ComboboxList>
                             </ComboboxContent>
                         </Combobox>
-                        <Input placeholder="Cari..." name="search" defaultValue={search} />
-                        <input type="hidden" name="page" value={1} />
-                        <Button variant={"secondary"}><SearchIcon /> Cari</Button>
-                    </Form>
+                        <Input
+                            placeholder="Cari..."
+                            value={searchValue}
+                            onChange={(e) => {
+                                const value = e.target.value
+                                setSearchValue(value)
+                                debouncedSearch(value, categoryValue)
+                            }}
+                        />
+
+                        <Button
+                            variant="secondary"
+                            onClick={() => debouncedSearch(searchValue, categoryValue)}
+                        >
+                            <SearchIcon /> Cari
+                        </Button>
+
+                    </div>
                 </CardHeader>
+
                 <CardContent>
                     <Table>
                         <TableHeader>
@@ -152,12 +188,17 @@ export default ({ categoryOptions, pagination }: Props) => {
                                 <TableHead>Aksi</TableHead>
                             </TableRow>
                         </TableHeader>
+
                         <TableBody>
                             {pagination.data.map((product, idx) => (
                                 <TableRow key={product.sku}>
                                     <TableCell>{startIndex + idx + 1}.</TableCell>
                                     <TableCell>{product.name}</TableCell>
-                                    <TableCell><Badge variant={"secondary"}>{product.product_category?.name}</Badge></TableCell>
+                                    <TableCell>
+                                        <Badge variant="secondary">
+                                            {product.product_category?.name}
+                                        </Badge>
+                                    </TableCell>
                                     <TableCell>{product.sku}</TableCell>
                                     <TableCell>{product.barcode}</TableCell>
                                     <TableCell>{toRupiah(product.last_buying_price)}</TableCell>
@@ -175,6 +216,7 @@ export default ({ categoryOptions, pagination }: Props) => {
                                     </TableCell>
                                 </TableRow>
                             ))}
+
                             {!pagination.data.length && (
                                 <TableRow>
                                     <TableCell colSpan={9} className="text-center py-2 text-muted-foreground">
@@ -184,120 +226,18 @@ export default ({ categoryOptions, pagination }: Props) => {
                             )}
                         </TableBody>
                     </Table>
+
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>
+
             <Dialog open={isModalOpen} onOpenChange={() => setIsModalOpen(false)}>
                 <Form>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Produk Baru</DialogTitle>
                         </DialogHeader>
-                        <div className="max-h-[50vh] overflow-y-auto">
-                            <FieldSet>
-                                <FieldGroup className="grid gap-y-4">
-                                    <Field>
-                                        <FieldLabel>Nama</FieldLabel>
-                                        <Input name="nama" placeholder="Masukkan nama" />
-                                    </Field>
 
-                                    <Field>
-                                        <FieldLabel>Deskripsi</FieldLabel>
-                                        <Input name="deskripsi" placeholder="Masukkan deskripsi" />
-                                    </Field>
-
-                                    <Field>
-                                        <FieldLabel>SKU</FieldLabel>
-                                        <Input name="sku" placeholder="Masukkan sku" />
-                                    </Field>
-
-                                    <Field>
-                                        <FieldLabel>Barcode</FieldLabel>
-                                        <Input name="barcode" placeholder="Masukkan barcode" />
-                                    </Field>
-
-                                    <Field>
-                                        <FieldLabel>Kategori</FieldLabel>
-                                        <Select name="kategori">
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Masukkan kategori" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="gift">GIFT</SelectItem>
-                                                <SelectItem value="acc">ACCESORIES</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                    <Field>
-                                        <FieldLabel>Satuan</FieldLabel>
-                                        <Select name="satuan">
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Masukkan satuan" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="pcs">Pcs</SelectItem>
-                                                <SelectItem value="box">Box</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                    <Field>
-                                        <FieldLabel>Lokasi</FieldLabel>
-                                        <Select name="lokasi">
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Masukkan lokasi" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="pusat">Pusat</SelectItem>
-                                                <SelectItem value="cabang">Cabang</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </Field>
-
-                                    <div /> {/* Spacer */}
-
-                                    <Field>
-                                        <FieldLabel>Harga Jual</FieldLabel>
-                                        <Input name="harga_jual" placeholder="Masukkan harga Jual" />
-                                    </Field>
-
-                                    <Field>
-                                        <FieldLabel>Harga Beli</FieldLabel>
-                                        <Input name="harga_beli" placeholder="Masukkan harga beli" />
-                                    </Field>
-                                </FieldGroup>
-                            </FieldSet>
-                            <div className="space-y-4">
-                                <Label className="mb-4 inline-block">Stok</Label>
-                                <div className="rounded-md border">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="w-[40%]">Lokasi</TableHead>
-                                                <TableHead className="text-center">Stok Sekarang</TableHead>
-                                                <TableHead className="text-center">Stok</TableHead>
-                                                <TableHead className="text-right">Aksi</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {stockData.map((item, index) => (
-                                                <TableRow key={index}>
-                                                    <TableCell className="font-medium">{item.lokasi}</TableCell>
-                                                    <TableCell className="text-center">{item.sekarang}</TableCell>
-                                                    <TableCell className="text-center">{item.stok}</TableCell>
-                                                    <TableCell className="text-right">
-                                                        <Button type="button" variant="outline" size="icon">
-                                                            <Pencil />
-                                                        </Button>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            </div>
-                        </div>
                         <DialogFooter>
                             <DialogClose asChild>
                                 <Button variant="outline">Batal</Button>
@@ -307,7 +247,7 @@ export default ({ categoryOptions, pagination }: Props) => {
                     </DialogContent>
                 </Form>
             </Dialog>
-        </AppLayout>
-    );
-}
 
+        </AppLayout>
+    )
+}

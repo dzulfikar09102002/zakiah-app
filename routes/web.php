@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BrandController;
+use App\Http\Controllers\ComingSoonController;
 use App\Http\Controllers\CustomerCategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPointMovementController;
@@ -44,6 +45,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');
     
     Route::get('dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');

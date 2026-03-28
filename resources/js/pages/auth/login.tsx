@@ -52,7 +52,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="email"
-                                    placeholder="email@example.com"
+                                    placeholder="Masukkan email"
                                     className="h-11 rounded-xl text-[13px] transition-all duration-200"
                                     style={{
                                         border: '1.5px solid rgba(196,134,106,0.3)',
@@ -93,7 +93,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                         required
                                         tabIndex={2}
                                         autoComplete="current-password"
-                                        placeholder="Masukkan password"
+                                        placeholder="********"
                                         className="h-11 rounded-xl pr-11 text-[13px] transition-all duration-200"
                                         style={{
                                             border: '1.5px solid rgba(196,134,106,0.3)',
