@@ -63,76 +63,76 @@
 }
 
 :root {
-    --radius: 0.65rem;
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.141 0.005 285.823);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.141 0.005 285.823);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.141 0.005 285.823);
-    --primary: oklch(0.488 0.243 264.376);
-    --primary-foreground: oklch(0.97 0.014 254.604);
-    --secondary: oklch(0.967 0.001 286.375);
-    --secondary-foreground: oklch(0.21 0.006 285.885);
-    --muted: oklch(0.967 0.001 286.375);
-    --muted-foreground: oklch(0.552 0.016 285.938);
-    --accent: oklch(0.967 0.001 286.375);
-    --accent-foreground: oklch(0.21 0.006 285.885);
+    --radius: 0.75rem;
+    --background: oklch(0.97 0.02 45);
+    --foreground: oklch(0.35 0.08 40);
+    --card: oklch(0.99 0.01 60);
+    --card-foreground: oklch(0.30 0.08 40);
+    --popover: oklch(0.99 0.01 60);
+    --popover-foreground: oklch(0.30 0.08 40);
+    --primary: oklch(0.65 0.12 40);
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(0.92 0.04 45);
+    --secondary-foreground: oklch(0.35 0.08 40);
+    --muted: oklch(0.95 0.02 45);
+    --muted-foreground: oklch(0.55 0.05 40);
+    --accent: oklch(0.92 0.04 45);
+    --accent-foreground: oklch(0.35 0.08 40);
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.92 0.004 286.32);
-    --input: oklch(0.92 0.004 286.32);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.809 0.105 251.813);
-    --chart-2: oklch(0.623 0.214 259.815);
-    --chart-3: oklch(0.546 0.245 262.881);
-    --chart-4: oklch(0.488 0.243 264.376);
-    --chart-5: oklch(0.424 0.199 265.638);
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.141 0.005 285.823);
-    --sidebar-primary: oklch(0.546 0.245 262.881);
-    --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-    --sidebar-accent: oklch(0.967 0.001 286.375);
-    --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-    --sidebar-border: oklch(0.92 0.004 286.32);
-    --sidebar-ring: oklch(0.708 0 0);
+    --border: oklch(0.90 0.03 45);
+    --input: oklch(0.90 0.03 45);
+    --ring: oklch(0.65 0.12 40);
+    --chart-1: oklch(0.65 0.12 40);
+    --chart-2: oklch(0.35 0.08 40);
+    --chart-3: oklch(0.85 0.08 45);
+    --chart-4: oklch(0.50 0.10 40);
+    --chart-5: oklch(0.70 0.10 30);
+    --sidebar: oklch(0.99 0.01 60);
+    --sidebar-foreground: oklch(0.35 0.08 40);
+    --sidebar-primary: oklch(0.65 0.12 40);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.95 0.02 45);
+    --sidebar-accent-foreground: oklch(0.35 0.08 40);
+    --sidebar-border: oklch(0.90 0.03 45);
+    --sidebar-ring: oklch(0.65 0.12 40);
 }
 
 .dark {
-    --background: oklch(0.141 0.005 285.823);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.21 0.006 285.885);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.21 0.006 285.885);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.488 0.243 264.376);
-    --primary-foreground: oklch(0.97 0.014 254.604);
-    --secondary: oklch(0.274 0.006 286.033);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.274 0.006 286.033);
-    --muted-foreground: oklch(0.705 0.015 286.067);
-    --accent: oklch(0.274 0.006 286.033);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.809 0.105 251.813);
-    --chart-2: oklch(0.623 0.214 259.815);
-    --chart-3: oklch(0.546 0.245 262.881);
-    --chart-4: oklch(0.488 0.243 264.376);
-    --chart-5: oklch(0.424 0.199 265.638);
-    --sidebar: oklch(0.21 0.006 285.885);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.623 0.214 259.815);
-    --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-    --sidebar-accent: oklch(0.274 0.006 286.033);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.439 0 0);
+    --background: oklch(0.14 0.015 45);
+    --foreground: oklch(0.95 0.015 45);
+    --card: oklch(0.18 0.015 45);
+    --card-foreground: oklch(0.95 0.015 45);
+    --popover: oklch(0.18 0.015 45);
+    --popover-foreground: oklch(0.95 0.015 45);
+    --primary: oklch(0.65 0.12 40);
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(0.22 0.015 45);
+    --secondary-foreground: oklch(0.95 0.015 45);
+    --muted: oklch(0.22 0.015 45);
+    --muted-foreground: oklch(0.65 0.015 45);
+    --accent: oklch(0.22 0.015 45);
+    --accent-foreground: oklch(0.95 0.015 45);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.27 0.015 45);
+    --input: oklch(0.27 0.015 45);
+    --ring: oklch(0.65 0.12 40);
+    --chart-1: oklch(0.65 0.12 40);
+    --chart-2: oklch(0.45 0.08 40);
+    --chart-3: oklch(0.85 0.08 45);
+    --chart-4: oklch(0.50 0.10 40);
+    --chart-5: oklch(0.70 0.10 30);
+    --sidebar: oklch(0.18 0.015 45);
+    --sidebar-foreground: oklch(0.95 0.015 45);
+    --sidebar-primary: oklch(0.65 0.12 40);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.22 0.015 45);
+    --sidebar-accent-foreground: oklch(0.95 0.015 45);
+    --sidebar-border: oklch(0.27 0.015 45);
+    --sidebar-ring: oklch(0.65 0.12 40);
 }
 
 @layer base {
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Lato:wght@400;700&display=swap');   
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Lato:wght@400;700&display=swap');
 
     * {
         @apply border-border;
@@ -157,403 +157,500 @@
 
     /* ── Auth Layout Animations ── */
 
-/* Floating orbs on left panel */
-@keyframes float-slow {
-    0%,
-    100% {
-        transform: translateY(0px) scale(1);
-    }
-    50% {
-        transform: translateY(-18px) scale(1.04);
-    }
-}
-@keyframes float-mid {
-    0%,
-    100% {
-        transform: translateY(0px) translateX(0px);
-    }
-    33% {
-        transform: translateY(-12px) translateX(8px);
-    }
-    66% {
-        transform: translateY(8px) translateX(-6px);
-    }
-}
-@keyframes float-fast {
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-9px);
-    }
-}
+    /* Floating orbs on left panel */
+    @keyframes float-slow {
 
-/* Spinning ring */
-@keyframes spin-slow {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-@keyframes spin-reverse {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(-360deg);
-    }
-}
+        0%,
+        100% {
+            transform: translateY(0px) scale(1);
+        }
 
-/* Gradient shimmer on left panel */
-@keyframes gradient-shift {
-    0% {
-        background-position: 0% 50%;
+        50% {
+            transform: translateY(-18px) scale(1.04);
+        }
     }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
 
-/* Pulse glow for dots / accent elements */
-@keyframes pulse-rose {
-    0%,
-    100% {
-        box-shadow: 0 0 0 0 rgba(196, 134, 106, 0.5);
-    }
-    50% {
-        box-shadow: 0 0 0 8px rgba(196, 134, 106, 0);
-    }
-}
+    @keyframes float-mid {
 
-/* Shimmer sweep on card border */
-@keyframes border-shimmer {
-    0% {
-        background-position: -200% center;
-    }
-    100% {
-        background-position: 200% center;
-    }
-}
+        0%,
+        100% {
+            transform: translateY(0px) translateX(0px);
+        }
 
-/* Staggered fade-up entrance */
-@keyframes fade-up {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+        33% {
+            transform: translateY(-12px) translateX(8px);
+        }
 
-/* Particle drift */
-@keyframes drift-1 {
-    0% {
-        transform: translateY(0) translateX(0) rotate(0deg);
-        opacity: 0;
+        66% {
+            transform: translateY(8px) translateX(-6px);
+        }
     }
-    10% {
-        opacity: 0.6;
-    }
-    90% {
-        opacity: 0.6;
-    }
-    100% {
-        transform: translateY(-80vh) translateX(30px) rotate(180deg);
-        opacity: 0;
-    }
-}
-@keyframes drift-2 {
-    0% {
-        transform: translateY(0) translateX(0) rotate(0deg);
-        opacity: 0;
-    }
-    10% {
-        opacity: 0.4;
-    }
-    90% {
-        opacity: 0.4;
-    }
-    100% {
-        transform: translateY(-70vh) translateX(-40px) rotate(-120deg);
-        opacity: 0;
-    }
-}
 
-/* Breathe scale */
-@keyframes breathe {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.18;
-    }
-    50% {
-        transform: scale(1.08);
-        opacity: 0.28;
-    }
-}
+    @keyframes float-fast {
 
-/* Classes */
-.animate-float-slow {
-    animation: float-slow 7s ease-in-out infinite;
-}
-.animate-float-mid {
-    animation: float-mid 9s ease-in-out infinite;
-}
-.animate-float-fast {
-    animation: float-fast 5s ease-in-out infinite;
-}
-.animate-spin-slow {
-    animation: spin-slow 20s linear infinite;
-}
-.animate-spin-reverse {
-    animation: spin-reverse 28s linear infinite;
-}
-.animate-pulse-rose {
-    animation: pulse-rose 2.5s ease-in-out infinite;
-}
-.animate-breathe {
-    animation: breathe 6s ease-in-out infinite;
-}
-.animate-fade-up {
-    animation: fade-up 0.7s ease-out both;
-}
-.animate-fade-up-2 {
-    animation: fade-up 0.7s ease-out 0.15s both;
-}
-.animate-fade-up-3 {
-    animation: fade-up 0.7s ease-out 0.3s both;
-}
-.animate-fade-up-4 {
-    animation: fade-up 0.7s ease-out 0.45s both;
-}
-.animate-fade-up-5 {
-    animation: fade-up 0.7s ease-out 0.6s both;
-}
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
 
-.animate-gradient-bg {
-    background-size: 300% 300%;
-    animation: gradient-shift 8s ease infinite;
-}
-/* ── Auth v3 animation classes ── */
-@keyframes auth-spin {
-    from {
-        transform: rotate(0deg);
+        50% {
+            transform: translateY(-9px);
+        }
     }
-    to {
-        transform: rotate(360deg);
-    }
-}
-@keyframes auth-spin-rev {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(-360deg);
-    }
-}
-@keyframes auth-float-a {
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-16px);
-    }
-}
-@keyframes auth-float-b {
-    0%,
-    100% {
-        transform: translateY(0px) translateX(0px);
-    }
-    40% {
-        transform: translateY(-12px) translateX(8px);
-    }
-    80% {
-        transform: translateY(6px) translateX(-5px);
-    }
-}
-@keyframes auth-float-c {
-    0%,
-    100% {
-        transform: translateY(0px) scale(1);
-    }
-    50% {
-        transform: translateY(-20px) scale(1.06);
-    }
-}
-@keyframes auth-particle-a {
-    0% {
-        transform: translateY(0) translateX(0);
-        opacity: 0;
-    }
-    8% {
-        opacity: 0.7;
-    }
-    92% {
-        opacity: 0.5;
-    }
-    100% {
-        transform: translateY(-85vh) translateX(25px);
-        opacity: 0;
-    }
-}
-@keyframes auth-particle-b {
-    0% {
-        transform: translateY(0) translateX(0);
-        opacity: 0;
-    }
-    8% {
-        opacity: 0.5;
-    }
-    92% {
-        opacity: 0.4;
-    }
-    100% {
-        transform: translateY(-75vh) translateX(-35px);
-        opacity: 0;
-    }
-}
-@keyframes auth-particle-c {
-    0% {
-        transform: translateY(0) scale(1);
-        opacity: 0;
-    }
-    10% {
-        opacity: 0.6;
-    }
-    90% {
-        opacity: 0.3;
-    }
-    100% {
-        transform: translateY(-90vh) scale(0.3);
-        opacity: 0;
-    }
-}
-@keyframes auth-gradient {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
-@keyframes auth-shimmer {
-    0% {
-        background-position: -300% center;
-    }
-    100% {
-        background-position: 300% center;
-    }
-}
-@keyframes auth-pulse {
-    0%,
-    100% {
-        box-shadow: 0 0 0 0 rgba(196, 134, 106, 0.6);
-    }
-    50% {
-        box-shadow: 0 0 0 10px rgba(196, 134, 106, 0);
-    }
-}
-@keyframes auth-breathe {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.15;
-    }
-    50% {
-        transform: scale(1.1);
-        opacity: 0.28;
-    }
-}
-@keyframes auth-orb {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.18;
-    }
-    50% {
-        transform: scale(1.12);
-        opacity: 0.3;
-    }
-}
-@keyframes auth-fade-up {
-    from {
-        opacity: 0;
-        transform: translateY(24px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-@keyframes auth-shine {
-    0% {
-        left: -75%;
-    }
-    100% {
-        left: 125%;
-    }
-}
 
-.auth-spin {
-    animation: auth-spin 22s linear infinite;
-}
-.auth-spin-rev {
-    animation: auth-spin-rev 30s linear infinite;
-}
-.auth-spin-slow {
-    animation: auth-spin 40s linear infinite;
-}
-.auth-float-a {
-    animation: auth-float-a 7s ease-in-out infinite;
-}
-.auth-float-b {
-    animation: auth-float-b 10s ease-in-out infinite;
-}
-.auth-float-c {
-    animation: auth-float-c 6s ease-in-out infinite;
-}
-.auth-breathe {
-    animation: auth-breathe 7s ease-in-out infinite;
-}
-.auth-orb {
-    animation: auth-orb 8s ease-in-out infinite;
-}
-.auth-pulse {
-    animation: auth-pulse 2.5s ease-in-out infinite;
-}
-.auth-gradient-bg {
-    background-size: 400% 400%;
-    animation: auth-gradient 10s ease infinite;
-}
-.auth-fade-up-1 {
-    animation: auth-fade-up 0.8s ease-out 0s both;
-}
-.auth-fade-up-2 {
-    animation: auth-fade-up 0.8s ease-out 0.15s both;
-}
-.auth-fade-up-3 {
-    animation: auth-fade-up 0.8s ease-out 0.3s both;
-}
-.auth-fade-up-4 {
-    animation: auth-fade-up 0.8s ease-out 0.45s both;
-}
-.auth-fade-up-5 {
-    animation: auth-fade-up 0.8s ease-out 0.6s both;
-}
-.auth-fade-up-6 {
-    animation: auth-fade-up 0.8s ease-out 0.75s both;
-}
+    /* Spinning ring */
+    @keyframes spin-slow {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spin-reverse {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(-360deg);
+        }
+    }
+
+    /* Gradient shimmer on left panel */
+    @keyframes gradient-shift {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    /* Pulse glow for dots / accent elements */
+    @keyframes pulse-rose {
+
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(196, 134, 106, 0.5);
+        }
+
+        50% {
+            box-shadow: 0 0 0 8px rgba(196, 134, 106, 0);
+        }
+    }
+
+    /* Shimmer sweep on card border */
+    @keyframes border-shimmer {
+        0% {
+            background-position: -200% center;
+        }
+
+        100% {
+            background-position: 200% center;
+        }
+    }
+
+    /* Staggered fade-up entrance */
+    @keyframes fade-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Particle drift */
+    @keyframes drift-1 {
+        0% {
+            transform: translateY(0) translateX(0) rotate(0deg);
+            opacity: 0;
+        }
+
+        10% {
+            opacity: 0.6;
+        }
+
+        90% {
+            opacity: 0.6;
+        }
+
+        100% {
+            transform: translateY(-80vh) translateX(30px) rotate(180deg);
+            opacity: 0;
+        }
+    }
+
+    @keyframes drift-2 {
+        0% {
+            transform: translateY(0) translateX(0) rotate(0deg);
+            opacity: 0;
+        }
+
+        10% {
+            opacity: 0.4;
+        }
+
+        90% {
+            opacity: 0.4;
+        }
+
+        100% {
+            transform: translateY(-70vh) translateX(-40px) rotate(-120deg);
+            opacity: 0;
+        }
+    }
+
+    /* Breathe scale */
+    @keyframes breathe {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 0.18;
+        }
+
+        50% {
+            transform: scale(1.08);
+            opacity: 0.28;
+        }
+    }
+
+    /* Classes */
+    .animate-float-slow {
+        animation: float-slow 7s ease-in-out infinite;
+    }
+
+    .animate-float-mid {
+        animation: float-mid 9s ease-in-out infinite;
+    }
+
+    .animate-float-fast {
+        animation: float-fast 5s ease-in-out infinite;
+    }
+
+    .animate-spin-slow {
+        animation: spin-slow 20s linear infinite;
+    }
+
+    .animate-spin-reverse {
+        animation: spin-reverse 28s linear infinite;
+    }
+
+    .animate-pulse-rose {
+        animation: pulse-rose 2.5s ease-in-out infinite;
+    }
+
+    .animate-breathe {
+        animation: breathe 6s ease-in-out infinite;
+    }
+
+    .animate-fade-up {
+        animation: fade-up 0.7s ease-out both;
+    }
+
+    .animate-fade-up-2 {
+        animation: fade-up 0.7s ease-out 0.15s both;
+    }
+
+    .animate-fade-up-3 {
+        animation: fade-up 0.7s ease-out 0.3s both;
+    }
+
+    .animate-fade-up-4 {
+        animation: fade-up 0.7s ease-out 0.45s both;
+    }
+
+    .animate-fade-up-5 {
+        animation: fade-up 0.7s ease-out 0.6s both;
+    }
+
+    .animate-gradient-bg {
+        background-size: 300% 300%;
+        animation: gradient-shift 8s ease infinite;
+    }
+
+    /* ── Auth v3 animation classes ── */
+    @keyframes auth-spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes auth-spin-rev {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(-360deg);
+        }
+    }
+
+    @keyframes auth-float-a {
+
+        0%,
+        100% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-16px);
+        }
+    }
+
+    @keyframes auth-float-b {
+
+        0%,
+        100% {
+            transform: translateY(0px) translateX(0px);
+        }
+
+        40% {
+            transform: translateY(-12px) translateX(8px);
+        }
+
+        80% {
+            transform: translateY(6px) translateX(-5px);
+        }
+    }
+
+    @keyframes auth-float-c {
+
+        0%,
+        100% {
+            transform: translateY(0px) scale(1);
+        }
+
+        50% {
+            transform: translateY(-20px) scale(1.06);
+        }
+    }
+
+    @keyframes auth-particle-a {
+        0% {
+            transform: translateY(0) translateX(0);
+            opacity: 0;
+        }
+
+        8% {
+            opacity: 0.7;
+        }
+
+        92% {
+            opacity: 0.5;
+        }
+
+        100% {
+            transform: translateY(-85vh) translateX(25px);
+            opacity: 0;
+        }
+    }
+
+    @keyframes auth-particle-b {
+        0% {
+            transform: translateY(0) translateX(0);
+            opacity: 0;
+        }
+
+        8% {
+            opacity: 0.5;
+        }
+
+        92% {
+            opacity: 0.4;
+        }
+
+        100% {
+            transform: translateY(-75vh) translateX(-35px);
+            opacity: 0;
+        }
+    }
+
+    @keyframes auth-particle-c {
+        0% {
+            transform: translateY(0) scale(1);
+            opacity: 0;
+        }
+
+        10% {
+            opacity: 0.6;
+        }
+
+        90% {
+            opacity: 0.3;
+        }
+
+        100% {
+            transform: translateY(-90vh) scale(0.3);
+            opacity: 0;
+        }
+    }
+
+    @keyframes auth-gradient {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    @keyframes auth-shimmer {
+        0% {
+            background-position: -300% center;
+        }
+
+        100% {
+            background-position: 300% center;
+        }
+    }
+
+    @keyframes auth-pulse {
+
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(196, 134, 106, 0.6);
+        }
+
+        50% {
+            box-shadow: 0 0 0 10px rgba(196, 134, 106, 0);
+        }
+    }
+
+    @keyframes auth-breathe {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 0.15;
+        }
+
+        50% {
+            transform: scale(1.1);
+            opacity: 0.28;
+        }
+    }
+
+    @keyframes auth-orb {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 0.18;
+        }
+
+        50% {
+            transform: scale(1.12);
+            opacity: 0.3;
+        }
+    }
+
+    @keyframes auth-fade-up {
+        from {
+            opacity: 0;
+            transform: translateY(24px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes auth-shine {
+        0% {
+            left: -75%;
+        }
+
+        100% {
+            left: 125%;
+        }
+    }
+
+    .auth-spin {
+        animation: auth-spin 22s linear infinite;
+    }
+
+    .auth-spin-rev {
+        animation: auth-spin-rev 30s linear infinite;
+    }
+
+    .auth-spin-slow {
+        animation: auth-spin 40s linear infinite;
+    }
+
+    .auth-float-a {
+        animation: auth-float-a 7s ease-in-out infinite;
+    }
+
+    .auth-float-b {
+        animation: auth-float-b 10s ease-in-out infinite;
+    }
+
+    .auth-float-c {
+        animation: auth-float-c 6s ease-in-out infinite;
+    }
+
+    .auth-breathe {
+        animation: auth-breathe 7s ease-in-out infinite;
+    }
+
+    .auth-orb {
+        animation: auth-orb 8s ease-in-out infinite;
+    }
+
+    .auth-pulse {
+        animation: auth-pulse 2.5s ease-in-out infinite;
+    }
+
+    .auth-gradient-bg {
+        background-size: 400% 400%;
+        animation: auth-gradient 10s ease infinite;
+    }
+
+    .auth-fade-up-1 {
+        animation: auth-fade-up 0.8s ease-out 0s both;
+    }
+
+    .auth-fade-up-2 {
+        animation: auth-fade-up 0.8s ease-out 0.15s both;
+    }
+
+    .auth-fade-up-3 {
+        animation: auth-fade-up 0.8s ease-out 0.3s both;
+    }
+
+    .auth-fade-up-4 {
+        animation: auth-fade-up 0.8s ease-out 0.45s both;
+    }
+
+    .auth-fade-up-5 {
+        animation: auth-fade-up 0.8s ease-out 0.6s both;
+    }
+
+    .auth-fade-up-6 {
+        animation: auth-fade-up 0.8s ease-out 0.75s both;
+    }
 
 }
