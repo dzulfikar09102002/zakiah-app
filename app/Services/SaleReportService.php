@@ -22,12 +22,13 @@ class SaleReportService
         $search = request('search', '');
         $entityId = auth()->user()?->entity?->id;
 
-        $startAt = request('start_at') ?? Carbon::now()->subDays(7)->startOfDay();
-        $endAt = request('end_at') ?? Carbon::now()->endOfDay();
+        $startAt = request('start_at')
+            ? Carbon::parse(request('start_at'))->startOfDay()
+            : Carbon::now()->subDays(7)->startOfDay();
 
-        // simulasi tanggal 1 januari 2026 sampai 8 januari 2026
-        // $startAt = request('start_at') ?? (env('APP_ENV') !== 'production' ? Carbon::create(2026, 1, 1)->startOfDay() : Carbon::now()->subDays(7)->startOfDay());
-        // $endAt = request('end_at') ?? (env('APP_ENV') !== 'production' ? Carbon::create(2026, 1, 8)->endOfDay() : Carbon::now()->endOfDay());
+        $endAt = request('end_at')
+            ? Carbon::parse(request('end_at'))->endOfDay()
+            : Carbon::now()->endOfDay();
 
         $statuses = request('statuses', ['ok']);
 
@@ -41,10 +42,10 @@ class SaleReportService
                 'saleTransactionPromos.promo',
             ])
             ->where('entity_id', $entityId)
-            ->whereBetween('created_at', [$startAt, $endAt])
+            ->whereBetween('local_sales_at', [$startAt, $endAt])
             ->whereIn('status', $statuses);
 
-        // lokasi milik entity
+        // semua lokasi milik entity
         $locationIds = auth()->user()
             ->entity
             ->locations()
@@ -53,21 +54,35 @@ class SaleReportService
 
         $query->whereIn('location_id', $locationIds);
 
-        // filter lokasi tertentu
-        if (! empty(request('locs')) && request('select_all_location') === false) {
-            $query->whereIn('location_id', request('locs'));
+        // filter lokasi (kalau ada)
+        $locs = request()->input('locs', []);
+
+        if (!empty($locs)) {
+            if (!is_array($locs)) {
+                $locs = [$locs];
+            }
+
+            $query->whereIn('location_id', $locs);
         }
 
-        // exclude lokasi
-        if (! empty(request('exclude_locs'))) {
-            $query->whereNotIn('location_id', request('exclude_locs'));
+        // discount filter
+        if (request('discount') === 'available') {
+            $query->where(function ($q) {
+                $q->where('promo_amount_before_tax', '>', 0)
+                ->orWhere('discount_amount_before_tax', '>', 0);
+            });
+        }
+
+        if (request('discount') === 'none') {
+            $query->where('promo_amount_before_tax', 0)
+                ->where('discount_amount_before_tax', 0);
         }
 
         // search
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%$search%")
-                    ->orWhere('invoice_number', 'like', "%$search%");
+                ->orWhere('invoice_number', 'like', "%$search%");
             });
         }
 
@@ -79,11 +94,11 @@ class SaleReportService
                     'transaction_no' => $t->sales_no,
                     'location' => $t->location_name,
                     'date' => $t->local_sales_at,
-                    'cashier' => Str::replace('_', ' ', $t->cashier_first_name.($t->cashier_last_name === 'Kasir' ? '' : $t->cashier_last_name)),
-                    'sales' => Str::replace('_', '', $t->employee_sales_first_name.($t->employee_sales_last_name === 'Sales' ? '' : $t->employee_sales_last_name)),
-                    'member' => $t->customer_first_name.' - '.$t->customer_last_name,
+                    'cashier' => Str::replace('_', ' ', $t->cashier_first_name . ($t->cashier_last_name === 'Kasir' ? '' : $t->cashier_last_name)),
+                    'sales' => Str::replace('_', '', $t->employee_sales_first_name . ($t->employee_sales_last_name === 'Sales' ? '' : $t->employee_sales_last_name)),
+                    'member' => $t->customer_first_name . ' - ' . $t->customer_last_name,
                     'subtotal' => $t->subtotal,
-                    'discount' => $t->promo_amount_before_tax + $t->discount_amount_before_tax ,
+                    'discount' => $t->promo_amount_before_tax + $t->discount_amount_before_tax,
                     'adjustment' => $t->surcharge_amount_before_tax,
                     'total' => $t->net_sales_after_tax,
                     'profit' => $t->net_profit,

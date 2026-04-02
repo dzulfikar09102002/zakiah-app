@@ -71,7 +71,7 @@ class StockRemainingExport implements FromCollection, WithHeadings, WithMapping,
 
     public function headings(): array
     {
-        return ['SKU', 'Barcode', 'Nama', 'Kategori', 'Stok', 'HPP', 'Harga Jual'];
+        return ['SKU', 'Barcode', 'Nama', 'Kategori', 'Stok', 'HPP', 'Harga Beli', 'Harga Jual'];
     }
 
     public function map($row): array
@@ -79,10 +79,12 @@ class StockRemainingExport implements FromCollection, WithHeadings, WithMapping,
         return [
             (string) ($row['SKU'] ?? '-'),
             (string) ($row['Barcode'] ?? '-'),
+            
             $row['Nama'] ?? '-',
             $row['Kategori'] ?? '-',
             $row['Stok'] ?? 0,
             $row['HPP'] ?? 0,
+            $row['Harga Beli'] ??0,
             $row['Harga Jual'] ?? 0,
         ];
     }
@@ -92,8 +94,9 @@ class StockRemainingExport implements FromCollection, WithHeadings, WithMapping,
         return [
             'A' => NumberFormat::FORMAT_TEXT,  
             'B' => NumberFormat::FORMAT_TEXT,  
-            'F' => '_-"Rp "* #,##0_-',       
-            'G' => '_-"Rp "* #,##0_-',       
+            'F' => '#,##0',
+            'G' => '#,##0',
+            'H' => '#,##0',       
         ];
     }
 }

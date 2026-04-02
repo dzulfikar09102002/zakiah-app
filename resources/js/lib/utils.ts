@@ -14,18 +14,19 @@ export const capitalize = (text: string): string => {
     return text
         .toLowerCase()
         .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 };
 
 export const toRupiah = (amount: number | string): string => {
-    const numericAmount = typeof amount === "string" ? parseFloat(amount) : amount;
+    const numericAmount =
+        typeof amount === 'string' ? parseFloat(amount) : amount;
 
-    if (isNaN(numericAmount)) return "Rp0";
+    if (isNaN(numericAmount)) return 'Rp0';
 
-    return new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
         minimumFractionDigits: 0,
     }).format(numericAmount);
 };

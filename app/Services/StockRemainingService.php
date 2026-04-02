@@ -29,7 +29,7 @@ class StockRemainingService
                 $q->where('entity_id', $entityId);
             })
             ->where('location_id', $locationId)
-            ->where('stock', '>', 0);
+            ->orderByDesc('stock');
 
         return $query
             ->paginate(request('per_page', 10))
@@ -73,7 +73,7 @@ class StockRemainingService
             $q->where('entity_id', $entityId);
         })
         ->where('location_id', $locationId)
-        ->where('stock', '>', 0);
+        ->orderByDesc('stock');
 
     $stocks = $query->get();
 
@@ -85,6 +85,7 @@ class StockRemainingService
             'Kategori' => $pls->product->productCategory?->name ?? '-',
             'Stok' => $pls->stock,
             'HPP' => $pls->product?->cost_of_goods_sold ?? 0,
+            'Harga Beli' => $pls->product?->last_buying_price ?? 0,
             'Harga Jual' => $pls->product?->sell_price ?? 0,
         ];
     });
