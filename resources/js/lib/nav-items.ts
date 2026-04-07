@@ -9,7 +9,7 @@ import {
     MonitorCog,
     UserCog,
 } from 'lucide-react';
-import {  dashboard, settings } from '@/routes';
+import { dashboard, settings } from '@/routes';
 
 import employees from '@/routes/employees';
 import locations from '@/routes/locations';

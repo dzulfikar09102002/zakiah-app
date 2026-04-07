@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Location;
+use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductLocationStock;
 
@@ -29,6 +30,7 @@ class StockRemainingService
                 $q->where('entity_id', $entityId);
             })
             ->where('location_id', $locationId)
+            ->where('stock', '>', 1)
             ->orderByDesc('stock');
 
         return $query
@@ -59,35 +61,37 @@ class StockRemainingService
         return $options;
     }
     public function getAllStockForExport(int $locationId)
-{
-    $entityId = auth()->user()?->entity?->id;
-    $product_category_id = request('product_category_id', 'all');
+    {
+        $entityId = auth()->user()?->entity?->id;
+        $product_category_id = request('product_category_id', 'all');
 
-    $query = ProductLocationStock::query()
-        ->with(['product', 'product.productCategory'])
-        ->whereHas('product', function ($q) use ($entityId, $product_category_id) {
-            $q->where('entity_id', $entityId)
-              ->when($product_category_id !== 'all', fn($q) => $q->where('product_category_id', $product_category_id));
+        $products = Product::query()
+            ->with(['productCategory'])
+            ->where('entity_id', $entityId)
+            ->when($product_category_id !== 'all', function ($q) use ($product_category_id) {
+                $q->where('product_category_id', $product_category_id);
+            })
+            ->with(['productLocationStocks' => function ($q) use ($locationId) {
+                $q->where('location_id', $locationId);
+            }])
+            ->get();
+
+        return $products
+        ->map(function ($product) {
+            $stock = $product->productLocationStocks->first();
+
+            return [
+                'SKU' => $product->sku ?? '-',
+                'Barcode' => $product->barcode ?? '-',
+                'Nama' => $product->name ?? '-',
+                'Kategori' => $product->productCategory?->name ?? '-',
+                'Stok' => $stock?->stock ?? 0,
+                'HPP' => $product->cost_of_goods_sold ?? 0,
+                'Harga Beli' => $product->last_buying_price ?? 0,
+                'Harga Jual' => $product->sell_price ?? 0,
+            ];
         })
-        ->whereHas('location', function ($q) use ($entityId) {
-            $q->where('entity_id', $entityId);
-        })
-        ->where('location_id', $locationId)
-        ->orderByDesc('stock');
-
-    $stocks = $query->get();
-
-    return $stocks->map(function ($pls) {
-        return [
-            'SKU' => $pls->product?->sku ?? '-',
-            'Barcode' => $pls->product?->barcode ?? '-',
-            'Nama' => $pls->product?->name ?? '-',
-            'Kategori' => $pls->product->productCategory?->name ?? '-',
-            'Stok' => $pls->stock,
-            'HPP' => $pls->product?->cost_of_goods_sold ?? 0,
-            'Harga Beli' => $pls->product?->last_buying_price ?? 0,
-            'Harga Jual' => $pls->product?->sell_price ?? 0,
-        ];
-    });
-}
+        ->sortByDesc('Stok') 
+        ->values();
+        }
 }
