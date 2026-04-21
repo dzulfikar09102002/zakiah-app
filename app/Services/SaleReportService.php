@@ -55,13 +55,18 @@ class SaleReportService
         $query->whereIn('location_id', $locationIds);
 
         // filter lokasi (kalau ada)
+        $selectAll = request('select_all_location') == '1';
         $locs = request()->input('locs', []);
+        $excludeLocs = request()->input('exclude_locs', []);
 
-        if (!empty($locs)) {
-            if (!is_array($locs)) {
-                $locs = [$locs];
-            }
+        // pastikan array integer
+        $locs = array_map('intval', (array) $locs);
+        $excludeLocs = array_map('intval', (array) $excludeLocs);
 
+        // 🔥 LOGIC FINAL
+        if ($selectAll && count($excludeLocs) > 0) {
+            $query->whereNotIn('location_id', $excludeLocs);
+        } elseif (!$selectAll && count($locs) > 0) {
             $query->whereIn('location_id', $locs);
         }
 

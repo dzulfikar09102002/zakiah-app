@@ -22,6 +22,7 @@ import { Search } from 'lucide-react';
 import Select from '@/components/select';
 import MultiSelect from '@/components/multi-select';
 import QueryString from 'qs';
+import LocationDropdown from '@/components/location-dropdown';
 
 type SalesData = {
     transaction_no: string;
@@ -182,7 +183,34 @@ export default ({ pagination, locationOptions }: Props) => {
     useEffect(() => {
         localStorage.setItem(cachedColumnKey, JSON.stringify(columnVisibility));
     }, [columnVisibility]);
-
+    useEffect(() => {
+        const params = QueryString.parse(window.location.search, {
+            ignoreQueryPrefix: true,
+        });
+    
+        if (params.select_all_location === '0') {
+            setSelectAllLocation(false);
+        }
+    
+        if (params.locs) {
+            const arr = Array.isArray(params.locs)
+                ? params.locs
+                : String(params.locs).split(',');
+    
+            setLocs(arr.map(Number));
+        }
+    
+        if (params.exclude_locs) {
+            const arr = Array.isArray(params.exclude_locs)
+                ? params.exclude_locs
+                : String(params.exclude_locs).split(',');
+    
+            setExcludeLocs(arr.map(Number));
+        }
+    }, []);
+    const [selectAllLocation, setSelectAllLocation] = useState<boolean>(true);
+    const [locs, setLocs] = useState<number[]>([]);
+    const [excludeLocs, setExcludeLocs] = useState<number[]>([]);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -204,7 +232,26 @@ export default ({ pagination, locationOptions }: Props) => {
                             />
 
                             {/* LOCATION */}
-                            <MultiSelect
+                            <LocationDropdown
+                                multiSelect
+                                options={locationOptions.map((l) => ({
+                                    id: Number(l.value),
+                                    name: l.label,
+                                }))}
+                                defaultSelectAll
+                                handleSelectAllChange={setSelectAllLocation}
+                                handleIdsChange={setLocs}
+                                handleExcludeIdsChange={setExcludeLocs}
+                            />
+                            <input type="hidden" name="select_all_location" value={selectAllLocation ? '1' : '0'} />
+                            {locs.map((id, i) => (
+                                <input key={i} type="hidden" name="locs[]" value={id} />
+                            ))}
+
+                            {excludeLocs.map((id, i) => (
+                                <input key={i} type="hidden" name="exclude_locs[]" value={id} />
+                            ))}
+                            {/* <MultiSelect
                                 name="locs"
                                 options={[
                                     { label: 'Semua lokasi', value: 'all' },
@@ -217,7 +264,7 @@ export default ({ pagination, locationOptions }: Props) => {
                                 placeholder={multiSelectPlaceholder}
                             />
 
-                            {/* SELECT ALL LOCATION FLAG */}
+                            
                             <input
                                 type="hidden"
                                 name="select_all_location"
@@ -227,7 +274,7 @@ export default ({ pagination, locationOptions }: Props) => {
                                         ? '1'
                                         : '0'
                                 }
-                            />
+                            /> */}
 
                             <Button type="submit">
                                 <Search /> Cari

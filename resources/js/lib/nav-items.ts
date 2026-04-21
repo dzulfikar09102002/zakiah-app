@@ -47,11 +47,11 @@ export const mainNavItems: NavItem[] = [
                 href: '#',
                 items: [
                     {
-                        title: 'Ringkasan',
+                        title: 'Per Transaksi',
                         href: reportSales.index().url,
                     },
                     {
-                        title: 'Per Product',
+                        title: 'Per Produk',
                         href: comingsoon.index().url,
                     },
                     {
@@ -69,7 +69,7 @@ export const mainNavItems: NavItem[] = [
                         href: comingsoon.index().url,
                     },
                     {
-                        title: 'Pergerakan',
+                        title: 'Pergerakan Stok',
                         href: comingsoon.index().url,
                     },
                     {
