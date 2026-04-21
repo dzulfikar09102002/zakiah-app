@@ -45,8 +45,12 @@ class StockRemainingController extends Controller
     {
         $location = Location::findOrFail($locationId);
         $data = $this->service->getAllStockForExport($locationId);
-
-        $fileName = 'Stok-Sisa-' . str_replace(' ', '-', $location->name) . '.xlsx';
+        $entityName = match ($location->entity_id) {
+                1 => 'Secaca',
+                3 => 'Zakiah',
+                default => 'Unknown'
+            };
+        $fileName = 'Stok-Sisa-' .$entityName . ' '  . str_replace(' ', '-', $location->name) . '.xlsx';
 
         return Excel::download(
             new StockRemainingExport($data),

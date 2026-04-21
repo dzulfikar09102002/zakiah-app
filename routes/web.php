@@ -45,8 +45,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');
-    
+Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');    
     Route::get('dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
     
@@ -93,8 +92,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('stock-remaining/{location}', [StockRemainingController::class, 'report'])
         ->name('stock-remaining.report');
-Route::get('/stock-remaining/{location}/export', [StockRemainingController::class, 'export'])
-    ->name('stock-remaining.export');
+    Route::get('/stock-remaining/{location}/export', [StockRemainingController::class, 'export'])
+        ->name('stock-remaining.export');
     // Categories
     Route::get('product-categories/deleted', [ProductCategoryController::class, 'deleted'])
         ->name('product-categories.deleted');

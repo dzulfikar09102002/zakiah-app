@@ -1,8 +1,5 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
-import {
-    Plus,
-    Search,
-} from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import Alert from '@/components/product-categories/alert';
 import type { AlertState } from '@/components/product-categories/alert';
@@ -15,60 +12,67 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
-import type {
-    Category,
-    Pagination
-} from '@/lib/model';
+import type { Category, Pagination } from '@/lib/model';
 import type { BreadcrumbItem } from '@/types';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import productCategories from '@/routes/product-categories';
 
-const title = 'Produk Kategori'
+const title = 'Produk Kategori';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title,
-        href: productCategories.index().url
+        href: productCategories.index().url,
     },
 ];
 
 type Props = {
-    pagination: Pagination<Category>
-    onlyTrashed?: boolean
-}
+    pagination: Pagination<Category>;
+    onlyTrashed?: boolean;
+};
 
 export default ({ pagination, onlyTrashed }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
-        dataId: undefined as unknown
+        dataId: undefined as unknown,
     });
     const [alert, setAlert] = useState<AlertState>({
         delete: true,
         isOpen: false,
         dataId: undefined as unknown,
-        proccessing: false
+        proccessing: false,
     });
-    const search = useQuery().search || ''
+    const search = useQuery().search || '';
 
-    const onModalSuccess = () => setModal({ ...modal, isOpen: false, dataId: undefined })
-    const onModalClose = () => setModal({ ...modal, dataId: undefined, isOpen: false })
+    const onModalSuccess = () =>
+        setModal({ ...modal, isOpen: false, dataId: undefined });
+    const onModalClose = () =>
+        setModal({ ...modal, dataId: undefined, isOpen: false });
 
-    const onAlertlClose = () => setAlert({ isOpen: false, proccessing: false, dataId: undefined, delete: true })
-    const onAlertProccessing = () => setAlert({ ...alert, proccessing: true })
+    const onAlertlClose = () =>
+        setAlert({
+            isOpen: false,
+            proccessing: false,
+            dataId: undefined,
+            delete: true,
+        });
+    const onAlertProccessing = () => setAlert({ ...alert, proccessing: true });
 
-    const onEdit = (id: unknown) => setModal({
-        ...modal,
-        dataId: id,
-        isOpen: true
-    })
+    const onEdit = (id: unknown) =>
+        setModal({
+            ...modal,
+            dataId: id,
+            isOpen: true,
+        });
 
-    const onDeleteOrRestore = (id: unknown, action: boolean) => setAlert({
-        ...alert,
-        dataId: id,
-        delete: action,
-        isOpen: true
-    })
-    const { url } = usePage()
-    const isDeletedRoute = url.includes('deleted')
+    const onDeleteOrRestore = (id: unknown, action: boolean) =>
+        setAlert({
+            ...alert,
+            dataId: id,
+            delete: action,
+            isOpen: true,
+        });
+    const { url } = usePage();
+    const isDeletedRoute = url.includes('deleted');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -85,22 +89,35 @@ export default ({ pagination, onlyTrashed }: Props) => {
                 onAlertProccessing={onAlertProccessing}
             />
             <div className="mb-4">
-                <Button className="size-9 lg:size-auto" onClick={() => setModal({ ...modal, isOpen: true })}>
-                    <Plus /> <span className="hidden lg:inline">Kategori Baru</span>
+                <Button
+                    className="size-9 lg:size-auto"
+                    onClick={() => setModal({ ...modal, isOpen: true })}
+                >
+                    <Plus />{' '}
+                    <span className="hidden lg:inline">Kategori Baru</span>
                 </Button>
             </div>
             <Card>
                 <CardHeader>
-                    <Form method='GET' className='grid lg:flex gap-2'>
+                    <Form method="GET" className="grid gap-2 lg:flex">
                         <input type="hidden" name="page" value={1} />
-                        <Input defaultValue={search} name='search' placeholder='Cari...' />
-                        <Button variant={'secondary'}><Search /> Cari</Button>
+                        <Input
+                            defaultValue={search}
+                            name="search"
+                            placeholder="Cari..."
+                        />
+                        <Button variant={'secondary'}>
+                            <Search /> Cari
+                        </Button>
                     </Form>
                 </CardHeader>
                 <CardContent>
-                    <Tabs value={isDeletedRoute ? 'deleted' : 'available'} className='mb-4'>
+                    <Tabs
+                        value={isDeletedRoute ? 'deleted' : 'available'}
+                        className="mb-4"
+                    >
                         <TabsList>
-                            <TabsTrigger value='available' asChild>
+                            <TabsTrigger value="available" asChild>
                                 <Link href={productCategories.index().url}>
                                     Tersedia
                                 </Link>
@@ -122,4 +139,4 @@ export default ({ pagination, onlyTrashed }: Props) => {
             </Card>
         </AppLayout>
     );
-}
+};
