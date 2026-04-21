@@ -208,9 +208,28 @@ export default ({ pagination, locationOptions }: Props) => {
             setExcludeLocs(arr.map(Number));
         }
     }, []);
-    const [selectAllLocation, setSelectAllLocation] = useState<boolean>(true);
-    const [locs, setLocs] = useState<number[]>([]);
-    const [excludeLocs, setExcludeLocs] = useState<number[]>([]);
+    const params = QueryString.parse(window.location.search, {
+        ignoreQueryPrefix: true,
+    });
+    
+    // helper biar aman
+    const parseToNumberArray = (val: any): number[] => {
+        if (!val) return [];
+    
+        if (Array.isArray(val)) {
+            return val.map(Number);
+        }
+    
+        return String(val).split(',').map(Number);
+    };
+    
+    const initialSelectAll = params.select_all_location !== '0';
+    const initialLocs = parseToNumberArray(params.locs);
+    const initialExcludeLocs = parseToNumberArray(params.exclude_locs);
+
+    const [selectAllLocation, setSelectAllLocation] = useState<boolean>(initialSelectAll);
+const [locs, setLocs] = useState<number[]>(initialLocs);
+const [excludeLocs, setExcludeLocs] = useState<number[]>(initialExcludeLocs);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -233,16 +252,18 @@ export default ({ pagination, locationOptions }: Props) => {
 
                             {/* LOCATION */}
                             <LocationDropdown
-                                multiSelect
-                                options={locationOptions.map((l) => ({
-                                    id: Number(l.value),
-                                    name: l.label,
-                                }))}
-                                defaultSelectAll
-                                handleSelectAllChange={setSelectAllLocation}
-                                handleIdsChange={setLocs}
-                                handleExcludeIdsChange={setExcludeLocs}
-                            />
+    multiSelect
+    options={locationOptions.map((l) => ({
+        id: Number(l.value),
+        name: l.label,
+    }))}
+    defaultSelectAll={initialSelectAll}
+    defaultIds={initialLocs}
+    defaultExcludeIds={initialExcludeLocs}
+    handleSelectAllChange={setSelectAllLocation}
+    handleIdsChange={setLocs}
+    handleExcludeIdsChange={setExcludeLocs}
+/>
                             <input type="hidden" name="select_all_location" value={selectAllLocation ? '1' : '0'} />
                             {locs.map((id, i) => (
                                 <input key={i} type="hidden" name="locs[]" value={id} />
