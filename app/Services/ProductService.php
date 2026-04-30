@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Location;
 use App\Models\Product;
 use App\Models\ProductCategory;
 
@@ -32,19 +33,19 @@ class ProductService
 
     public function getCategoryOptions()
     {
-        $options = ProductCategory::where('entity_id', auth()->user()?->entity?->id)->get()
-            ->map(function ($category) {
-                return [
-                    'value' => $category->id,
-                    'label' => $category->name,
-                ];
-            });
+        return ProductCategory::where('entity_id', auth()->user()?->entity?->id)
+            ->select('id as value', 'name as label')
+            ->get()
+            ->prepend((object) [ // Cast ke object agar seragam dengan hasil get()
+                'value' => 'all',
+                'label' => 'Semua kategori',
+            ]);
+    }
 
-        $options->prepend([
-            'value' => 'all',
-            'label' => 'Semua kategori',
-        ]);
-
-        return $options;
+    public function getLocationOptions()
+    {
+        return Location::where('entity_id', auth()->user()?->entity?->id)
+            ->select('id as value', 'name as label')
+            ->get();
     }
 }

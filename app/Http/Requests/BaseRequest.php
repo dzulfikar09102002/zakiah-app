@@ -15,6 +15,7 @@ class BaseRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return (new RoleValidatorService($this->employee, $this->page, $this->action))->authorize();
+        return (new RoleValidatorService($this->employee, $this->page, $this->action))
+            ->authorize();
     }
 }

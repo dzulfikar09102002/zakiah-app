@@ -44,9 +44,9 @@ export interface Employee {
         id: number;
         email: string;
     }
-    employeeLocation?:{
-        location_id:number;
-        role_id:number;
+    employeeLocation?: {
+        location_id: number;
+        role_id: number;
     }
 }
 
@@ -87,7 +87,7 @@ export interface Product {
     sku: string;
     barcode: string;
     description: string;
-    image_url?: string;
+    image_url?: string | null;
     sell_to_customer: number | boolean; //
     service: number | boolean;
     modifier: number | boolean;
@@ -107,6 +107,15 @@ export interface Product {
     cost_of_goods_sold: number;
     last_buying_price: number;
     total_stock: string | number; // Di data kamu berupa string "544"
+    stock_movements?: StockMovement[]
+    product_unit_conversions?: any[]
+    product_sell_prices?: number[]
+}
+
+export type StockMovement = {
+    location_id: number
+    buying_price: number
+    stock: number
 }
 
 export type Pagination<T> = {

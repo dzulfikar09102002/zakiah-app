@@ -16,7 +16,7 @@ class ProductTransformerFromRequestServices
     protected array $params;
     protected Entity $entity;
     protected Request $request;
-    
+
     /**
      * Create a new class instance.
      */
@@ -31,16 +31,16 @@ class ProductTransformerFromRequestServices
     public function transform(): ProductRequest
     {
         return (new ProductRequest())
-                ->setFillable($this->params)
-                ->setCreatedBy($this->request->user())
-                ->setUpdatedBy($this->request->user())
-                ->setEntity($this->entity)
-                ->setLocationIds($this->getLocationIds())
-                ->setStockMovements($this->params['stock_movements'] ?? [])
-                ->setLocation($this->getLocation([$this->params['location_id']]))
-                ->setTax($this->getTax($this->params['tax_id']))
-                ->setProductUnit($this->getProductUnit($this->params['product_unit_id']))
-                ->setProductSellUnit($this->getProductUnit($this->params['product_sell_unit_id']));
+            ->setFillable($this->params)
+            ->setCreatedBy($this->request->user())
+            ->setUpdatedBy($this->request->user())
+            ->setEntity($this->entity)
+            ->setLocationIds($this->getLocationIds())
+            ->setStockMovements($this->params['stock_movements'] ?? [])
+            ->setLocation($this->getLocation([$this->params['location_id']]))
+            ->setTax($this->getTax($this->params['tax_id']))
+            ->setProductUnit($this->getProductUnit($this->params['product_unit_id']))
+            ->setProductSellUnit($this->getProductUnit($this->params['product_sell_unit_id']));
     }
 
     protected function getLocationIds(): Collection
@@ -63,6 +63,7 @@ class ProductTransformerFromRequestServices
 
     protected function getProductUnit(?int $id, bool $required = true): ?ProductUnit
     {
+        // dd($this->entity->id, $id);
         $producUnit = ProductUnit::where('entity_id', $this->entity->id)->where('id', $id)->first();
         if ($required && !$producUnit) {
             throw ValidationException::withMessages([

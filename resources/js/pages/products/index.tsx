@@ -55,6 +55,9 @@ import type { Pagination, Product } from "@/lib/model";
 import { toRupiah } from "@/lib/utils";
 import products from "@/routes/products"
 import type { BreadcrumbItem } from "@/types"
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { ProductFormDialog } from "../../components/product-form-dialog";
 
 const title = 'Kelola Produk'
 
@@ -72,10 +75,11 @@ type Option = {
 
 type Props = {
     categoryOptions: Option[]
+    locations: Option[]
     pagination: Pagination<Product>
 }
 
-export default ({ categoryOptions, pagination }: Props) => {
+export default ({ categoryOptions, pagination, locations }: Props) => {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -231,12 +235,78 @@ export default ({ categoryOptions, pagination }: Props) => {
                 </CardContent>
             </Card>
 
-            <Dialog open={isModalOpen} onOpenChange={() => setIsModalOpen(false)}>
+            <ProductFormDialog
+                locations={locations as any}
+                onOpenChange={(open) => setIsModalOpen(open)}
+                onSuccess={() => console.log('berhasil')}
+                product={undefined}
+                open={isModalOpen}
+                categories={categoryOptions}
+            />
+
+            {/* <Dialog open={isModalOpen} onOpenChange={() => setIsModalOpen(false)}>
                 <Form>
                     <DialogContent>
                         <DialogHeader>
                             <DialogTitle>Produk Baru</DialogTitle>
                         </DialogHeader>
+
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="name">Nama</Label>
+                                <Input id="name" name="name" placeholder="Nama produk" />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="description">Deskripsi</Label>
+                                <Input id="description" name="description" placeholder="Keterangan produk" />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="sku">SKU</Label>
+                                <Input id="sku" name="sku" placeholder="Stock Keeping Unit" />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="barcode">Barcode</Label>
+                                <Input id="barcode" name="barcode" placeholder="Kode barcode" />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="sell_price">Harga Jual</Label>
+                                    <Input id="sell_price" name="sell_price" type="number" />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="last_buying_price">Harga Beli Terakhir</Label>
+                                    <Input id="last_buying_price" name="last_buying_price" type="number" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Separator />
+
+                        
+                        <div className="grid gap-4">
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-medium">Stock Movements (Per Lokasi)</h4>
+                                <Button type="button" variant="outline" size="sm">Tambah Lokasi</Button>
+                            </div>
+
+                            <div className="grid grid-cols-12 gap-3 items-end border p-3 rounded-md">
+                                <div className="col-span-7 grid gap-2">
+                                    <Label className="text-xs">ID Lokasi</Label>
+                                    <Input name="stock_movements[0].location_id" placeholder="ID Lokasi (Contoh: 5)" />
+                                </div>
+                                <div className="col-span-4 grid gap-2">
+                                    <Label className="text-xs">Jumlah Stok</Label>
+                                    <Input name="stock_movements[0].stock" type="number" placeholder="0" />
+                                </div>
+                                <div className="col-span-1">
+                                    <Button variant="ghost" size="icon" className="text-destructive">×</Button>
+                                </div>
+                            </div>
+                        </div>
 
                         <DialogFooter>
                             <DialogClose asChild>
@@ -246,8 +316,7 @@ export default ({ categoryOptions, pagination }: Props) => {
                         </DialogFooter>
                     </DialogContent>
                 </Form>
-            </Dialog>
-
-        </AppLayout>
+            </Dialog> */}
+        </AppLayout >
     )
 }

@@ -34,6 +34,7 @@ use App\Http\Controllers\SaleTransactionController;
 use App\Http\Controllers\SellingController;
 use App\Http\Controllers\StockRemainingController;
 use App\Http\Controllers\TaxController;
+use App\Http\Middleware\EntityCheckingMiddleware;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -45,30 +46,34 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');    
+    Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');
     Route::get('dashboard', [DashboardController::class, 'index'])
-    ->name('dashboard');
-    
+        ->name('dashboard');
+
     Route::resource('roles', RoleController::class);
 
     Route::resource('employees', EmployeeController::class)->except('show');
-        Route::get('employees/deleted', [EmployeeController::class, 'deleted'])
-    ->name('employees.deleted');
+    Route::get('employees/deleted', [EmployeeController::class, 'deleted'])
+        ->name('employees.deleted');
     Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
-    ->name('employees.restore');
-    
-    Route::resource('products', ProductController::class);
+        ->name('employees.restore');
+
+    Route::prefix('products')->group(function () {
+        Route::get('/', [ProductController::class, 'index'])->name('products.index');
+        Route::post('/', [ProductController::class, 'store'])->name('products.store')->middleware(EntityCheckingMiddleware::class);
+        Route::put('/{product}', [ProductController::class, 'update'])->name('products.update');
+    });
     Route::resource('product-categories', ProductCategoryController::class)->except(['show']);
 
     Route::resource('product-units', ProductUnitController::class)->except(['show']);
     Route::get('product-units/deleted', [ProductUnitController::class, 'deleted'])
-    ->name('product-units.deleted');
+        ->name('product-units.deleted');
     Route::post('product-units/{id}/restore', [ProductUnitController::class, 'restore'])
-    ->name('product-units.restore');
+        ->name('product-units.restore');
 
     Route::resource('locations', LocationController::class)->except('show');
     Route::get('locations/deleted', [LocationController::class, 'deleted'])
-    ->name('locations.deleted');
+        ->name('locations.deleted');
     Route::post('locations/{id}/restore', [LocationController::class, 'restore'])
         ->name('locations.restore');
     // Payment Methods
@@ -78,7 +83,7 @@ Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comings
 
     Route::resource('order-types', OrderTypeController::class)->except(['show']);
     Route::get('order-types/deleted', [OrderTypeController::class, 'deleted'])
-    ->name('order-types.deleted');
+        ->name('order-types.deleted');
     Route::post('order-types/{id}/restore', [OrderTypeController::class, 'restore'])
         ->name('order-types.restore');
 
@@ -112,157 +117,157 @@ Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comings
     Route::post('order-types/{id}/restore', [OrderTypeController::class, 'restore'])
         ->name('order-types.restore');
 
-                /*
-        |--------------------------------------------------------------------------
-        | ENTITY
-        |--------------------------------------------------------------------------
-        */
-        Route::resource('entities', EntityController::class)
+    /*
+|--------------------------------------------------------------------------
+| ENTITY
+|--------------------------------------------------------------------------
+*/
+    Route::resource('entities', EntityController::class)
         ->only(['show', 'update']);
 
-        /*
-        |--------------------------------------------------------------------------
-        | MASTER TAMBAHAN
-        |--------------------------------------------------------------------------
-        */
-        Route::resource('brands', BrandController::class)->except(['destroy']);
-        Route::resource('taxes', TaxController::class)->except(['destroy']);
+    /*
+    |--------------------------------------------------------------------------
+    | MASTER TAMBAHAN
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('brands', BrandController::class)->except(['destroy']);
+    Route::resource('taxes', TaxController::class)->except(['destroy']);
 
-        /*
-        |--------------------------------------------------------------------------
-        | DROPDOWN TAMBAHAN
-        |--------------------------------------------------------------------------
-        */
-        Route::get('locations-dropdown', [LocationController::class, 'dropdown'])
+    /*
+    |--------------------------------------------------------------------------
+    | DROPDOWN TAMBAHAN
+    |--------------------------------------------------------------------------
+    */
+    Route::get('locations-dropdown', [LocationController::class, 'dropdown'])
         ->name('locations.dropdown');
 
-        Route::get('products-dropdown', [ProductController::class, 'dropdown'])
+    Route::get('products-dropdown', [ProductController::class, 'dropdown'])
         ->name('products.dropdown');
 
-        Route::get('products-stock', [ProductController::class, 'stock'])
+    Route::get('products-stock', [ProductController::class, 'stock'])
         ->name('products.stock');
 
-        Route::get('products-export', [ProductController::class, 'export'])
+    Route::get('products-export', [ProductController::class, 'export'])
         ->name('products.export');
 
-        /*
-        |--------------------------------------------------------------------------
-        | CUSTOMER CATEGORY
-        |--------------------------------------------------------------------------
-        */
-        Route::resource('customers', CustomerController::class)
+    /*
+    |--------------------------------------------------------------------------
+    | CUSTOMER CATEGORY
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('customers', CustomerController::class)
         ->except(['show']);
-        
-        Route::post('customers/{id}/restore', [CustomerController::class, 'restore'])
+
+    Route::post('customers/{id}/restore', [CustomerController::class, 'restore'])
         ->name('customers.restore');
 
-        Route::get('customers/deleted', [CustomerController::class, 'deleted'])
+    Route::get('customers/deleted', [CustomerController::class, 'deleted'])
         ->name('customers.deleted');
-        
-        Route::resource('customer-categories', CustomerCategoryController::class)
+
+    Route::resource('customer-categories', CustomerCategoryController::class)
         ->except(['show']);
 
-        Route::post('customer-categories/{id}/restore', [CustomerCategoryController::class, 'restore'])
+    Route::post('customer-categories/{id}/restore', [CustomerCategoryController::class, 'restore'])
         ->name('customer-categories.restore');
 
-        Route::get('customer-categories/deleted', [CustomerCategoryController::class, 'deleted'])
+    Route::get('customer-categories/deleted', [CustomerCategoryController::class, 'deleted'])
         ->name('customer-categories.deleted');
 
-        /*
-        |--------------------------------------------------------------------------
-        | PRODUCT SERVICES
-        |--------------------------------------------------------------------------
-        */
-        Route::resource('product-import-services', ProductImportServiceController::class)
+    /*
+    |--------------------------------------------------------------------------
+    | PRODUCT SERVICES
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('product-import-services', ProductImportServiceController::class)
         ->except(['destroy']);
 
-        Route::post('product-import-services/upload', [ProductImportServiceController::class, 'upload'])
+    Route::post('product-import-services/upload', [ProductImportServiceController::class, 'upload'])
         ->name('product-import-services.upload');
 
-        Route::resource('product-transfer-services', ProductTransferServiceController::class)
+    Route::resource('product-transfer-services', ProductTransferServiceController::class)
         ->except(['destroy']);
 
-        Route::post('product-transfer-services/{product_transfer_service}/approve', [ProductTransferServiceController::class, 'approve'])
+    Route::post('product-transfer-services/{product_transfer_service}/approve', [ProductTransferServiceController::class, 'approve'])
         ->name('product-transfer-services.approve');
 
-        Route::post('product-transfer-services/{product_transfer_service}/reject', [ProductTransferServiceController::class, 'reject'])
+    Route::post('product-transfer-services/{product_transfer_service}/reject', [ProductTransferServiceController::class, 'reject'])
         ->name('product-transfer-services.reject');
 
-        Route::post('product-transfer-services/{product_transfer_service}/cancel', [ProductTransferServiceController::class, 'cancel'])
+    Route::post('product-transfer-services/{product_transfer_service}/cancel', [ProductTransferServiceController::class, 'cancel'])
         ->name('product-transfer-services.cancel');
 
-        Route::resource('product-opname-services', ProductOpnameServiceController::class);
+    Route::resource('product-opname-services', ProductOpnameServiceController::class);
 
-        Route::get('product-opname-services/{id}/preview', [ProductOpnameServiceController::class, 'preview'])
+    Route::get('product-opname-services/{id}/preview', [ProductOpnameServiceController::class, 'preview'])
         ->name('product-opname-services.preview');
 
-        Route::resource('product-adjustment-stocks', ProductAdjustmentStockController::class);
+    Route::resource('product-adjustment-stocks', ProductAdjustmentStockController::class);
 
-        Route::post('product-adjustment-stocks/{id}/approve', [ProductAdjustmentStockController::class, 'approve'])
+    Route::post('product-adjustment-stocks/{id}/approve', [ProductAdjustmentStockController::class, 'approve'])
         ->name('product-adjustment-stocks.approve');
 
-        Route::post('product-adjustment-stocks/{id}/reject', [ProductAdjustmentStockController::class, 'reject'])
+    Route::post('product-adjustment-stocks/{id}/reject', [ProductAdjustmentStockController::class, 'reject'])
         ->name('product-adjustment-stocks.reject');
 
-        /*
-        |--------------------------------------------------------------------------
-        | PROMO
-        |--------------------------------------------------------------------------
-        */
-        Route::resource('promos', PromoController::class)->except(['destroy']);
+    /*
+    |--------------------------------------------------------------------------
+    | PROMO
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('promos', PromoController::class)->except(['destroy']);
 
-        /*
-        |--------------------------------------------------------------------------
-        | EMPLOYEE TAMBAHAN
-        |--------------------------------------------------------------------------
-        */
-        Route::get('employees-dropdown', [EmployeeController::class, 'dropdown'])
+    /*
+    |--------------------------------------------------------------------------
+    | EMPLOYEE TAMBAHAN
+    |--------------------------------------------------------------------------
+    */
+    Route::get('employees-dropdown', [EmployeeController::class, 'dropdown'])
         ->name('employees.dropdown');
 
-        /*
-        |--------------------------------------------------------------------------
-        | SALES & CUSTOMER
-        |--------------------------------------------------------------------------
-        */
-        Route::resource('daily-sales', DailySaleController::class)
+    /*
+    |--------------------------------------------------------------------------
+    | SALES & CUSTOMER
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('daily-sales', DailySaleController::class)
         ->only(['index', 'show']);
 
-        Route::resource('sale-transactions', SaleTransactionController::class)
+    Route::resource('sale-transactions', SaleTransactionController::class)
         ->only(['index', 'show']);
 
-        Route::patch('sale-transactions/{id}/void', [SaleTransactionController::class, 'void'])
+    Route::patch('sale-transactions/{id}/void', [SaleTransactionController::class, 'void'])
         ->name('sale-transactions.void');
 
 
-        Route::patch('customers/{id}/activate', [CustomerController::class, 'activate'])
+    Route::patch('customers/{id}/activate', [CustomerController::class, 'activate'])
         ->name('customers.activate');
 
-        Route::resource('customer-point-movements', CustomerPointMovementController::class)
+    Route::resource('customer-point-movements', CustomerPointMovementController::class)
         ->only(['index']);
 
-        /*
-        |--------------------------------------------------------------------------
-        | LOYALTY
-        |--------------------------------------------------------------------------
-        */
-        Route::resource('loyalties', LoyaltyController::class)->except(['destroy']);
+    /*
+    |--------------------------------------------------------------------------
+    | LOYALTY
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('loyalties', LoyaltyController::class)->except(['destroy']);
 
-        Route::patch('loyalties/{id}/activate', [LoyaltyController::class, 'activate'])
+    Route::patch('loyalties/{id}/activate', [LoyaltyController::class, 'activate'])
         ->name('loyalties.activate');
 
-        Route::patch('loyalties/{id}/deactivate', [LoyaltyController::class, 'deactivate'])
+    Route::patch('loyalties/{id}/deactivate', [LoyaltyController::class, 'deactivate'])
         ->name('loyalties.deactivate');
 
-        Route::patch('loyalties/{id}/archive', [LoyaltyController::class, 'archive'])
+    Route::patch('loyalties/{id}/archive', [LoyaltyController::class, 'archive'])
         ->name('loyalties.archive');
 
-        Route::resource('report-by-products', ReportByProductController::class)->only(['index']);
-        Route::resource('report-sales', SalesReportController::class)->only(['index']);
-        Route::resource('report-sales-by-location', ReportSalesByLocationController::class)->only(['index']);
-        Route::resource('report-stock-movement', ReportStockMovementController::class)->only(['index']);
-        Route::resource('report-stock-card', ReportStockCardController::class)->only(['index']);
-        Route::resource('report-employee-summary', ReportEmployeeSummaryController::class)->only(['index']);
-        Route::resource('report-employee-detail', ReportEmployeeDetailController::class)->only(['index']);
+    Route::resource('report-by-products', ReportByProductController::class)->only(['index']);
+    Route::resource('report-sales', SalesReportController::class)->only(['index']);
+    Route::resource('report-sales-by-location', ReportSalesByLocationController::class)->only(['index']);
+    Route::resource('report-stock-movement', ReportStockMovementController::class)->only(['index']);
+    Route::resource('report-stock-card', ReportStockCardController::class)->only(['index']);
+    Route::resource('report-employee-summary', ReportEmployeeSummaryController::class)->only(['index']);
+    Route::resource('report-employee-detail', ReportEmployeeDetailController::class)->only(['index']);
 });
 
-require __DIR__.'/settings.php';
+require __DIR__ . '/settings.php';
