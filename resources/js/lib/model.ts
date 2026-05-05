@@ -110,6 +110,7 @@ export interface Product {
     stock_movements?: StockMovement[]
     product_unit_conversions?: any[]
     product_sell_prices?: number[]
+    product_location_stocks?: ProductStock[]
 }
 
 export type StockMovement = {

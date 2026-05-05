@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductUnit;
 
 class ProductService
 {
@@ -12,7 +13,7 @@ class ProductService
     {
         $search = request('search', '');
         $product_category_id = request('product_category_id', 'all');
-        $query = Product::with('productCategory')
+        $query = Product::with('productCategory', 'productLocationStocks')
             ->where('entity_id', auth()->user()?->entity?->id)
             ->where(function ($q) use ($search) {
                 $q->whereLike('name', "%$search%")
@@ -41,6 +42,13 @@ class ProductService
     public function getLocationOptions()
     {
         return Location::where('entity_id', auth()->user()?->entity?->id)
+            ->select('id as value', 'name as label')
+            ->get();
+    }
+
+    public function getProuductUnitOptions()
+    {
+        return ProductUnit::where('entity_id', auth()->user()?->entity?->id)
             ->select('id as value', 'name as label')
             ->get();
     }

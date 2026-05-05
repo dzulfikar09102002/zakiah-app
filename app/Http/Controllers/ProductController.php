@@ -26,9 +26,10 @@ class ProductController extends Controller
     {
         $pagination = $this->service->getProducts();
         $categoryOptions = $this->service->getCategoryOptions();
-        $locations = $this->service->getLocationOptions();
+        $locationOptions = $this->service->getLocationOptions();
+        $unitOptions = $this->service->getProuductUnitOptions();
 
-        return Inertia::render('products/index', compact('pagination', 'categoryOptions', 'locations'));
+        return Inertia::render('products/index', compact('pagination', 'categoryOptions', 'locationOptions', 'unitOptions'));
     }
 
     public function store(StoreProductRequest $request)
@@ -49,13 +50,16 @@ class ProductController extends Controller
             throw $e;
         }
 
-        return to_route('products.index')->with('success', value: 'Produk baru berhasil ditambahkan');
+        Inertia::flash(key: 'success', value: 'Produk baru berhasil ditambahkan');
+
+        return back();
     }
 
     public function update(UpdateProductRequest $request, Product $product)
     {
         if ($request->entity->id != $product->entity_id) {
-            return to_route('products.index')->with('error', value: 'Entitas tidak valid');
+            Inertia::flash(key: 'error', value: 'Entitas tidak valid');
+            return back();
         }
 
         # start transcation
@@ -64,6 +68,7 @@ class ProductController extends Controller
             (new ProductUpdaterServices($transforming->transform(), $product))->update();
         });
 
-        return to_route('products.index')->with('success', value: 'Produk berhasil diperbarui');
+        Inertia::flash(key: 'success', value: 'Produk berhasil diperbarui');
+        return back();
     }
 }

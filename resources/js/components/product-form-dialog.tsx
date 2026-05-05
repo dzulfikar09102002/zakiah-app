@@ -24,7 +24,6 @@ import { Option, SharedData } from "@/types";
 import { Product } from "@/lib/model";
 import products from "@/routes/products";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface StockMovementRow {
     location_id: number;
@@ -33,11 +32,9 @@ export interface StockMovementRow {
     stock_new: number;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function buildStockMovements(product: Product | undefined, locations: Option[]): StockMovementRow[] {
     const existingMap = new Map(
-        product?.stock_movements?.map((sm) => [sm.location_id, sm]) ?? []
+        product?.product_location_stocks?.map((sm) => [sm.location_id, sm]) ?? []
     );
 
     return locations.map((loc) => {
@@ -45,69 +42,61 @@ function buildStockMovements(product: Product | undefined, locations: Option[]):
         const existing = existingMap.get(id);
         return {
             location_id: id,
-            buying_price: existing?.buying_price ?? product?.last_buying_price ?? 0,
+            buying_price: product?.last_buying_price ?? 0,
             stock: existing?.stock ?? 0,
             stock_new: existing?.stock ?? 0,
         };
     });
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-
 interface ProductFormDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     locations: Option[];
     categories: Option[];
+    units: Option[];
     product?: Product;
     onSuccess?: () => void;
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export function ProductFormDialog({
     open,
     onOpenChange,
     locations,
+    units,
     categories,
     product,
     onSuccess,
 }: ProductFormDialogProps) {
+
     const isEdit = Boolean(product);
     const employee_code = usePage<SharedData>().props.auth.user.employee.code
 
-    // Inertia useForm — hanya untuk errors & processing
     const { post, put, processing, errors, clearErrors, ...iform } = useForm<any>({});
 
-    // State minimal: hanya Select karena shadcn Select bukan <select> native,
-    // sehingga nilainya tidak terbaca oleh FormData
     const [categoryId, setCategoryId] = useState(String(product?.product_category_id ?? ""));
     const [locationId, setLocationId] = useState(String(product?.location_id ?? ""));
+    const [unitId, setUnitId] = useState(String(product?.product_unit_id ?? ""));
 
-    // Stock movements di-render ulang hanya saat dialog dibuka, bukan tiap ketikan
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const [stockMovements, setStockMovements] = useState<StockMovementRow[]>(() =>
         buildStockMovements(product, locations)
     );
 
-    // Satu ref ke <form> — sumber FormData saat submit
     const formRef = useRef<HTMLFormElement>(null);
 
-    // ── Reset saat dialog dibuka ─────────────────────────────────────────────
     useEffect(() => {
         if (!open) return;
 
         clearErrors();
         setCategoryId(String(product?.product_category_id ?? ""));
         setLocationId(String(product?.location_id ?? ""));
+        setUnitId(String(product?.product_unit_id ?? ""));
         setStockMovements(buildStockMovements(product, locations));
 
-        // Reset semua input uncontrolled ke defaultValue masing-masing
-        formRef.current?.reset();
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
-    // ── Submit: baca semua nilai sekaligus dari FormData ─────────────────────
     const handleSubmit = () => {
         if (!formRef.current) return;
 
@@ -125,8 +114,8 @@ export function ProductFormDialog({
             last_buying_price,
             product_category_id: Number(categoryId),
             location_id: Number(locationId),
-            product_unit_id: 5,
-            product_sell_unit_id: 5,
+            product_unit_id: Number(unitId),
+            product_sell_unit_id: Number(unitId), // default sama dengan product_unit_id
             image_url: null,
             sell_to_customer: true,
             service: false,
@@ -148,28 +137,30 @@ export function ProductFormDialog({
         };
 
         iform.setData(payload)
+        setIsSubmitting(true);
 
     };
 
     useEffect(() => {
 
-        const options = {
-            headers: { "x-employee-code": employee_code },
-            onSuccess: () => {
-                onOpenChange(false);
-                onSuccess?.();
-            },
-        };
+        if (isSubmitting) {
+            const options = {
+                headers: { "x-employee-code": employee_code },
+                onSuccess: () => {
+                    onOpenChange(false);
+                    onSuccess?.();
+                },
+            };
 
-        if (product) {
-            put(products.update(product.id).url, options);
-        } else {
-            products.store
-            post(products.store().url, options);
+            if (product) {
+                put(products.update(product.id).url, options);
+            } else {
+                products.store
+                post(products.store().url, options);
+            }
+            setIsSubmitting(false);
         }
-    }, [iform.data]);
-
-    // ─────────────────────────────────────────────────────────────────────────
+    }, [isSubmitting]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -179,7 +170,6 @@ export function ProductFormDialog({
                 </DialogHeader>
 
                 <ScrollArea className="max-h-[70vh] -mx-1 px-1">
-                    {/* <form> native sebagai wadah FormData — tidak submit ke server */}
                     <form ref={formRef} onSubmit={(e) => e.preventDefault()}>
                         <div className="grid gap-6 py-2">
                             <h4 className="text-sm font-medium">Informasi Dasar</h4>
@@ -210,6 +200,25 @@ export function ProductFormDialog({
                                     />
                                     {errors.description && (
                                         <p className="text-xs text-destructive">{errors.description}</p>
+                                    )}
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="category">Satuan</Label>
+                                    <Select value={unitId} onValueChange={setUnitId}>
+                                        <SelectTrigger id="category">
+                                            <SelectValue placeholder="Pilih satuan" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {units.map((unit) => (
+                                                <SelectItem key={unit.value} value={String(unit.value)}>
+                                                    {unit.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.product_unit_id && (
+                                        <p className="text-xs text-destructive">{errors.product_unit_id}</p>
                                     )}
                                 </div>
 
