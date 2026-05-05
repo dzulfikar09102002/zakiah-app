@@ -61,7 +61,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products.index');
         Route::post('/', [ProductController::class, 'store'])->name('products.store')->middleware(EntityCheckingMiddleware::class);
-        Route::put('/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::put('/{product}', [ProductController::class, 'update'])->name('products.update')->middleware(EntityCheckingMiddleware::class);
     });
     Route::resource('product-categories', ProductCategoryController::class)->except(['show']);
 

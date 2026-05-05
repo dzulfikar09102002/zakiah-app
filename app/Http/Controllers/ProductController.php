@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Services\Product\ProductCreatorServices;
+use App\Helpers\Services\Product\ProductTransformerFromRequestForUpdateServices;
 use App\Helpers\Services\Product\ProductTransformerFromRequestServices;
+use App\Helpers\Services\Product\ProductUpdaterServices;
 use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
+use App\Http\Responses\BaseJsonResponse;
 use App\Models\Product;
 use App\Services\ProductService;
 use DB;
@@ -46,5 +50,20 @@ class ProductController extends Controller
         }
 
         return to_route('products.index')->with('success', value: 'Produk baru berhasil ditambahkan');
+    }
+
+    public function update(UpdateProductRequest $request, Product $product)
+    {
+        if ($request->entity->id != $product->entity_id) {
+            return to_route('products.index')->with('error', value: 'Entitas tidak valid');
+        }
+
+        # start transcation
+        DB::transaction(function () use ($request, $product) {
+            $transforming = new ProductTransformerFromRequestForUpdateServices($request, $product);
+            (new ProductUpdaterServices($transforming->transform(), $product))->update();
+        });
+
+        return to_route('products.index')->with('success', value: 'Produk berhasil diperbarui');
     }
 }

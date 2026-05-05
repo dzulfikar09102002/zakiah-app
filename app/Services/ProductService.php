@@ -35,11 +35,7 @@ class ProductService
     {
         return ProductCategory::where('entity_id', auth()->user()?->entity?->id)
             ->select('id as value', 'name as label')
-            ->get()
-            ->prepend((object) [ // Cast ke object agar seragam dengan hasil get()
-                'value' => 'all',
-                'label' => 'Semua kategori',
-            ]);
+            ->get();
     }
 
     public function getLocationOptions()

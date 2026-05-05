@@ -1,3 +1,5 @@
+import { Employee } from "@/lib/model";
+
 export type User = {
     id: number;
     name: string;
@@ -8,6 +10,7 @@ export type User = {
     created_at: string;
     updated_at: string;
     entity: Entity;
+    employee: Employee;
     [key: string]: unknown;
 };
 

@@ -26,20 +26,6 @@ import {
     ComboboxItem,
     ComboboxList
 } from "@/components/ui/combobox";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from "@/components/ui/dialog";
-import {
-    Field,
-    FieldGroup,
-    FieldLabel,
-    FieldSet
-} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
     Table,
@@ -55,8 +41,6 @@ import type { Pagination, Product } from "@/lib/model";
 import { toRupiah } from "@/lib/utils";
 import products from "@/routes/products"
 import type { BreadcrumbItem } from "@/types"
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { ProductFormDialog } from "../../components/product-form-dialog";
 
 const title = 'Kelola Produk'
@@ -79,7 +63,14 @@ type Props = {
     pagination: Pagination<Product>
 }
 
-export default ({ categoryOptions, pagination, locations }: Props) => {
+const defaultCategoryOption: Option = {
+    label: 'Semua Kategori',
+    value: 'all'
+}
+
+export default ({ categoryOptions: coptions, pagination, locations }: Props) => {
+
+    const categoryOptions = [defaultCategoryOption, ...coptions]
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -91,6 +82,8 @@ export default ({ categoryOptions, pagination, locations }: Props) => {
     const [categoryValue, setCategoryValue] = useState(product_category_id)
 
     const startIndex = (pagination.current_page - 1) * pagination.per_page
+
+    const [selectedProduct, setSelectedProduct] = useState<Product>();
 
     const debouncedSearch = useCallback(
         debounce((value: string, category: any) => {
@@ -210,7 +203,10 @@ export default ({ categoryOptions, pagination, locations }: Props) => {
                                     <TableCell>{product.total_stock}</TableCell>
                                     <TableCell>
                                         <div className="flex gap-2">
-                                            <Button variant="outline" size="icon">
+                                            <Button variant="outline" size="icon" onClick={() => {
+                                                setSelectedProduct(product)
+                                                setIsModalOpen(true)
+                                            }}>
                                                 <Pencil />
                                             </Button>
                                             <Button variant="destructive" size="icon">
@@ -239,9 +235,9 @@ export default ({ categoryOptions, pagination, locations }: Props) => {
                 locations={locations as any}
                 onOpenChange={(open) => setIsModalOpen(open)}
                 onSuccess={() => console.log('berhasil')}
-                product={undefined}
+                product={selectedProduct}
                 open={isModalOpen}
-                categories={categoryOptions}
+                categories={coptions}
             />
 
             {/* <Dialog open={isModalOpen} onOpenChange={() => setIsModalOpen(false)}>
