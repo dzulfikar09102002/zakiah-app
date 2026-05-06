@@ -69,4 +69,17 @@ class ProductController extends Controller
         Inertia::flash(key: 'success', value: 'Produk berhasil diperbarui');
         return back();
     }
+
+    public function destroy(Product $product)
+    {
+        if ($product->entity_id != request()->entity->id) {
+            Inertia::flash(key: 'error', value: 'Entitas tidak valid');
+            return back();
+        }
+
+        $product->delete();
+
+        Inertia::flash(key: 'success', value: 'Produk berhasil dihapus');
+        return back();
+    }
 }

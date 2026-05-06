@@ -32,6 +32,7 @@ import products from '@/routes/products';
 import type { BreadcrumbItem, SharedData } from '@/types';
 import { ProductFormDialog } from '../../components/product-form-dialog';
 import { toast } from 'sonner';
+import { ProductImportButton } from '@/components/product-import-button';
 
 const title = 'Kelola Produk';
 
@@ -127,8 +128,9 @@ export default ({
                     <Plus /> Produk Baru
                 </Button>
 
-                {/* <Button variant="outline"><FileDown /> Export</Button>
-                <Button variant="outline"><FileUp /> Import</Button> */}
+                {/* <Button variant="outline"><FileDown /> Export</Button> */}
+                {/* <Button variant="outline"><FileUp /> Import</Button> */}
+                <ProductImportButton locations={locationOptions} onSuccess={() => console.log('berhasil')} categories={categoryOptions} units={unitOptions} />
             </div>
 
             <Card>
