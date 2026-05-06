@@ -43,8 +43,6 @@ class ProductController extends Controller
 
             DB::commit();
         } catch (Exception $e) {
-            dd($e);
-            # should throw 500
             DB::rollBack();
 
             throw $e;

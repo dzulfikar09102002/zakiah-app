@@ -252,7 +252,6 @@ export default ({ categoryOptions: coptions, pagination, locationOptions, unitOp
                     setSelectedProduct(undefined)
                     setIsModalOpen(open)
                 }}
-                onSuccess={() => console.log('berhasil')}
                 product={selectedProduct}
                 open={isModalOpen}
                 categories={coptions}

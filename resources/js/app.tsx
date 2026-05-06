@@ -1,9 +1,10 @@
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../css/app.css';
 import { initializeTheme } from './hooks/use-appearance';
+import { toast } from 'sonner';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -26,6 +27,22 @@ createInertiaApp({
     progress: {
         color: '#4B5563',
     },
+});
+
+router.on('invalid', (event) => {
+    // 1. Cegah layar putih/pindah halaman
+    event.preventDefault();
+
+    // 2. Ambil data respon
+    const response = event.detail.response;
+
+    if (response.status === 500) {
+        toast.error("Server Error", {
+            description: "Silakan periksa kembali data yang Anda masukkan dan coba lagi sesaat atau hubungi admin",
+        });
+    } else if (response.status === 403) {
+        toast.error("Akses ditolak (403).");
+    }
 });
 
 // This will set light / dark mode on load...

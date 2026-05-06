@@ -23,6 +23,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Option, SharedData } from "@/types";
 import { Product } from "@/lib/model";
 import products from "@/routes/products";
+import { toast } from "sonner";
 
 
 export interface StockMovementRow {
@@ -145,17 +146,18 @@ export function ProductFormDialog({
 
         if (isSubmitting) {
             const options = {
+                preserveState: true,
                 headers: { "x-employee-code": employee_code },
                 onSuccess: () => {
                     onOpenChange(false);
                     onSuccess?.();
                 },
+                onFinish: () => setIsSubmitting(false)
             };
 
             if (product) {
                 put(products.update(product.id).url, options);
             } else {
-                products.store
                 post(products.store().url, options);
             }
             setIsSubmitting(false);
