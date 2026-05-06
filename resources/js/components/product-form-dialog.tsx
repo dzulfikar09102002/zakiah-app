@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { useForm, usePage } from "@inertiajs/react";
+import { useEffect, useRef, useState } from 'react';
+import { useForm, usePage } from '@inertiajs/react';
 import {
     Dialog,
     DialogContent,
@@ -7,23 +7,23 @@ import {
     DialogTitle,
     DialogFooter,
     DialogClose,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Option, SharedData } from "@/types";
-import { Product } from "@/lib/model";
-import products from "@/routes/products";
-
+} from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Option, SharedData } from '@/types';
+import { Product } from '@/lib/model';
+import products from '@/routes/products';
+import { Spinner } from './ui/spinner';
 
 export interface StockMovementRow {
     location_id: number;
@@ -32,9 +32,13 @@ export interface StockMovementRow {
     stock_new: number;
 }
 
-function buildStockMovements(product: Product | undefined, locations: Option[]): StockMovementRow[] {
+function buildStockMovements(
+    product: Product | undefined,
+    locations: Option[],
+): StockMovementRow[] {
     const existingMap = new Map(
-        product?.product_location_stocks?.map((sm) => [sm.location_id, sm]) ?? []
+        product?.product_location_stocks?.map((sm) => [sm.location_id, sm]) ??
+            [],
     );
 
     return locations.map((loc) => {
@@ -68,20 +72,26 @@ export function ProductFormDialog({
     product,
     onSuccess,
 }: ProductFormDialogProps) {
-
     const isEdit = Boolean(product);
-    const employee_code = usePage<SharedData>().props.auth.user.employee.code
+    const employee_code = usePage<SharedData>().props.auth.user.employee.code;
 
-    const { post, put, processing, errors, clearErrors, ...iform } = useForm<any>({});
+    const { post, put, processing, errors, clearErrors, ...iform } =
+        useForm<any>({});
 
-    const [categoryId, setCategoryId] = useState(String(product?.product_category_id ?? ""));
-    const [locationId, setLocationId] = useState(String(product?.location_id ?? ""));
-    const [unitId, setUnitId] = useState(String(product?.product_unit_id ?? ""));
+    const [categoryId, setCategoryId] = useState(
+        String(product?.product_category_id ?? ''),
+    );
+    const [locationId, setLocationId] = useState(
+        String(product?.location_id ?? ''),
+    );
+    const [unitId, setUnitId] = useState(
+        String(product?.product_unit_id ?? ''),
+    );
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const [stockMovements, setStockMovements] = useState<StockMovementRow[]>(() =>
-        buildStockMovements(product, locations)
+    const [stockMovements, setStockMovements] = useState<StockMovementRow[]>(
+        () => buildStockMovements(product, locations),
     );
 
     const formRef = useRef<HTMLFormElement>(null);
@@ -90,27 +100,26 @@ export function ProductFormDialog({
         if (!open) return;
 
         clearErrors();
-        setCategoryId(String(product?.product_category_id ?? ""));
-        setLocationId(String(product?.location_id ?? ""));
-        setUnitId(String(product?.product_unit_id ?? ""));
+        setCategoryId(String(product?.product_category_id ?? ''));
+        setLocationId(String(product?.location_id ?? ''));
+        setUnitId(String(product?.product_unit_id ?? ''));
         setStockMovements(buildStockMovements(product, locations));
-
     }, [open]);
 
     const handleSubmit = () => {
         if (!formRef.current) return;
 
         const fd = new FormData(formRef.current);
-        const get = (name: string) => fd.get(name) as string ?? "";
+        const get = (name: string) => (fd.get(name) as string) ?? '';
 
-        const last_buying_price = Number(get("last_buying_price"));
+        const last_buying_price = Number(get('last_buying_price'));
 
         const payload: Partial<Product> = {
-            name: get("name"),
-            sku: get("sku"),
-            barcode: get("barcode"),
-            description: get("description"),
-            sell_price: Number(get("sell_price")),
+            name: get('name'),
+            sku: get('sku'),
+            barcode: get('barcode'),
+            description: get('description'),
+            sell_price: Number(get('sell_price')),
             last_buying_price,
             product_category_id: Number(categoryId),
             location_id: Number(locationId),
@@ -136,16 +145,14 @@ export function ProductFormDialog({
             product_sell_prices: [],
         };
 
-        iform.setData(payload)
+        iform.setData(payload);
         setIsSubmitting(true);
-
     };
 
     useEffect(() => {
-
         if (isSubmitting) {
             const options = {
-                headers: { "x-employee-code": employee_code },
+                headers: { 'x-employee-code': employee_code },
                 onSuccess: () => {
                     onOpenChange(false);
                     onSuccess?.();
@@ -155,7 +162,7 @@ export function ProductFormDialog({
             if (product) {
                 put(products.update(product.id).url, options);
             } else {
-                products.store
+                products.store;
                 post(products.store().url, options);
             }
             setIsSubmitting(false);
@@ -166,13 +173,17 @@ export function ProductFormDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>{isEdit ? "Edit Produk" : "Produk Baru"}</DialogTitle>
+                    <DialogTitle>
+                        {isEdit ? 'Edit Produk' : 'Produk Baru'}
+                    </DialogTitle>
                 </DialogHeader>
 
-                <ScrollArea className="max-h-[70vh] -mx-1 px-1">
+                <ScrollArea className="-mx-1 max-h-[70vh] px-1">
                     <form ref={formRef} onSubmit={(e) => e.preventDefault()}>
                         <div className="grid gap-6 py-2">
-                            <h4 className="text-sm font-medium">Informasi Dasar</h4>
+                            <h4 className="text-sm font-medium">
+                                Informasi Dasar
+                            </h4>
 
                             <div className="grid gap-4">
                                 {/* Nama */}
@@ -181,44 +192,60 @@ export function ProductFormDialog({
                                     <Input
                                         id="name"
                                         name="name"
-                                        defaultValue={product?.name ?? ""}
+                                        defaultValue={product?.name ?? ''}
                                         placeholder="Nama produk"
                                     />
                                     {errors.name && (
-                                        <p className="text-xs text-destructive">{errors.name}</p>
+                                        <p className="text-xs text-destructive">
+                                            {errors.name}
+                                        </p>
                                     )}
                                 </div>
 
                                 {/* Deskripsi */}
                                 <div className="grid gap-2">
-                                    <Label htmlFor="description">Deskripsi</Label>
+                                    <Label htmlFor="description">
+                                        Deskripsi
+                                    </Label>
                                     <Input
                                         id="description"
                                         name="description"
-                                        defaultValue={product?.description ?? ""}
+                                        defaultValue={
+                                            product?.description ?? ''
+                                        }
                                         placeholder="Keterangan produk"
                                     />
                                     {errors.description && (
-                                        <p className="text-xs text-destructive">{errors.description}</p>
+                                        <p className="text-xs text-destructive">
+                                            {errors.description}
+                                        </p>
                                     )}
                                 </div>
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="category">Satuan</Label>
-                                    <Select value={unitId} onValueChange={setUnitId}>
+                                    <Select
+                                        value={unitId}
+                                        onValueChange={setUnitId}
+                                    >
                                         <SelectTrigger id="category">
                                             <SelectValue placeholder="Pilih satuan" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {units.map((unit) => (
-                                                <SelectItem key={unit.value} value={String(unit.value)}>
+                                                <SelectItem
+                                                    key={unit.value}
+                                                    value={String(unit.value)}
+                                                >
                                                     {unit.label}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                     {errors.product_unit_id && (
-                                        <p className="text-xs text-destructive">{errors.product_unit_id}</p>
+                                        <p className="text-xs text-destructive">
+                                            {errors.product_unit_id}
+                                        </p>
                                     )}
                                 </div>
 
@@ -229,11 +256,13 @@ export function ProductFormDialog({
                                         <Input
                                             id="sku"
                                             name="sku"
-                                            defaultValue={product?.sku ?? ""}
+                                            defaultValue={product?.sku ?? ''}
                                             placeholder="Stock Keeping Unit"
                                         />
                                         {errors.sku && (
-                                            <p className="text-xs text-destructive">{errors.sku}</p>
+                                            <p className="text-xs text-destructive">
+                                                {errors.sku}
+                                            </p>
                                         )}
                                     </div>
                                     <div className="grid gap-2">
@@ -241,11 +270,15 @@ export function ProductFormDialog({
                                         <Input
                                             id="barcode"
                                             name="barcode"
-                                            defaultValue={product?.barcode ?? ""}
+                                            defaultValue={
+                                                product?.barcode ?? ''
+                                            }
                                             placeholder="Kode barcode"
                                         />
                                         {errors.barcode && (
-                                            <p className="text-xs text-destructive">{errors.barcode}</p>
+                                            <p className="text-xs text-destructive">
+                                                {errors.barcode}
+                                            </p>
                                         )}
                                     </div>
                                 </div>
@@ -253,7 +286,9 @@ export function ProductFormDialog({
                                 {/* Harga Jual & Harga Beli */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="sell_price">Harga Jual</Label>
+                                        <Label htmlFor="sell_price">
+                                            Harga Jual
+                                        </Label>
                                         <Input
                                             id="sell_price"
                                             name="sell_price"
@@ -263,21 +298,29 @@ export function ProductFormDialog({
                                             min={0}
                                         />
                                         {errors.sell_price && (
-                                            <p className="text-xs text-destructive">{errors.sell_price}</p>
+                                            <p className="text-xs text-destructive">
+                                                {errors.sell_price}
+                                            </p>
                                         )}
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="last_buying_price">Harga Beli</Label>
+                                        <Label htmlFor="last_buying_price">
+                                            Harga Beli
+                                        </Label>
                                         <Input
                                             id="last_buying_price"
                                             name="last_buying_price"
                                             type="number"
-                                            defaultValue={product?.last_buying_price}
+                                            defaultValue={
+                                                product?.last_buying_price
+                                            }
                                             placeholder="0"
                                             min={0}
                                         />
                                         {errors.last_buying_price && (
-                                            <p className="text-xs text-destructive">{errors.last_buying_price}</p>
+                                            <p className="text-xs text-destructive">
+                                                {errors.last_buying_price}
+                                            </p>
                                         )}
                                     </div>
                                 </div>
@@ -285,39 +328,63 @@ export function ProductFormDialog({
                                 {/* Kategori & Lokasi — tetap pakai state karena bukan <select> native */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="category">Kategori</Label>
-                                        <Select value={categoryId} onValueChange={setCategoryId}>
+                                        <Label htmlFor="category">
+                                            Kategori
+                                        </Label>
+                                        <Select
+                                            value={categoryId}
+                                            onValueChange={setCategoryId}
+                                        >
                                             <SelectTrigger id="category">
                                                 <SelectValue placeholder="Pilih kategori" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {categories.map((cat) => (
-                                                    <SelectItem key={cat.value} value={String(cat.value)}>
+                                                    <SelectItem
+                                                        key={cat.value}
+                                                        value={String(
+                                                            cat.value,
+                                                        )}
+                                                    >
                                                         {cat.label}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                         {errors.product_category_id && (
-                                            <p className="text-xs text-destructive">{errors.product_category_id}</p>
+                                            <p className="text-xs text-destructive">
+                                                {errors.product_category_id}
+                                            </p>
                                         )}
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="location">Lokasi Input</Label>
-                                        <Select value={locationId} onValueChange={setLocationId}>
+                                        <Label htmlFor="location">
+                                            Lokasi Input
+                                        </Label>
+                                        <Select
+                                            value={locationId}
+                                            onValueChange={setLocationId}
+                                        >
                                             <SelectTrigger id="location">
                                                 <SelectValue placeholder="Pilih lokasi" />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {locations.map((loc) => (
-                                                    <SelectItem key={loc.value} value={String(loc.value)}>
+                                                    <SelectItem
+                                                        key={loc.value}
+                                                        value={String(
+                                                            loc.value,
+                                                        )}
+                                                    >
                                                         {loc.label}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
                                         </Select>
                                         {errors.location_id && (
-                                            <p className="text-xs text-destructive">{errors.location_id}</p>
+                                            <p className="text-xs text-destructive">
+                                                {errors.location_id}
+                                            </p>
                                         )}
                                     </div>
                                 </div>
@@ -327,24 +394,42 @@ export function ProductFormDialog({
 
                             {/* ── Stock per Lokasi ───────────────────────────── */}
                             <div className="grid gap-3">
-                                <h4 className="text-sm font-medium">Stock per Lokasi</h4>
+                                <h4 className="text-sm font-medium">
+                                    Stock per Lokasi
+                                </h4>
 
                                 {stockMovements.length > 0 && (
                                     <div className="grid grid-cols-12 gap-3 px-1">
-                                        <span className="col-span-5 text-xs text-muted-foreground">Lokasi</span>
-                                        <span className="col-span-3 text-xs text-muted-foreground">Stok Saat Ini</span>
-                                        <span className="col-span-4 text-xs text-muted-foreground">Stok Baru</span>
+                                        <span className="col-span-5 text-xs text-muted-foreground">
+                                            Lokasi
+                                        </span>
+                                        <span className="col-span-3 text-xs text-muted-foreground">
+                                            Stok Saat Ini
+                                        </span>
+                                        <span className="col-span-4 text-xs text-muted-foreground">
+                                            Stok Baru
+                                        </span>
                                     </div>
                                 )}
 
                                 <div className="grid gap-2">
                                     {stockMovements.map((row, index) => (
-                                        <div key={row.location_id} className="grid grid-cols-12 gap-3 items-center">
+                                        <div
+                                            key={row.location_id}
+                                            className="grid grid-cols-12 items-center gap-3"
+                                        >
                                             <div className="col-span-5">
                                                 <Input
-                                                    value={locations.find((l) => (l.value as unknown as number) == row.location_id)?.label ?? `Lokasi #${row.location_id}`}
+                                                    value={
+                                                        locations.find(
+                                                            (l) =>
+                                                                (l.value as unknown as number) ==
+                                                                row.location_id,
+                                                        )?.label ??
+                                                        `Lokasi #${row.location_id}`
+                                                    }
                                                     readOnly
-                                                    className="bg-muted text-muted-foreground cursor-not-allowed"
+                                                    className="cursor-not-allowed bg-muted text-muted-foreground"
                                                 />
                                             </div>
                                             <div className="col-span-3">
@@ -352,7 +437,7 @@ export function ProductFormDialog({
                                                     type="number"
                                                     value={row.stock}
                                                     readOnly
-                                                    className="bg-muted text-muted-foreground cursor-not-allowed"
+                                                    className="cursor-not-allowed bg-muted text-muted-foreground"
                                                 />
                                             </div>
                                             <div className="col-span-4">
@@ -360,7 +445,9 @@ export function ProductFormDialog({
                                                 <Input
                                                     type="number"
                                                     name={`stock_new_${index}`}
-                                                    defaultValue={row.stock_new || ''}
+                                                    defaultValue={
+                                                        row.stock_new || ''
+                                                    }
                                                     placeholder="0"
                                                     min={0}
                                                 />
@@ -369,7 +456,7 @@ export function ProductFormDialog({
                                     ))}
 
                                     {stockMovements.length === 0 && (
-                                        <p className="text-sm text-muted-foreground py-2">
+                                        <p className="py-2 text-sm text-muted-foreground">
                                             Tidak ada data lokasi.
                                         </p>
                                     )}
@@ -381,12 +468,21 @@ export function ProductFormDialog({
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline" type="button" disabled={processing}>
+                        <Button
+                            variant="outline"
+                            type="button"
+                            disabled={processing}
+                        >
                             Batal
                         </Button>
                     </DialogClose>
-                    <Button type="button" onClick={handleSubmit} disabled={processing}>
-                        {processing ? "Menyimpan…" : "Simpan"}
+                    <Button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={processing}
+                    >
+                        {processing && <Spinner />}
+                        {processing ? 'Menyimpan…' : 'Simpan'}
                     </Button>
                 </DialogFooter>
             </DialogContent>
