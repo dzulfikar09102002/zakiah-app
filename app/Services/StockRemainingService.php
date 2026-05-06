@@ -61,37 +61,43 @@ class StockRemainingService
         return $options;
     }
     public function getAllStockForExport(int $locationId)
-    {
-        $entityId = auth()->user()?->entity?->id;
-        $product_category_id = request('product_category_id', 'all');
+{
+    $entityId = auth()->user()?->entity?->id;
+    $product_category_id = request('product_category_id', 'all');
 
-        $products = Product::query()
-            ->with(['productCategory'])
-            ->where('entity_id', $entityId)
-            ->when($product_category_id !== 'all', function ($q) use ($product_category_id) {
-                $q->where('product_category_id', $product_category_id);
-            })
-            ->with(['productLocationStocks' => function ($q) use ($locationId) {
-                $q->where('location_id', $locationId);
-            }])
-            ->get();
+    $results = collect();
 
-        return $products
-        ->map(function ($product) {
-            $stock = $product->productLocationStocks->first();
-
-            return [
-                'SKU' => $product->sku ?? '-',
-                'Barcode' => $product->barcode ?? '-',
-                'Nama' => $product->name ?? '-',
-                'Kategori' => $product->productCategory?->name ?? '-',
-                'Stok' => $stock?->stock ?? 0,
-                'HPP' => $product->cost_of_goods_sold ?? 0,
-                'Harga Beli' => $product->last_buying_price ?? 0,
-                'Harga Jual' => $product->sell_price ?? 0,
-            ];
+    Product::query()
+        ->with(['productCategory'])
+        ->where('entity_id', $entityId)
+        ->when($product_category_id !== 'all', function ($q) use ($product_category_id) {
+            $q->where('product_category_id', $product_category_id);
         })
-        ->sortByDesc('Stok') 
+        ->with(['productLocationStocks' => function ($q) use ($locationId) {
+            $q->where('location_id', $locationId);
+        }])
+        ->chunk(500, function ($products) use (&$results) {
+
+            $mapped = $products->map(function ($product) {
+                $stock = $product->productLocationStocks->first();
+
+                return [
+                    'SKU' => $product->sku ?? '-',
+                    'Barcode' => $product->barcode ?? '-',
+                    'Nama' => $product->name ?? '-',
+                    'Kategori' => $product->productCategory?->name ?? '-',
+                    'Stok' => $stock?->stock ?? 0,
+                    'HPP' => $product->cost_of_goods_sold ?? 0,
+                    'Harga Beli' => $product->last_buying_price ?? 0,
+                    'Harga Jual' => $product->sell_price ?? 0,
+                ];
+            });
+
+            $results = $results->concat($mapped);
+        });
+
+    return $results
+        ->sortByDesc('Stok')
         ->values();
-        }
+}
 }
