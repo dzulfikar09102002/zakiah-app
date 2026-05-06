@@ -6,6 +6,8 @@ use App\Helpers\Services\Product\ProductCreatorServices;
 use App\Helpers\Services\Product\ProductTransformerFromRequestForUpdateServices;
 use App\Helpers\Services\Product\ProductTransformerFromRequestServices;
 use App\Helpers\Services\Product\ProductUpdaterServices;
+use App\Http\Requests\BaseRequest;
+use App\Http\Requests\ImportProductRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Responses\BaseJsonResponse;
@@ -13,6 +15,7 @@ use App\Models\Product;
 use App\Services\ProductService;
 use DB;
 use Exception;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -80,6 +83,46 @@ class ProductController extends Controller
         $product->delete();
 
         Inertia::flash(key: 'success', value: 'Produk berhasil dihapus');
+        return back();
+    }
+
+    public function import(ImportProductRequest $request)
+    {
+        $employee = $request->employee;
+        $entity = $request->entity;
+        DB::beginTransaction();
+
+        try {
+            foreach ($request->validated('products') as $productData) {
+                $storeRequest = StoreProductRequest::createFrom($request);
+
+                // dd($employee);
+
+                $storeRequest->replace($productData);
+                // dd($employee);
+                $storeRequest->employee = $employee;
+                $storeRequest->entity = $entity;
+
+                // Tetap harus dipanggil agar validated() bekerja
+                $storeRequest->setContainer(app())->validateResolved();
+
+
+                $transforming = new ProductTransformerFromRequestServices($storeRequest);
+                $creator = new ProductCreatorServices($transforming->transform());
+                $creator->create();
+            }
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+
+            throw $e;
+        }
+
+        $count = count($request->validated('products'));
+
+        Inertia::flash(key: 'success', value: "{$count} produk berhasil diimpor.");
+
         return back();
     }
 }

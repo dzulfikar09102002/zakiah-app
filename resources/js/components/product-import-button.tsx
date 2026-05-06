@@ -242,7 +242,11 @@ export function ProductImportDialog({
     onSuccess,
 }: ProductImportDialogProps) {
     const employee_code = usePage<SharedData>().props.auth.user.employee.code;
-    const { post, processing } = useForm<any>({});
+
+    const { setData, post, processing } = useForm<{ products: ReturnType<typeof buildPayload>[] }>({
+        products: [],
+    });
+
     const [generating, setGenerating] = useState(false);
 
     const handleDownloadTemplate = async () => {
@@ -256,80 +260,58 @@ export function ProductImportDialog({
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [fileName, setFileName] = useState<string | null>(null);
-    const [rows, setRows] = useState<ImportRow[]>([]);
+    const [rowCount, setRowCount] = useState(0);
     const [parseError, setParseError] = useState<string | null>(null);
 
-    /** Parse file Excel menggunakan SheetJS (xlsx) yang di-import secara lazy */
+    /** Parse file Excel, build semua payload sekaligus, lalu simpan ke form via setData */
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         setFileName(file.name);
         setParseError(null);
-        setRows([]);
+        setRowCount(0);
+        setData('products', []);
 
         try {
             const XLSX = await import('xlsx');
             const buffer = await file.arrayBuffer();
             const workbook = XLSX.read(buffer, { type: 'array' });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json<ImportRow>(sheet, {
-                defval: '',
-            });
+            const sheet = workbook.Sheets[workbook.SheetNames[1]];
+            const json = XLSX.utils.sheet_to_json<ImportRow>(sheet, { defval: '' });
 
             if (json.length === 0) {
                 setParseError('File tidak memiliki data. Pastikan baris pertama adalah header.');
                 return;
             }
 
-            setRows(json);
+            const payloads = json.map((row) => buildPayload(row, locations, categories, units));
+            setData('products', payloads);
+            setRowCount(payloads.length);
         } catch {
             setParseError('Gagal membaca file. Pastikan format file adalah .xlsx atau .xls.');
         }
     };
 
     const handleSubmit = () => {
-        if (rows.length === 0) return;
+        if (rowCount === 0) return;
 
-        // Kirim tiap baris sebagai request POST terpisah, identik dengan
-        // alur di ProductFormDialog (post ke products.store()).
-        let completed = 0;
-        let failed = 0;
-
-        const sendNext = (index: number) => {
-            if (index >= rows.length) {
-                if (failed > 0) {
-                    toast.error(`Import selesai: ${completed} berhasil, ${failed} gagal.`);
-                } else {
-                    toast.success(`${completed} produk berhasil diimpor.`);
-                    onOpenChange(false);
-                    onSuccess?.();
-                }
-                return;
-            }
-
-            const payload = buildPayload(rows[index], locations, categories, units);
-
-            post(products.store().url, {
-                data: payload,
-                headers: { 'x-employee-code': employee_code },
-                onSuccess: () => {
-                    completed++;
-                    sendNext(index + 1);
-                },
-                onError: () => {
-                    failed++;
-                    sendNext(index + 1);
-                },
-            } as any);
-        };
-
-        sendNext(0);
+        post(products.import().url, {
+            headers: { 'x-employee-code': employee_code },
+            onSuccess: () => {
+                onOpenChange(false);
+                onSuccess?.();
+            },
+            onError: () => {
+                toast.error('Import gagal. Periksa kembali data pada file.');
+            },
+        });
     };
 
     const reset = () => {
         setFileName(null);
-        setRows([]);
+        setRowCount(0);
+        setData('products', []);
         setParseError(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
@@ -390,10 +372,10 @@ export function ProductImportDialog({
                     </div>
 
                     {/* Preview jumlah baris */}
-                    {rows.length > 0 && (
+                    {rowCount > 0 && (
                         <p className="text-sm text-muted-foreground">
                             <span className="font-medium text-foreground">
-                                {rows.length}
+                                {rowCount}
                             </span>{' '}
                             produk siap diimpor dari{' '}
                             <span className="font-medium text-foreground">
@@ -413,10 +395,10 @@ export function ProductImportDialog({
                     <Button
                         type="button"
                         onClick={handleSubmit}
-                        disabled={processing || rows.length === 0}
+                        disabled={processing || rowCount === 0}
                     >
                         {processing && <Spinner />}
-                        {processing ? 'Mengimpor…' : `Impor${rows.length > 0 ? ` (${rows.length})` : ''}`}
+                        {processing ? 'Mengimpor…' : `Impor${rowCount > 0 ? ` (${rowCount})` : ''}`}
                     </Button>
                 </DialogFooter>
             </DialogContent>
