@@ -19,10 +19,12 @@ class StoreProductRequest extends BaseRequest
      */
     public function rules(): array
     {
+        $forImport = (bool) request()->boolean('for_import');
+
         return [
             "name" => 'required',
-            "sku" => 'required|unique:products,sku',
-            "barcode" => 'required|unique:products,barcode',
+            "sku" => $forImport ? 'required' : 'required|unique:products,sku',
+            "barcode" => $forImport ? 'required' : 'required|unique:products,barcode',
             "description" => 'nullable',
             "sell_price" => 'required|integer|min:0',
             "last_buying_price" => 'required|integer|min:0',
