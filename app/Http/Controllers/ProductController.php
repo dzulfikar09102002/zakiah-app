@@ -8,10 +8,13 @@ use App\Helpers\Services\Product\ProductTransformerFromRequestServices;
 use App\Helpers\Services\Product\ProductUpdaterServices;
 use App\Http\Requests\BaseRequest;
 use App\Http\Requests\ImportProductRequest;
+use App\Http\Requests\StoreProductImportRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Responses\BaseJsonResponse;
 use App\Models\Product;
+use App\Models\ProductLocationStock;
+use App\Models\ProductStockMovement;
 use App\Services\ProductService;
 use DB;
 use Exception;
@@ -94,23 +97,77 @@ class ProductController extends Controller
 
         try {
             foreach ($request->validated('products') as $productData) {
-                $storeRequest = StoreProductRequest::createFrom($request);
 
-                // dd($employee);
+            $storeRequest = StoreProductImportRequest::createFrom($request);
 
-                $storeRequest->replace($productData);
-                // dd($employee);
-                $storeRequest->employee = $employee;
-                $storeRequest->entity = $entity;
+            $storeRequest->replace($productData);
 
-                // Tetap harus dipanggil agar validated() bekerja
-                $storeRequest->setContainer(app())->validateResolved();
+            $storeRequest->merge([
+                'employee' => $employee,
+                'entity' => $entity,
+            ]);
 
+            $storeRequest->setContainer(app())->validateResolved();
+
+            $product = Product::where('sku', $productData['sku'])
+                ->orWhere('barcode', $productData['barcode'])
+                ->first();
+            if ($product) {
+
+                $product->update([
+                    'name' => $productData['name'],
+                    'description' => $productData['description'],
+                    'sell_price' => $productData['sell_price'],
+                    'last_buying_price' => $productData['last_buying_price'],
+                    'product_category_id' => $productData['product_category_id'],
+                    'child_product_category_id' => $productData['child_product_category_id'] ?? null,
+                    'product_unit_id' => $productData['product_unit_id'],
+                    'product_sell_unit_id' => $productData['product_sell_unit_id'],
+                    'updated_by' => $employee->id,
+                ]);
+
+                foreach ($productData['stock_movements'] as $movement) {
+
+                    $stock = ProductLocationStock::firstOrNew([
+                        'product_id' => $product->id,
+                        'location_id' => $movement['location_id'],
+                        'product_unit_id' => $productData['product_unit_id'],
+                    ]);
+
+                    $currentStock = $stock->stock ?? 0;
+
+                    $stock->stock = $currentStock + $movement['stock'];
+
+                    $stock->save();
+
+                    ProductStockMovement::create([
+                        'product_id' => $product->id,
+                        'location_id' => $movement['location_id'],
+                        'product_unit_id' => $productData['product_unit_id'],
+                        'original_product_unit_id' => $productData['product_unit_id'],
+                        'resource_id' => $product->id,
+                        'resource_type' => Product::class,
+                        'original_stock_out' => $currentStock,
+                        'original_stock_in' => $movement['stock'],
+                        'original_buying_price' => $movement['buying_price'],
+                        'conversion_stock' => 1,
+                        'stock_in' => $movement['stock'],
+                        'stock_out' => $currentStock,
+                        'buying_price' => $movement['buying_price'],
+                    ]);
+                }
+
+            }
+            else {
 
                 $transforming = new ProductTransformerFromRequestServices($storeRequest);
-                $creator = new ProductCreatorServices($transforming->transform());
+
+                $creator = new ProductCreatorServices(
+                    $transforming->transform()
+                );
                 $creator->create();
             }
+        }
 
             DB::commit();
         } catch (Exception $e) {
