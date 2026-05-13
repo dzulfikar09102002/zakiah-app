@@ -90,26 +90,39 @@ class ProductController extends Controller
     {
         $employee = $request->employee;
         $entity = $request->entity;
+
         DB::beginTransaction();
 
         try {
             foreach ($request->validated('products') as $productData) {
                 $storeRequest = StoreProductRequest::createFrom($request);
 
-                // dd($employee);
-
                 $storeRequest->replace($productData);
-                // dd($employee);
                 $storeRequest->employee = $employee;
                 $storeRequest->entity = $entity;
+                $storeRequest->merge(['for_import' => true]);
+
+
+                $storeRequest->setRedirector(redirect());
 
                 // Tetap harus dipanggil agar validated() bekerja
                 $storeRequest->setContainer(app())->validateResolved();
 
-
                 $transforming = new ProductTransformerFromRequestServices($storeRequest);
-                $creator = new ProductCreatorServices($transforming->transform());
-                $creator->create();
+                $creatorRequest = $transforming->transform();
+
+                // update-or-create berdasarkan SKU (dalam konteks entity)
+                $product = Product::query()
+                    ->where('entity_id', $entity->id)
+                    ->where('sku', $storeRequest->validated('sku'))
+                    ->first();
+
+                if ($product) {
+                    (new ProductUpdaterServices($creatorRequest, $product))->update();
+                } else {
+                    $creator = new ProductCreatorServices($creatorRequest);
+                    $creator->create();
+                }
             }
 
             DB::commit();

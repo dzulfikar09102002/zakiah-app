@@ -130,7 +130,7 @@ export default ({
 
                 {/* <Button variant="outline"><FileDown /> Export</Button> */}
                 {/* <Button variant="outline"><FileUp /> Import</Button> */}
-                <ProductImportButton locations={locationOptions} onSuccess={() => console.log('berhasil')} categories={categoryOptions} units={unitOptions} />
+                <ProductImportButton locations={locationOptions} onSuccess={() => console.log('berhasil')} categories={categoryOptions.slice(1)} units={unitOptions} />
             </div>
 
             <Card>
