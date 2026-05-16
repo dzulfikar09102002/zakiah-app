@@ -98,8 +98,11 @@ class ProductController extends Controller
                 $storeRequest = StoreProductRequest::createFrom($request);
 
                 $storeRequest->replace($productData);
-                $storeRequest->employee = $employee;
-                $storeRequest->entity = $entity;
+
+                $storeRequest->merge([
+                    'employee' => $employee,
+                    'entity' => $entity,
+                ]);
                 $storeRequest->merge(['for_import' => true]);
 
 
