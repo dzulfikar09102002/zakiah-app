@@ -142,7 +142,7 @@ const discountOption: Option[] = [
 
 type Props = {
     pagination?: Pagination<SalesData>;
-    locationOptions?: Option[];
+    locationOptions: Option[];
 };
 
 type Params = {
@@ -168,6 +168,16 @@ export default ({ pagination, locationOptions }: Props) => {
             columnVisibility,
         },
     });
+
+    const multiSelectPlaceholder = (values: string[]) => {
+        if (values.length === 0) {
+            return 'Pilih lokasi';
+        } else if (values.length >= locationOptions.length) {
+            return 'Semua lokasi';
+        } else {
+            return `${values.length} lokasi`;
+        }
+    };
 
     useEffect(() => {
         localStorage.setItem(cachedColumnKey, JSON.stringify(columnVisibility));
@@ -221,23 +231,6 @@ export default ({ pagination, locationOptions }: Props) => {
     const [locs, setLocs] = useState<number[]>(initialLocs);
     const [excludeLocs, setExcludeLocs] =
         useState<number[]>(initialExcludeLocs);
-    if (!pagination || !locationOptions) {
-        return (
-            <AppLayout breadcrumbs={breadcrumbs}>
-                <Head title={title} />
-                <TableSkeleton />
-            </AppLayout>
-        );
-    }
-    const multiSelectPlaceholder = (values: string[]) => {
-        if (values.length === 0) {
-            return 'Pilih lokasi';
-        } else if (values.length >= locationOptions.length) {
-            return 'Semua lokasi';
-        } else {
-            return `${values.length} lokasi`;
-        }
-    };
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -324,8 +317,14 @@ export default ({ pagination, locationOptions }: Props) => {
                             </Button>
                         </div>
                     </Form>
-                    <DataTable columns={columns} table={table} />
-                    <TablePagination pagination={pagination} />
+                    <Deferred data="pagination" fallback={<TableSkeleton />}>
+                        {pagination && (
+                            <>
+                                <DataTable columns={columns} table={table} />
+                                <TablePagination pagination={pagination} />
+                            </>
+                        )}
+                    </Deferred>
                 </CardContent>
             </Card>
         </AppLayout>
