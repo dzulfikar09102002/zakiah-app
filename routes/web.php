@@ -29,6 +29,8 @@ use App\Http\Controllers\Report\ReportSalesController;
 use App\Http\Controllers\Report\ReportStockCardController;
 use App\Http\Controllers\Report\ReportStockMovementController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SalesReportByLocationController;
+use App\Http\Controllers\SalesReportByProductController;
 use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\SaleTransactionController;
 use App\Http\Controllers\SellingController;
@@ -262,9 +264,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('loyalties/{id}/archive', [LoyaltyController::class, 'archive'])
         ->name('loyalties.archive');
 
-    Route::resource('report-by-products', ReportByProductController::class)->only(['index']);
+    Route::resource('report-by-products', SalesReportByProductController::class)->only(['index']);
     Route::resource('report-sales', SalesReportController::class)->only(['index']);
-    Route::resource('report-sales-by-location', ReportSalesByLocationController::class)->only(['index']);
+    Route::resource('report-by-locations', SalesReportByLocationController::class)->only(['index']);
     Route::resource('report-stock-movement', ReportStockMovementController::class)->only(['index']);
     Route::resource('report-stock-card', ReportStockCardController::class)->only(['index']);
     Route::resource('report-employee-summary', ReportEmployeeSummaryController::class)->only(['index']);

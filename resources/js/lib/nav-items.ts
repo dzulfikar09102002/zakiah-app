@@ -29,6 +29,8 @@ import loyalties from '@/routes/loyalties';
 import taxes from '@/routes/taxes';
 import reportSales from '@/routes/report-sales';
 import comingsoon from '@/routes/comingsoon';
+import reportByProducts from '@/routes/report-by-products';
+import reportByLocations from '@/routes/report-by-locations';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -52,11 +54,11 @@ export const mainNavItems: NavItem[] = [
                     },
                     {
                         title: 'Per Produk',
-                        href: comingsoon.index().url,
+                        href: reportByProducts.index().url,
                     },
                     {
                         title: 'Per Toko',
-                        href: comingsoon.index().url,
+                        href: reportByLocations.index().url,
                     },
                 ],
             },
@@ -83,11 +85,11 @@ export const mainNavItems: NavItem[] = [
                 href: '#',
                 items: [
                     {
-                        title: 'Perform',
+                        title: 'Performa Sales',
                         href: '/playground/settings/general',
                     },
                     {
-                        title: 'Perform Detail',
+                        title: 'Performa Detail',
                         href: '/playground/settings/team',
                     },
                 ],

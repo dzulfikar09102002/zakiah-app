@@ -100,7 +100,7 @@ export const columns = [
     }),
 ] as ColumnDef<SalesData>[];
 
-const title = 'Ringkasan Penjualan';
+const title = 'Penjualan Per Transaksi';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {

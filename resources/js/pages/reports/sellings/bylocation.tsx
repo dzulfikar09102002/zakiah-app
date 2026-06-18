@@ -24,46 +24,36 @@ import MultiSelect from '@/components/multi-select';
 import QueryString from 'qs';
 import LocationDropdown from '@/components/location-dropdown';
 
-type ProductSalesData = {
-    product_name: string;
-    product_sku: string;
-    category: string;
-    description: string;
+type LocationSalesData = {
+    location_name: string;
     quantity: number;
-    sell_price: number;
+    cancelled_quantity: number;
     cost_of_goods_sold: number;
     gross_sales: number;
+    gross_refund: number;
     discount: number;
     total: number;
+    gross_profit: number;
     profit: number;
 };
 
-const columnHelper = createColumnHelper<ProductSalesData>();
+const columnHelper = createColumnHelper<LocationSalesData>();
 
-export const columns = [
-    columnHelper.accessor('product_name', {
-        header: 'Produk',
-    }),
-
-    columnHelper.accessor('product_sku', {
-        header: 'SKU Produk',
-    }),
-
-    columnHelper.accessor('category', {
-        header: 'Kategori Produk',
+export const columns: ColumnDef<LocationSalesData>[] = [
+    columnHelper.accessor('location_name', {
+        header: 'Lokasi',
     }),
 
     columnHelper.accessor('quantity', {
         header: 'Qty',
     }),
 
-    columnHelper.accessor('sell_price', {
-        header: 'Harga Jual',
-        cell: (info) => toRupiah(info.getValue()),
+    columnHelper.accessor('cancelled_quantity', {
+        header: 'Qty Batal',
     }),
 
     columnHelper.accessor('cost_of_goods_sold', {
-        header: 'Harga Beli',
+        header: 'HPP',
         cell: (info) => toRupiah(info.getValue()),
     }),
 
@@ -72,8 +62,13 @@ export const columns = [
         cell: (info) => toRupiah(info.getValue()),
     }),
 
+    columnHelper.accessor('gross_refund', {
+        header: 'Refund',
+        cell: (info) => toRupiah(info.getValue()),
+    }),
+
     columnHelper.accessor('discount', {
-        header: 'Total Diskon',
+        header: 'Diskon',
         cell: (info) => toRupiah(info.getValue()),
     }),
 
@@ -82,13 +77,18 @@ export const columns = [
         cell: (info) => toRupiah(info.getValue()),
     }),
 
-    columnHelper.accessor('profit', {
-        header: 'Laba',
+    columnHelper.accessor('gross_profit', {
+        header: 'Laba Kotor',
         cell: (info) => toRupiah(info.getValue()),
     }),
-] as ColumnDef<ProductSalesData>[];
 
-const title = 'Penjualan Per Produk';
+    columnHelper.accessor('profit', {
+        header: 'Laba Bersih',
+        cell: (info) => toRupiah(info.getValue()),
+    }),
+] as ColumnDef<LocationSalesData>[];
+
+const title = 'Penjualan Per Toko';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -128,7 +128,7 @@ const discountOption: Option[] = [
 ];
 
 type Props = {
-    pagination: Pagination<ProductSalesData>;
+    pagination: Pagination<LocationSalesData>;
     locationOptions: Option[];
 };
 
@@ -276,31 +276,6 @@ export default ({ pagination, locationOptions }: Props) => {
                                     value={id}
                                 />
                             ))}
-                            {/* <MultiSelect
-                                name="locs"
-                                options={[
-                                    { label: 'Semua lokasi', value: 'all' },
-                                    ...locationOptions,
-                                ]}
-                                defaultValues={
-                                    query.locations ??
-                                    locationOptions.map((el) => el.value)
-                                }
-                                placeholder={multiSelectPlaceholder}
-                            />
-
-                            
-                            <input
-                                type="hidden"
-                                name="select_all_location"
-                                value={
-                                    !query.locations ||
-                                    query.locations.includes('all')
-                                        ? '1'
-                                        : '0'
-                                }
-                            /> */}
-
                             <Button type="submit">
                                 <Search /> Cari
                             </Button>

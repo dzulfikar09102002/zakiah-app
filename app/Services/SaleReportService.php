@@ -54,23 +54,19 @@ class SaleReportService
 
         $query->whereIn('location_id', $locationIds);
 
-        // filter lokasi (kalau ada)
         $selectAll = request('select_all_location') == '1';
         $locs = request()->input('locs', []);
         $excludeLocs = request()->input('exclude_locs', []);
 
-        // pastikan array integer
         $locs = array_map('intval', (array) $locs);
         $excludeLocs = array_map('intval', (array) $excludeLocs);
 
-        // 🔥 LOGIC FINAL
         if ($selectAll && count($excludeLocs) > 0) {
             $query->whereNotIn('location_id', $excludeLocs);
         } elseif (!$selectAll && count($locs) > 0) {
             $query->whereIn('location_id', $locs);
         }
 
-        // discount filter
         if (request('discount') === 'available') {
             $query->where(function ($q) {
                 $q->where('promo_amount_before_tax', '>', 0)
@@ -83,7 +79,6 @@ class SaleReportService
                 ->where('discount_amount_before_tax', 0);
         }
 
-        // search
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%$search%")
@@ -99,8 +94,27 @@ class SaleReportService
                     'transaction_no' => $t->sales_no,
                     'location' => $t->location_name,
                     'date' => $t->local_sales_at,
-                    'cashier' => Str::replace('_', ' ', $t->cashier_first_name . ($t->cashier_last_name === 'Kasir' ? '' : $t->cashier_last_name)),
-                    'sales' => Str::replace('_', '', $t->employee_sales_first_name . ($t->employee_sales_last_name === 'Sales' ? '' : $t->employee_sales_last_name)),
+                    'cashier' => trim(
+                        Str::replace(
+                            '_',
+                            ' ',
+                            $t->cashier_first_name . ' ' .
+                            ($t->cashier_last_name === 'Kasir'
+                                ? ''
+                                : $t->cashier_last_name)
+                        )
+                    ),
+
+                    'sales' => trim(
+                        Str::replace(
+                            '_',
+                            ' ',
+                            $t->employee_sales_first_name . ' ' .
+                            ($t->employee_sales_last_name === 'Sales'
+                                ? ''
+                                : $t->employee_sales_last_name)
+                        )
+                    ),
                     'member' => $t->customer_first_name . ' - ' . $t->customer_last_name,
                     'subtotal' => $t->subtotal,
                     'discount' => $t->promo_amount_before_tax + $t->discount_amount_before_tax,

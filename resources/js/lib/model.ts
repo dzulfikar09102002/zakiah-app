@@ -43,11 +43,11 @@ export interface Employee {
     user?: {
         id: number;
         email: string;
-    }
+    };
     employeeLocation?: {
         location_id: number;
         role_id: number;
-    }
+    };
 }
 
 export interface EmployeeLocation {
@@ -107,18 +107,27 @@ export interface Product {
     cost_of_goods_sold: number;
     last_buying_price: number;
     total_stock: string | number; // Di data kamu berupa string "544"
-    stock_movements?: StockMovement[]
-    product_unit_conversions?: any[]
-    product_sell_prices?: number[]
-    product_location_stocks?: ProductStock[]
+    stock_movements?: StockMovement[];
+    product_unit_conversions?: any[];
+    product_sell_prices?: number[];
+    product_location_stocks?: ProductStock[];
 }
 
 export type StockMovement = {
-    location_id: number
-    buying_price: number
-    stock: number
-}
+    location_id: number;
+    buying_price: number;
+    stock: number;
+};
+export type Option = {
+    value: string;
+    label: string;
+};
 
+export type ProfitPotential = {
+    stock: number;
+    cogs: number;
+    sell_price: number;
+};
 export type Pagination<T> = {
     data: T[];
     current_page: number;
