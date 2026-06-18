@@ -1,4 +1,4 @@
-import { Form, Head } from '@inertiajs/react';
+import { Deferred, Form, Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import sellings from '@/routes/sellings';
@@ -23,6 +23,7 @@ import Select from '@/components/select';
 import MultiSelect from '@/components/multi-select';
 import QueryString from 'qs';
 import LocationDropdown from '@/components/location-dropdown';
+import TableSkeleton from '@/components/ui/table-skeleton';
 
 type SalesData = {
     transaction_no: string;
@@ -140,8 +141,8 @@ const discountOption: Option[] = [
 ];
 
 type Props = {
-    pagination: Pagination<SalesData>;
-    locationOptions: Option[];
+    pagination?: Pagination<SalesData>;
+    locationOptions?: Option[];
 };
 
 type Params = {
@@ -152,8 +153,6 @@ type Params = {
 };
 
 export default ({ pagination, locationOptions }: Props) => {
-    const { data } = pagination;
-
     const query = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
     }) as Partial<Params>;
@@ -161,7 +160,7 @@ export default ({ pagination, locationOptions }: Props) => {
     const [columnVisibility, setColumnVisibility] =
         useState<VisibilityState>(cachedColumn);
     const table = useReactTable({
-        data,
+        data: pagination?.data ?? [],
         columns,
         getCoreRowModel: getCoreRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
@@ -170,6 +169,66 @@ export default ({ pagination, locationOptions }: Props) => {
         },
     });
 
+    useEffect(() => {
+        localStorage.setItem(cachedColumnKey, JSON.stringify(columnVisibility));
+    }, [columnVisibility]);
+    useEffect(() => {
+        const params = QueryString.parse(window.location.search, {
+            ignoreQueryPrefix: true,
+        });
+
+        if (params.select_all_location === '0') {
+            setSelectAllLocation(false);
+        }
+
+        if (params.locs) {
+            const arr = Array.isArray(params.locs)
+                ? params.locs
+                : String(params.locs).split(',');
+
+            setLocs(arr.map(Number));
+        }
+
+        if (params.exclude_locs) {
+            const arr = Array.isArray(params.exclude_locs)
+                ? params.exclude_locs
+                : String(params.exclude_locs).split(',');
+
+            setExcludeLocs(arr.map(Number));
+        }
+    }, []);
+    const params = QueryString.parse(window.location.search, {
+        ignoreQueryPrefix: true,
+    });
+
+    // helper biar aman
+    const parseToNumberArray = (val: any): number[] => {
+        if (!val) return [];
+
+        if (Array.isArray(val)) {
+            return val.map(Number);
+        }
+
+        return String(val).split(',').map(Number);
+    };
+
+    const initialSelectAll = params.select_all_location !== '0';
+    const initialLocs = parseToNumberArray(params.locs);
+    const initialExcludeLocs = parseToNumberArray(params.exclude_locs);
+
+    const [selectAllLocation, setSelectAllLocation] =
+        useState<boolean>(initialSelectAll);
+    const [locs, setLocs] = useState<number[]>(initialLocs);
+    const [excludeLocs, setExcludeLocs] =
+        useState<number[]>(initialExcludeLocs);
+    if (!pagination || !locationOptions) {
+        return (
+            <AppLayout breadcrumbs={breadcrumbs}>
+                <Head title={title} />
+                <TableSkeleton />
+            </AppLayout>
+        );
+    }
     const multiSelectPlaceholder = (values: string[]) => {
         if (values.length === 0) {
             return 'Pilih lokasi';
@@ -179,57 +238,6 @@ export default ({ pagination, locationOptions }: Props) => {
             return `${values.length} lokasi`;
         }
     };
-
-    useEffect(() => {
-        localStorage.setItem(cachedColumnKey, JSON.stringify(columnVisibility));
-    }, [columnVisibility]);
-    useEffect(() => {
-        const params = QueryString.parse(window.location.search, {
-            ignoreQueryPrefix: true,
-        });
-    
-        if (params.select_all_location === '0') {
-            setSelectAllLocation(false);
-        }
-    
-        if (params.locs) {
-            const arr = Array.isArray(params.locs)
-                ? params.locs
-                : String(params.locs).split(',');
-    
-            setLocs(arr.map(Number));
-        }
-    
-        if (params.exclude_locs) {
-            const arr = Array.isArray(params.exclude_locs)
-                ? params.exclude_locs
-                : String(params.exclude_locs).split(',');
-    
-            setExcludeLocs(arr.map(Number));
-        }
-    }, []);
-    const params = QueryString.parse(window.location.search, {
-        ignoreQueryPrefix: true,
-    });
-    
-    // helper biar aman
-    const parseToNumberArray = (val: any): number[] => {
-        if (!val) return [];
-    
-        if (Array.isArray(val)) {
-            return val.map(Number);
-        }
-    
-        return String(val).split(',').map(Number);
-    };
-    
-    const initialSelectAll = params.select_all_location !== '0';
-    const initialLocs = parseToNumberArray(params.locs);
-    const initialExcludeLocs = parseToNumberArray(params.exclude_locs);
-
-    const [selectAllLocation, setSelectAllLocation] = useState<boolean>(initialSelectAll);
-const [locs, setLocs] = useState<number[]>(initialLocs);
-const [excludeLocs, setExcludeLocs] = useState<number[]>(initialExcludeLocs);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -252,25 +260,39 @@ const [excludeLocs, setExcludeLocs] = useState<number[]>(initialExcludeLocs);
 
                             {/* LOCATION */}
                             <LocationDropdown
-    multiSelect
-    options={locationOptions.map((l) => ({
-        id: Number(l.value),
-        name: l.label,
-    }))}
-    defaultSelectAll={initialSelectAll}
-    defaultIds={initialLocs}
-    defaultExcludeIds={initialExcludeLocs}
-    handleSelectAllChange={setSelectAllLocation}
-    handleIdsChange={setLocs}
-    handleExcludeIdsChange={setExcludeLocs}
-/>
-                            <input type="hidden" name="select_all_location" value={selectAllLocation ? '1' : '0'} />
+                                multiSelect
+                                options={locationOptions.map((l) => ({
+                                    id: Number(l.value),
+                                    name: l.label,
+                                }))}
+                                defaultSelectAll={initialSelectAll}
+                                defaultIds={initialLocs}
+                                defaultExcludeIds={initialExcludeLocs}
+                                handleSelectAllChange={setSelectAllLocation}
+                                handleIdsChange={setLocs}
+                                handleExcludeIdsChange={setExcludeLocs}
+                            />
+                            <input
+                                type="hidden"
+                                name="select_all_location"
+                                value={selectAllLocation ? '1' : '0'}
+                            />
                             {locs.map((id, i) => (
-                                <input key={i} type="hidden" name="locs[]" value={id} />
+                                <input
+                                    key={i}
+                                    type="hidden"
+                                    name="locs[]"
+                                    value={id}
+                                />
                             ))}
 
                             {excludeLocs.map((id, i) => (
-                                <input key={i} type="hidden" name="exclude_locs[]" value={id} />
+                                <input
+                                    key={i}
+                                    type="hidden"
+                                    name="exclude_locs[]"
+                                    value={id}
+                                />
                             ))}
                             {/* <MultiSelect
                                 name="locs"
