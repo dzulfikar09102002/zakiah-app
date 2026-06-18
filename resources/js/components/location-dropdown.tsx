@@ -1,17 +1,21 @@
-"use client";
+'use client';
 
-import { FC, useEffect, useState, useMemo } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Check, MapPinIcon, Square, SquareCheck } from "lucide-react";
+import { FC, useEffect, useState, useMemo } from 'react';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Check, MapPinIcon, Square, SquareCheck } from 'lucide-react';
 import {
     Command,
     CommandEmpty,
     CommandInput,
     CommandItem,
     CommandList,
-} from "@/components/ui/command";
+} from '@/components/ui/command';
 
 type Locations = {
     id: number;
@@ -19,7 +23,8 @@ type Locations = {
 };
 
 interface LocationDropdownProps {
-    options: Locations[]; // 🔥 data dari luar
+    options: Locations[];
+    loading?: boolean;
     multiSelect?: boolean;
     disabled?: boolean;
     full?: boolean;
@@ -35,17 +40,18 @@ interface LocationDropdownProps {
 }
 
 const LocationDropdown: FC<LocationDropdownProps> = (props) => {
-
     const [selectAll, setSelectAll] = useState(props.defaultSelectAll ?? true);
-    const [keyword, setKeyword] = useState("");
+    const [keyword, setKeyword] = useState('');
     const [id, setId] = useState(props.defaultId ?? 0);
     const [ids, setIds] = useState<number[]>(props.defaultIds ?? []);
-    const [excludeIds, setExcludeIds] = useState<number[]>(props.defaultExcludeIds ?? []);
+    const [excludeIds, setExcludeIds] = useState<number[]>(
+        props.defaultExcludeIds ?? [],
+    );
 
     // 🔥 FILTER LOCAL
     const filteredOptions = useMemo(() => {
         return props.options.filter((loc) =>
-            loc.name.toLowerCase().includes(keyword.toLowerCase())
+            loc.name.toLowerCase().includes(keyword.toLowerCase()),
         );
     }, [keyword, props.options]);
 
@@ -83,14 +89,14 @@ const LocationDropdown: FC<LocationDropdownProps> = (props) => {
             setExcludeIds((prev) =>
                 prev.includes(loc.id)
                     ? prev.filter((x) => x !== loc.id)
-                    : [...prev, loc.id]
+                    : [...prev, loc.id],
             );
         } else {
             // include mode
             setIds((prev) =>
                 prev.includes(loc.id)
                     ? prev.filter((x) => x !== loc.id)
-                    : [...prev, loc.id]
+                    : [...prev, loc.id],
             );
         }
     };
@@ -109,13 +115,22 @@ const LocationDropdown: FC<LocationDropdownProps> = (props) => {
                 <Square className="mr-2 h-4 w-4" />
             )
         ) : (
-            <Check className={cn("mr-2 h-4 w-4", checked ? "opacity-100" : "opacity-0")} />
+            <Check
+                className={cn(
+                    'mr-2 h-4 w-4',
+                    checked ? 'opacity-100' : 'opacity-0',
+                )}
+            />
         );
 
     const labelButton = () => {
+        if (props.loading) {
+            return 'Memuat lokasi...';
+        }
+
         if (!props.multiSelect) {
             const loc = props.options.find((l) => l.id === id);
-            return loc ? loc.name : "Pilih lokasi";
+            return loc ? loc.name : 'Pilih lokasi';
         }
 
         if (selectAll && excludeIds.length > 0) {
@@ -127,10 +142,10 @@ const LocationDropdown: FC<LocationDropdownProps> = (props) => {
         }
 
         if (selectAll) {
-            return "Semua lokasi";
+            return 'Semua lokasi';
         }
 
-        return "Pilih lokasi";
+        return 'Pilih lokasi';
     };
 
     return (
@@ -138,13 +153,13 @@ const LocationDropdown: FC<LocationDropdownProps> = (props) => {
             <PopoverTrigger asChild>
                 <Button
                     variant="outline"
-                    disabled={props.disabled}
+                    disabled={props.disabled || props.loading}
                     className={cn(
-                        "w-[180px] justify-start",
-                        props.full && "w-full"
+                        'w-[180px] justify-start',
+                        props.full && 'w-full',
                     )}
                 >
-                    <MapPinIcon/>
+                    <MapPinIcon />
                     <span>{labelButton()}</span>
                 </Button>
             </PopoverTrigger>

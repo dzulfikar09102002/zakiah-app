@@ -1,4 +1,4 @@
-import { Deferred, Form, Head } from '@inertiajs/react';
+import { Form, Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import sellings from '@/routes/sellings';
@@ -23,7 +23,6 @@ import Select from '@/components/select';
 import MultiSelect from '@/components/multi-select';
 import QueryString from 'qs';
 import LocationDropdown from '@/components/location-dropdown';
-import TableSkeleton from '@/components/ui/table-skeleton';
 
 type SalesData = {
     transaction_no: string;
@@ -141,7 +140,7 @@ const discountOption: Option[] = [
 ];
 
 type Props = {
-    pagination?: Pagination<SalesData>;
+    pagination: Pagination<SalesData>;
     locationOptions: Option[];
 };
 
@@ -153,6 +152,8 @@ type Params = {
 };
 
 export default ({ pagination, locationOptions }: Props) => {
+    const { data } = pagination;
+
     const query = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
     }) as Partial<Params>;
@@ -160,7 +161,7 @@ export default ({ pagination, locationOptions }: Props) => {
     const [columnVisibility, setColumnVisibility] =
         useState<VisibilityState>(cachedColumn);
     const table = useReactTable({
-        data: pagination?.data ?? [],
+        data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
@@ -317,14 +318,8 @@ export default ({ pagination, locationOptions }: Props) => {
                             </Button>
                         </div>
                     </Form>
-                    <Deferred data="pagination" fallback={<TableSkeleton />}>
-                        {pagination && (
-                            <>
-                                <DataTable columns={columns} table={table} />
-                                <TablePagination pagination={pagination} />
-                            </>
-                        )}
-                    </Deferred>
+                    <DataTable columns={columns} table={table} />
+                    <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>
         </AppLayout>
