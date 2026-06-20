@@ -22,6 +22,8 @@ import { Filter, MapPin, Search } from 'lucide-react';
 import QueryString from 'qs';
 import LocationDropdown from '@/components/location-dropdown';
 import { ProfitPotential } from '@/lib/model';
+import { DateRange } from 'node_modules/react-day-picker/dist/esm/types/shared';
+import { format } from 'date-fns';
 
 const dailyData = [
     { name: '2026-02-15', sales: 12500000, profit: 3200000 },
@@ -65,15 +67,36 @@ const years = Array.from(
 type Props = {
     locationOptions: Option[];
     profitPotential: ProfitPotential;
+    salesRefundSummary: {
+        net_sales_after_tax: number;
+    };
+    salesSummary: {
+        net_sales_after_tax: number;
+        net_profit: number;
+    };
 };
-function DashboardContent({ locationOptions, profitPotential }: Props) {
+function DashboardContent({
+    locationOptions,
+    profitPotential,
+    salesRefundSummary,
+    salesSummary,
+}: Props) {
     const params = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
     });
+
     const handleApplyFilter = () => {
         router.get(
             dashboard().url,
             {
+                start_at: dateRange?.from
+                    ? format(dateRange.from, 'yyyy-MM-dd')
+                    : undefined,
+
+                end_at: dateRange?.to
+                    ? format(dateRange.to, 'yyyy-MM-dd')
+                    : undefined,
+
                 select_all_location: selectAllLocation ? 1 : 0,
                 locs,
                 exclude_locs: excludeLocs,
@@ -94,7 +117,7 @@ function DashboardContent({ locationOptions, profitPotential }: Props) {
 
         return String(val).split(',').map(Number);
     };
-
+    const [dateRange, setDateRange] = useState<DateRange | undefined>();
     const initialSelectAll = params.select_all_location !== '0';
     const initialLocs = parseToNumberArray(params.locs);
     const initialExcludeLocs = parseToNumberArray(params.exclude_locs);
@@ -107,13 +130,15 @@ function DashboardContent({ locationOptions, profitPotential }: Props) {
     const [excludeLocs, setExcludeLocs] =
         useState<number[]>(initialExcludeLocs);
     const dailyOverviewData = {
-        total_sale: 21418500,
-        total_profit: 5777660,
-        total_return: 0,
-        total_stock: 28837,
-        total_hpp: 1624601365,
-        total_stock_price: 2337998100,
-        potential_profit: profitPotential,
+        total_sale: Number(salesSummary?.net_sales_after_tax ?? 0),
+        total_profit: Number(salesSummary?.net_profit ?? 0),
+        total_return: Number(salesRefundSummary?.net_sales_after_tax ?? 0),
+        total_stock: Number(profitPotential.stock ?? 0),
+        total_hpp: Number(profitPotential.cogs ?? 0),
+        total_stock_price: Number(profitPotential.sell_price ?? 0),
+        potential_profit: Number(
+            profitPotential.sell_price - profitPotential.cogs,
+        ),
     };
     return (
         <div className="space-y-4">
@@ -158,7 +183,7 @@ function DashboardContent({ locationOptions, profitPotential }: Props) {
 
             <div className="items-center justify-between lg:flex">
                 <h2 className="text-lg font-semibold">Performa Harian</h2>
-                <RangeDatePicker />
+                <RangeDatePicker onValueChange={setDateRange} />
             </div>
             <DaillyOverview {...dailyOverviewData} />
 
@@ -189,13 +214,20 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Dashboard({ locationOptions, profitPotential }: Props) {
+export default function Dashboard({
+    locationOptions,
+    profitPotential,
+    salesRefundSummary,
+    salesSummary,
+}: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
             <DashboardContent
                 locationOptions={locationOptions}
                 profitPotential={profitPotential}
+                salesRefundSummary={salesRefundSummary}
+                salesSummary={salesSummary}
             />
         </AppLayout>
     );
