@@ -86,12 +86,12 @@ class DashboardService
     {
         $query = SaleRefund::query();
         $startAt = request('start_at')
-            ? Carbon::parse(request('start_at'))
-            : now()->subDays(7)->startOfDay();
+            ? Carbon::parse(request('start_at'))->startOfDay()
+            : today()->startOfDay();
 
         $endAt = request('end_at')
-            ? Carbon::parse(request('end_at'))
-            : now()->endOfDay();
+            ? Carbon::parse(request('end_at'))->endOfDay()
+            : today()->endOfDay();
         $locationIds = auth()->user()
             ->entity
             ->locations()
@@ -160,13 +160,17 @@ class DashboardService
         $query->where(
             'sales_at',
             '>=',
-            request('start_at', now()->subDays(7)->startOfDay())
+            request('start_at')
+                ? Carbon::parse(request('start_at'))->startOfDay()
+                : today()->startOfDay()
         );
 
         $query->where(
             'sales_at',
             '<=',
-            request('end_at', now()->endOfDay())
+            request('end_at')
+                ? Carbon::parse(request('end_at'))->endOfDay()
+                : today()->endOfDay()
         );
 
         $selectAll = request('select_all_location') == '1';

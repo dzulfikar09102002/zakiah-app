@@ -14,9 +14,16 @@ import QueryString from 'qs';
 type Props = {
     onValueChange?: (value?: DateRange) => void;
     prefix?: string;
+
+    defaultStartDate?: Date;
+    defaultEndDate?: Date;
 };
 
-export default ({ onValueChange, prefix }: Props) => {
+export default function RangeDatePicker({
+    onValueChange,
+    defaultStartDate,
+    defaultEndDate,
+}: Props) {
     const getInitialDate = (): DateRange => {
         const query = QueryString.parse(window.location.search, {
             ignoreQueryPrefix: true,
@@ -30,15 +37,15 @@ export default ({ onValueChange, prefix }: Props) => {
         }
 
         return {
-            from: subDays(new Date(), 7),
-            to: new Date(),
+            from: defaultStartDate ?? subDays(new Date(), 7),
+            to: defaultEndDate ?? new Date(),
         };
     };
 
     const [date, setDate] = useState<DateRange | undefined>(getInitialDate());
 
     useEffect(() => {
-        if (onValueChange) onValueChange(date);
+        onValueChange?.(date);
     }, [date]);
 
     return (
@@ -86,4 +93,4 @@ export default ({ onValueChange, prefix }: Props) => {
             </Popover>
         </>
     );
-};
+}

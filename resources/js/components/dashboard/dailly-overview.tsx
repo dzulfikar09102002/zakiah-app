@@ -8,6 +8,7 @@ import {
     RotateCcw,
     TrendingUp,
 } from 'lucide-react';
+import { AnimatedValue } from '../ui/count-up';
 
 function StatCard({
     title,
@@ -34,11 +35,11 @@ function StatCard({
             </CardHeader>
             <CardContent>
                 <div className="text-2xl font-bold">
-                    {typeof value === 'number'
-                        ? isCurrency
-                            ? toRupiah(value)
-                            : value.toLocaleString('id-ID')
-                        : value}
+                    {typeof value === 'number' ? (
+                        <AnimatedValue value={value} isCurrency={isCurrency} />
+                    ) : (
+                        value
+                    )}
                     {suffix}
                 </div>
             </CardContent>

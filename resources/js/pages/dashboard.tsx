@@ -142,48 +142,49 @@ function DashboardContent({
     };
     return (
         <div className="space-y-4">
-            <div className="flex items-center gap-2">
-                <LocationDropdown
-                    multiSelect
-                    options={locationOptions.map((l) => ({
-                        id: Number(l.value),
-                        name: l.label,
-                    }))}
-                    defaultSelectAll={initialSelectAll}
-                    defaultIds={initialLocs}
-                    defaultExcludeIds={initialExcludeLocs}
-                    handleSelectAllChange={setSelectAllLocation}
-                    handleIdsChange={setLocs}
-                    handleExcludeIdsChange={setExcludeLocs}
-                />
-                <Button onClick={handleApplyFilter}>
-                    <Search className="h-4 w-4" />
-                    Cari
-                </Button>
-                <input
-                    type="hidden"
-                    name="select_all_location"
-                    value={selectAllLocation ? '1' : '0'}
-                />
-                {locs.map((id, i) => (
-                    <input key={i} type="hidden" name="locs[]" value={id} />
-                ))}
+            <input
+                type="hidden"
+                name="select_all_location"
+                value={selectAllLocation ? '1' : '0'}
+            />
+            {locs.map((id, i) => (
+                <input key={i} type="hidden" name="locs[]" value={id} />
+            ))}
 
-                {excludeLocs.map((id, i) => (
-                    <input
-                        key={i}
-                        type="hidden"
-                        name="exclude_locs[]"
-                        value={id}
+            {excludeLocs.map((id, i) => (
+                <input key={i} type="hidden" name="exclude_locs[]" value={id} />
+            ))}
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-center gap-2">
+                    <LocationDropdown
+                        multiSelect
+                        options={locationOptions.map((l) => ({
+                            id: Number(l.value),
+                            name: l.label,
+                        }))}
+                        defaultSelectAll={initialSelectAll}
+                        defaultIds={initialLocs}
+                        defaultExcludeIds={initialExcludeLocs}
+                        handleSelectAllChange={setSelectAllLocation}
+                        handleIdsChange={setLocs}
+                        handleExcludeIdsChange={setExcludeLocs}
                     />
-                ))}
-            </div>
 
+                    <RangeDatePicker
+                        onValueChange={setDateRange}
+                        defaultStartDate={new Date()}
+                        defaultEndDate={new Date()}
+                    />
+                    <Button onClick={handleApplyFilter}>
+                        <Search className="h-4 w-4" />
+                        Cari
+                    </Button>
+                </div>
+            </div>
             <Separator />
 
             <div className="items-center justify-between lg:flex">
                 <h2 className="text-lg font-semibold">Performa Harian</h2>
-                <RangeDatePicker onValueChange={setDateRange} />
             </div>
             <DaillyOverview {...dailyOverviewData} />
 
