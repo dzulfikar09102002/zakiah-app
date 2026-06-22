@@ -155,7 +155,7 @@ const LocationDropdown: FC<LocationDropdownProps> = (props) => {
                     variant="outline"
                     disabled={props.disabled || props.loading}
                     className={cn(
-                        'w-[180px] justify-start',
+                        'w-full justify-start lg:w-[180px]',
                         props.full && 'w-full',
                     )}
                 >

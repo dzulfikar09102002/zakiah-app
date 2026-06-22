@@ -17,6 +17,7 @@ type Props = {
 
     defaultStartDate?: Date;
     defaultEndDate?: Date;
+    className?: string;
 };
 
 export default function RangeDatePicker({
@@ -64,7 +65,10 @@ export default function RangeDatePicker({
 
             <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="justify-start px-2.5">
+                    <Button
+                        variant="outline"
+                        className="w-full justify-start px-2.5 lg:w-auto"
+                    >
                         <CalendarIcon />
                         {date?.from ? (
                             date.to ? (

@@ -154,31 +154,41 @@ function DashboardContent({
             {excludeLocs.map((id, i) => (
                 <input key={i} type="hidden" name="exclude_locs[]" value={id} />
             ))}
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-center gap-2">
-                    <LocationDropdown
-                        multiSelect
-                        options={locationOptions.map((l) => ({
-                            id: Number(l.value),
-                            name: l.label,
-                        }))}
-                        defaultSelectAll={initialSelectAll}
-                        defaultIds={initialLocs}
-                        defaultExcludeIds={initialExcludeLocs}
-                        handleSelectAllChange={setSelectAllLocation}
-                        handleIdsChange={setLocs}
-                        handleExcludeIdsChange={setExcludeLocs}
-                    />
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+                    <div className="flex w-full flex-col gap-3 lg:w-auto lg:flex-row lg:items-center lg:gap-2">
+                        <div className="w-full lg:w-auto">
+                            <LocationDropdown
+                                multiSelect
+                                options={locationOptions.map((l) => ({
+                                    id: Number(l.value),
+                                    name: l.label,
+                                }))}
+                                defaultSelectAll={initialSelectAll}
+                                defaultIds={initialLocs}
+                                defaultExcludeIds={initialExcludeLocs}
+                                handleSelectAllChange={setSelectAllLocation}
+                                handleIdsChange={setLocs}
+                                handleExcludeIdsChange={setExcludeLocs}
+                            />
+                        </div>
 
-                    <RangeDatePicker
-                        onValueChange={setDateRange}
-                        defaultStartDate={new Date()}
-                        defaultEndDate={new Date()}
-                    />
-                    <Button onClick={handleApplyFilter}>
-                        <Search className="h-4 w-4" />
-                        Cari
-                    </Button>
+                        <div className="w-full lg:w-auto">
+                            <RangeDatePicker
+                                onValueChange={setDateRange}
+                                defaultStartDate={new Date()}
+                                defaultEndDate={new Date()}
+                            />
+                        </div>
+
+                        <Button
+                            onClick={handleApplyFilter}
+                            className="w-full lg:w-auto"
+                        >
+                            <Search className="h-4 w-4" />
+                            Cari
+                        </Button>
+                    </div>
                 </div>
             </div>
             <Separator />
