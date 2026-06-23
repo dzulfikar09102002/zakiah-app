@@ -1,103 +1,122 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import { Card, CardContent } from '../ui/card';
+import { Top5Data } from '@/lib/model';
 
-export default () => {
+type Props = {
+    top5: Top5Data;
+};
+
+export default ({ top5 }: Props) => {
+    function formatCurrency(value: number) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            maximumFractionDigits: 0,
+        }).format(value);
+    }
     return (
         <>
             <h2 className="text-lg font-semibold">Top 5</h2>
             <Card>
                 <CardContent>
-                    <Tabs defaultValue='product'>
+                    <Tabs defaultValue="product">
                         <TabsList>
-                            <TabsTrigger value='product'>Produk</TabsTrigger>
-                            <TabsTrigger value='category'>Kategori</TabsTrigger>
+                            <TabsTrigger value="product">Produk</TabsTrigger>
+                            <TabsTrigger value="category">Kategori</TabsTrigger>
                         </TabsList>
-                        <TabsContent value='product'>
+                        <TabsContent value="product">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>#</TableHead>
+                                        <TableHead>No. </TableHead>
                                         <TableHead>Nama</TableHead>
                                         <TableHead>Kuantitas</TableHead>
                                         <TableHead>Total Penjualan</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Item 1</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Rp. *****</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>2</TableCell>
-                                        <TableCell>Item 1</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Rp. *****</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>3</TableCell>
-                                        <TableCell>Item 1</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Rp. *****</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>4</TableCell>
-                                        <TableCell>Item 1</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Rp. *****</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>5</TableCell>
-                                        <TableCell>Item 1</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Rp. *****</TableCell>
-                                    </TableRow>
+                                    {top5.products.length > 0 ? (
+                                        top5.products.map((item, index) => (
+                                            <TableRow key={item.product_id}>
+                                                <TableCell>
+                                                    {index + 1}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {item.product_name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {item.quantity}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatCurrency(
+                                                        item.total_line_amount,
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={4}
+                                                className="text-center text-muted-foreground"
+                                            >
+                                                Data tidak ditemukan
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </TabsContent>
-                        <TabsContent value='category'>
+                        <TabsContent value="category">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>#</TableHead>
+                                        <TableHead>No. </TableHead>
                                         <TableHead>Nama</TableHead>
                                         <TableHead>Kuantitas</TableHead>
                                         <TableHead>Total Penjualan</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    <TableRow>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Item 1</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Rp. *****</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>2</TableCell>
-                                        <TableCell>Item 1</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Rp. *****</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>3</TableCell>
-                                        <TableCell>Item 1</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Rp. *****</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>4</TableCell>
-                                        <TableCell>Item 1</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Rp. *****</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell>5</TableCell>
-                                        <TableCell>Item 1</TableCell>
-                                        <TableCell>1</TableCell>
-                                        <TableCell>Rp. *****</TableCell>
-                                    </TableRow>
+                                    {top5.categories.length > 0 ? (
+                                        top5.categories.map((item, index) => (
+                                            <TableRow
+                                                key={item.product_category_id}
+                                            >
+                                                <TableCell>
+                                                    {index + 1}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {item.product_category_name}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {item.quantity}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {formatCurrency(
+                                                        item.total_line_amount,
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={4}
+                                                className="text-center text-muted-foreground"
+                                            >
+                                                Data tidak ditemukan
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </TabsContent>
@@ -105,5 +124,5 @@ export default () => {
                 </CardContent>
             </Card>
         </>
-    )
-}
+    );
+};

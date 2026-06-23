@@ -17,6 +17,7 @@ class DashboardController extends Controller
         $locationOptions = $this->service->getLocationOptions();
         $salesRefundSummary = $this->service->getSalesRefundSummary();
         $salesSummary = $this->service->getSalesSummary();
-        return Inertia::render('dashboard', compact('profitPotential', 'locationOptions', 'salesRefundSummary', 'salesSummary'));
+        $top5 = $this->service->getTopProductsAndCategories();
+        return Inertia::render('dashboard', compact('profitPotential', 'locationOptions', 'salesRefundSummary', 'salesSummary', 'top5'));
     }
 }

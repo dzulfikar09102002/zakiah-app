@@ -21,7 +21,7 @@ import YearlyProfitChart from '@/components/dashboard/yearly-profit-chart';
 import { Filter, MapPin, Search } from 'lucide-react';
 import QueryString from 'qs';
 import LocationDropdown from '@/components/location-dropdown';
-import { ProfitPotential } from '@/lib/model';
+import { ProfitPotential, Top5Data } from '@/lib/model';
 import { DateRange } from 'node_modules/react-day-picker/dist/esm/types/shared';
 import { format } from 'date-fns';
 
@@ -74,12 +74,14 @@ type Props = {
         net_sales_after_tax: number;
         net_profit: number;
     };
+    top5: Top5Data;
 };
 function DashboardContent({
     locationOptions,
     profitPotential,
     salesRefundSummary,
     salesSummary,
+    top5,
 }: Props) {
     const params = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
@@ -213,7 +215,7 @@ function DashboardContent({
                     endYear={2026}
                 />
             </div>
-            <TopFive />
+            <TopFive top5={top5} />
         </div>
     );
 }
@@ -230,6 +232,7 @@ export default function Dashboard({
     profitPotential,
     salesRefundSummary,
     salesSummary,
+    top5,
 }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -239,6 +242,7 @@ export default function Dashboard({
                 profitPotential={profitPotential}
                 salesRefundSummary={salesRefundSummary}
                 salesSummary={salesSummary}
+                top5={top5}
             />
         </AppLayout>
     );

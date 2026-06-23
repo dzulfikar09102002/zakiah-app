@@ -6,6 +6,7 @@ use App\Models\Location;
 use App\Models\ProductLocationStock;
 use App\Models\SaleRefund;
 use App\Models\SaleTransaction;
+use App\Models\SaleTransactionDetail;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
@@ -207,5 +208,123 @@ class DashboardService
                 as net_profit
             ')
             ->first();
+    }
+
+    public function getTopProductsAndCategories()
+    {
+        $query = SaleTransactionDetail::query();
+
+        $locationIds = auth()->user()
+            ->entity
+            ->locations()
+            ->pluck('id')
+            ->toArray();
+
+        $query->whereIn(
+            'location_id',
+            $locationIds
+        );
+
+        $query->where(
+            'status',
+            'ok'
+        );
+
+        $query->where(
+            'local_sales_at',
+            '>=',
+            request('start_at')
+                ? Carbon::parse(request('start_at'))->startOfDay()
+                : today()->startOfDay()
+        );
+
+        $query->where(  
+            'local_sales_at',
+            '<=',
+            request('end_at')
+                ? Carbon::parse(request('end_at'))->endOfDay()
+                : today()->endOfDay()
+        );
+
+        $selectAll = request('select_all_location') == 'true';
+
+        $locs = array_map(
+            'intval',
+            (array) request('locs', [])
+        );
+
+        $excludeLocs = array_map(
+            'intval',
+            (array) request('exclude_locs', [])
+        );
+
+        if ($selectAll && count($excludeLocs) > 0) {
+            $query->whereNotIn(
+                'location_id',
+                $excludeLocs
+            );
+        } elseif (!$selectAll && count($locs) > 0) {
+            $query->whereIn(
+                'location_id',
+                $locs
+            );
+        }
+
+        $products = (clone $query)
+            ->select(
+                'product_id',
+                'product_name'
+            )
+            ->selectRaw('
+                SUM(total_line_amount)
+                as total_line_amount
+            ')
+            ->selectRaw('
+                SUM(quantity)
+                as quantity
+            ')
+            ->groupBy(
+                'product_id',
+                'product_name'
+            )
+            ->orderByDesc(
+                'total_line_amount'
+            )
+            ->orderByDesc(
+                'quantity'
+            )
+            ->limit(5)
+            ->get();
+
+        $categories = (clone $query)
+            ->select(
+                'product_category_id',
+                'product_category_name'
+            )
+            ->selectRaw('
+                SUM(total_line_amount)
+                as total_line_amount
+            ')
+            ->selectRaw('
+                SUM(quantity)
+                as quantity
+            ')
+            ->groupBy(
+                'product_category_id',
+                'product_category_name'
+            )
+            ->orderByDesc(
+                'total_line_amount'
+            )
+            ->orderByDesc(
+                'quantity'
+            )
+            ->limit(5)
+            ->get();
+
+        return [
+            'products' => $products,
+            'categories' => $categories,
+        ];
     }
 }
