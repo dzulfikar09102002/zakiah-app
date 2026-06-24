@@ -7,9 +7,20 @@ import { initializeTheme } from './hooks/use-appearance';
 import { toast } from 'sonner';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const rawEntityName = (window as any).entityName || appName;
 
+const entityName =
+    rawEntityName === rawEntityName.toUpperCase() ||
+    rawEntityName === rawEntityName.toLowerCase()
+        ? rawEntityName
+              .toLowerCase()
+              .replace(/\b\w/g, (c: string) => c.toUpperCase())
+        : rawEntityName;
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) =>
+        title
+            ? `${title} | ${entityName} Backoffice`
+            : `${entityName} Backoffice`,
     resolve: (name) =>
         resolvePageComponent(
             `./pages/${name}.tsx`,
@@ -37,11 +48,12 @@ router.on('invalid', (event) => {
     const response = event.detail.response;
 
     if (response.status === 500) {
-        toast.error("Server Error", {
-            description: "Silakan periksa kembali data yang Anda masukkan dan coba lagi sesaat atau hubungi admin",
+        toast.error('Server Error', {
+            description:
+                'Silakan periksa kembali data yang Anda masukkan dan coba lagi sesaat atau hubungi admin',
         });
     } else if (response.status === 403) {
-        toast.error("Akses ditolak (403).");
+        toast.error('Akses ditolak (403).');
     }
 });
 

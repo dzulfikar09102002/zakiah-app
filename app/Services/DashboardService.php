@@ -8,6 +8,7 @@ use App\Models\SaleRefund;
 use App\Models\SaleTransaction;
 use App\Models\SaleTransactionDetail;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class DashboardService
@@ -159,7 +160,7 @@ class DashboardService
         );
 
         $query->where(
-            'sales_at',
+            'local_sales_at',
             '>=',
             request('start_at')
                 ? Carbon::parse(request('start_at'))->startOfDay()
@@ -167,7 +168,7 @@ class DashboardService
         );
 
         $query->where(
-            'sales_at',
+            'local_sales_at',
             '<=',
             request('end_at')
                 ? Carbon::parse(request('end_at'))->endOfDay()
@@ -210,6 +211,92 @@ class DashboardService
             ->first();
     }
 
+    public function getTop5Products()
+    {
+        $query = SaleTransactionDetail::query();
+
+        $locationIds = auth()->user()
+            ->entity
+            ->locations()
+            ->pluck('id')
+            ->toArray();
+
+        $query->whereIn(
+            'location_id',
+            $locationIds
+        );
+
+        $query->where(
+            'status',
+            'ok'
+        );
+
+        $query->where(
+            'local_sales_at',
+            '>=',
+            request('start_at')
+                ? Carbon::parse(request('start_at'))->startOfDay()
+                : today()->startOfDay()
+        );
+
+        $query->where(
+            'local_sales_at',
+            '<=',
+            request('end_at')
+                ? Carbon::parse(request('end_at'))->endOfDay()
+                : today()->endOfDay()
+        );
+
+        $selectAll = request('select_all_location') == 'true';
+
+        $locs = array_map(
+            'intval',
+            (array) request('locs', [])
+        );
+
+        $excludeLocs = array_map(
+            'intval',
+            (array) request('exclude_locs', [])
+        );
+
+        if ($selectAll && count($excludeLocs) > 0) {
+            $query->whereNotIn(
+                'location_id',
+                $excludeLocs
+            );
+        } elseif (!$selectAll && count($locs) > 0) {
+            $query->whereIn(
+                'location_id',
+                $locs
+            );
+        }
+
+        return $query
+            ->select(
+                'product_id',
+                'product_name'
+            )
+            ->selectRaw('
+                SUM(total_line_amount)
+                as total_line_amount
+            ')
+            ->selectRaw('
+                SUM(quantity)
+                as quantity
+            ')
+            ->groupBy(
+                'product_id',
+                'product_name'
+            )
+            ->orderByDesc(
+                'total_line_amount'
+            )
+            ->orderByDesc(
+                'quantity'
+            )
+            ->limit(5)
+            ->get();
+    }
     public function getTopProductsAndCategories()
     {
         $query = SaleTransactionDetail::query();
@@ -325,6 +412,228 @@ class DashboardService
         return [
             'products' => $products,
             'categories' => $categories,
+        ];
+    }
+    public function getSalesByDate()
+    {
+        $query = SaleTransaction::query();
+
+        $locationIds = auth()->user()
+            ->entity
+            ->locations()
+            ->pluck('id')
+            ->toArray();
+
+        $query->whereIn(
+            'location_id',
+            $locationIds
+        );
+
+        $query->where(
+            'status',
+            'ok'
+        );
+
+        $query->where(
+            'local_sales_at',
+            '>=',
+            request('start_at')
+                ? Carbon::parse(request('start_at'))->startOfDay()
+                : today()->startOfDay()
+        );
+
+        $query->where(
+            'local_sales_at',
+            '<=',
+            request('end_at')
+                ? Carbon::parse(request('end_at'))->endOfDay()
+                : today()->endOfDay()
+        );
+
+        $selectAll = request('select_all_location') == 'true';
+
+        $locs = array_map(
+            'intval',
+            (array) request('locs', [])
+        );
+
+        $excludeLocs = array_map(
+            'intval',
+            (array) request('exclude_locs', [])
+        );
+
+        if ($selectAll && count($excludeLocs) > 0) {
+            $query->whereNotIn(
+                'location_id',
+                $excludeLocs
+            );
+        } elseif (!$selectAll && count($locs) > 0) {
+            $query->whereIn(
+                'location_id',
+                $locs
+            );
+        }
+
+        return $query
+            ->select(
+                DB::raw("DATE_FORMAT(local_sales_at, '%Y-%m-%d') as local_sales_date")
+            )
+            ->selectRaw('SUM(net_sales_after_tax) as net_sales_after_tax')
+            ->selectRaw('SUM(net_profit) as net_profit')
+            ->groupBy('local_sales_date')
+            ->orderBy('local_sales_date')
+            ->limit(30)
+            ->get();
+    }
+    public function getMonthlySales()
+    {
+        $query = SaleTransaction::query();
+
+        $locationIds = auth()->user()
+            ->entity
+            ->locations()
+            ->pluck('id')
+            ->toArray();
+
+        $query->whereIn('location_id', $locationIds);
+        $query->where('status', 'ok');
+
+        $year = request('monthly_year', now()->year);
+
+        $query->whereRaw(
+            "DATE_FORMAT(local_sales_at, '%Y') = ?",
+            [$year]
+        );
+
+        $query->where(
+            'local_sales_at',
+            '>=',
+            request('start_at')
+                ? Carbon::parse(request('start_at'))->startOfDay()
+                : Carbon::create($year)->startOfYear()
+        );
+
+        $query->where(
+            'local_sales_at',
+            '<=',
+            request('end_at')
+                ? Carbon::parse(request('end_at'))->endOfDay()
+                : Carbon::create($year)->endOfYear()
+        );
+
+        $selectAll = request('select_all_location') == 'true';
+
+        $locs = array_map('intval', (array) request('locs', []));
+        $excludeLocs = array_map('intval', (array) request('exclude_locs', []));
+
+        if ($selectAll && count($excludeLocs) > 0) {
+            $query->whereNotIn('location_id', $excludeLocs);
+        } elseif (!$selectAll && count($locs) > 0) {
+            $query->whereIn('location_id', $locs);
+        }
+
+        $data = $query
+            ->selectRaw("MONTH(local_sales_at) as month")
+            ->selectRaw("SUM(net_sales_after_tax) as sales")
+            ->selectRaw("SUM(net_profit) as profit")
+            ->groupByRaw("MONTH(local_sales_at)")
+            ->orderByRaw("MONTH(local_sales_at)")
+            ->get();
+
+        $map = [];
+
+        foreach ($data as $row) {
+            $map[(int)$row->month] = $row;
+        }
+
+        $months = [
+            'Jan', 'Feb', 'Mar', 'Apr',
+            'Mei', 'Jun', 'Jul', 'Aug',
+            'Sep', 'Okt', 'Nov', 'Des',
+        ];
+
+        $sales = [];
+        $profit = [];
+
+        for ($i = 1; $i <= 12; $i++) {
+            $sales[] = $map[$i]->sales ?? 0;
+            $profit[] = $map[$i]->profit ?? 0;
+        }
+
+        return [
+            'months' => $months,
+            'net_sales_after_tax' => $sales,
+            'net_profit' => $profit,
+        ];
+    }
+    public function getYearlySales()
+    {
+        $query = SaleTransaction::query();
+
+        $locationIds = auth()->user()
+            ->entity
+            ->locations()
+            ->pluck('id')
+            ->toArray();
+
+        $query->whereIn('location_id', $locationIds);
+        $query->where('status', 'ok');
+
+        $year = request('monthly_year', now()->year);
+
+        $query->whereRaw(
+            "DATE_FORMAT(local_sales_at, '%Y') = ?",
+            [$year]
+        );
+        $selectAll = request('select_all_location') == 'true';
+
+        $locs = array_map('intval', (array) request('locs', []));
+        $excludeLocs = array_map('intval', (array) request('exclude_locs', []));
+
+        if ($selectAll && count($excludeLocs) > 0) {
+            $query->whereNotIn('location_id', $excludeLocs);
+        } elseif (!$selectAll && count($locs) > 0) {
+            $query->whereIn('location_id', $locs);
+        }
+
+        // $startYear = request('start_year', date('Y') - 1);
+        $startYear = request('start_year', date('Y'));
+        $endYear = request('end_year', date('Y'));
+
+        $query->whereRaw(
+            "YEAR(local_sales_at) BETWEEN ? AND ?",
+            [$startYear, $endYear]
+        );
+
+        $raw = $query
+            ->selectRaw("YEAR(local_sales_at) as year")
+            ->selectRaw("SUM(net_sales_after_tax) as net_sales_after_tax")
+            ->selectRaw("SUM(net_profit) as net_profit")
+            ->groupByRaw("YEAR(local_sales_at)")
+            ->orderBy("year")
+            ->get()
+            ->keyBy('year');
+
+        $years = [];
+        $sales = [];
+        $profit = [];
+
+        for ($y = (int)$startYear; $y <= (int)$endYear; $y++) {
+            $years[] = (string)$y;
+
+            $sales[] = isset($raw[$y])
+                ? (float) $raw[$y]->net_sales_after_tax
+                : 0;
+
+            $profit[] = isset($raw[$y])
+                ? (float) $raw[$y]->net_profit
+                : 0;
+        }
+
+        return [
+            'years' => $years,
+            'net_sales_after_tax' => $sales,
+            'net_profit' => $profit,
         ];
     }
 }

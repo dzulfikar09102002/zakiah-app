@@ -124,14 +124,12 @@ export type Option = {
 };
 
 export interface Top5Product {
-    product_id: number;
     product_name: string;
     total_line_amount: number;
     quantity: number;
 }
 
 export interface Top5Category {
-    product_category_id: number;
     product_category_name: string;
     total_line_amount: number;
     quantity: number;

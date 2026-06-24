@@ -71,7 +71,7 @@ export const mainNavItems: NavItem[] = [
                         href: comingsoon.index().url,
                     },
                     {
-                        title: 'Pergerakan Stok',
+                        title: 'Pergerakan',
                         href: comingsoon.index().url,
                     },
                     {
@@ -81,15 +81,15 @@ export const mainNavItems: NavItem[] = [
                 ],
             },
             {
-                title: 'Sales',
+                title: 'Perfoma Sales',
                 href: '#',
                 items: [
                     {
-                        title: 'Performa Sales',
+                        title: 'Ringkasan',
                         href: '/playground/settings/general',
                     },
                     {
-                        title: 'Performa Detail',
+                        title: 'Detail',
                         href: '/playground/settings/team',
                     },
                 ],

@@ -13,11 +13,15 @@ class DashboardController extends Controller
     ) {}
     public function index()
     {
-        $profitPotential = $this->service->getProfitPotential();
-        $locationOptions = $this->service->getLocationOptions();
-        $salesRefundSummary = $this->service->getSalesRefundSummary();
-        $salesSummary = $this->service->getSalesSummary();
-        $top5 = $this->service->getTopProductsAndCategories();
-        return Inertia::render('dashboard', compact('profitPotential', 'locationOptions', 'salesRefundSummary', 'salesSummary', 'top5'));
+        return Inertia::render('dashboard', [
+            'profitPotential' => $this->service->getProfitPotential(),
+            'locationOptions' => $this->service->getLocationOptions(),
+            'salesRefundSummary' => $this->service->getSalesRefundSummary(),
+            'salesSummary' => $this->service->getSalesSummary(),
+            'top5' => $this->service->getTopProductsAndCategories(),
+            'salesByDate' => $this->service->getSalesByDate(),
+            'monthlySales' => $this->service->getMonthlySales(),
+            'yearlySales' => $this->service->getYearlySales(),
+        ]);
     }
 }

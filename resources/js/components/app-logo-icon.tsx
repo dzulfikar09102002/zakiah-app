@@ -4,7 +4,10 @@ interface AppLogoIconProps extends ImgHTMLAttributes<HTMLImageElement> {
     entityName?: string;
 }
 
-export default function AppLogoIcon({ entityName, ...props }: AppLogoIconProps) {
+export default function AppLogoIcon({
+    entityName,
+    ...props
+}: AppLogoIconProps) {
     const slug = entityName
         ?.toLowerCase()
         .replace(/\s+/g, '-')
@@ -12,7 +15,7 @@ export default function AppLogoIcon({ entityName, ...props }: AppLogoIconProps) 
 
     const logoSrc = slug
         ? `/assets/images/${slug}.png`
-        : '/assets/images/images-logo.png';
+        : '/assets/images/zakiah.png';
 
     return (
         <img
@@ -20,7 +23,8 @@ export default function AppLogoIcon({ entityName, ...props }: AppLogoIconProps) 
             src={logoSrc}
             alt={entityName ? `Logo ${entityName}` : 'Logo'}
             onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = '/assets/images/zakiah.png';
+                (e.currentTarget as HTMLImageElement).src =
+                    '/assets/images/zakiah.png';
             }}
         />
     );

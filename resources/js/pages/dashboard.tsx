@@ -25,44 +25,11 @@ import { ProfitPotential, Top5Data } from '@/lib/model';
 import { DateRange } from 'node_modules/react-day-picker/dist/esm/types/shared';
 import { format } from 'date-fns';
 
-const dailyData = [
-    { name: '2026-02-15', sales: 12500000, profit: 3200000 },
-    { name: '2026-02-16', sales: 15800000, profit: 4100000 },
-    { name: '2026-02-17', sales: 14200000, profit: 3800000 },
-    { name: '2026-02-18', sales: 19500000, profit: 5200000 },
-    { name: '2026-02-19', sales: 17100000, profit: 4600000 },
-    { name: '2026-02-20', sales: 21418500, profit: 5777660 },
-    { name: '2026-02-21', sales: 18900000, profit: 4900000 },
-];
-
-const monthlyData = [
-    { name: 'Jan', sales: 450000000, profit: 120000000 },
-    { name: 'Feb', sales: 520000000, profit: 145000000 },
-    { name: 'Mar', sales: 480000000, profit: 130000000 },
-    { name: 'Apr', sales: 610000000, profit: 170000000 },
-    { name: 'Mei', sales: 550000000, profit: 155000000 },
-    { name: 'Jun', sales: 590000000, profit: 165000000 },
-    { name: 'Jul', sales: 630000000, profit: 180000000 },
-    { name: 'Agu', sales: 580000000, profit: 160000000 },
-    { name: 'Sep', sales: 650000000, profit: 190000000 },
-    { name: 'Okt', sales: 710000000, profit: 210000000 },
-    { name: 'Nov', sales: 680000000, profit: 200000000 },
-    { name: 'Des', sales: 850000000, profit: 250000000 },
-];
-
-const yearlyData = [
-    { name: '2022', sales: 4800000000, profit: 1200000000 },
-    { name: '2023', sales: 5600000000, profit: 1450000000 },
-    { name: '2024', sales: 6200000000, profit: 1700000000 },
-    { name: '2025', sales: 7500000000, profit: 2100000000 },
-    { name: '2026', sales: 8200000000, profit: 2400000000 },
-];
-
 const currentYear = new Date().getFullYear();
 
 const years = Array.from(
     { length: currentYear - 2023 + 1 },
-    (_, i) => 2023 + i,
+    (_, i) => currentYear - i,
 );
 type Props = {
     locationOptions: Option[];
@@ -75,6 +42,21 @@ type Props = {
         net_profit: number;
     };
     top5: Top5Data;
+    salesByDate: {
+        local_sales_date: string;
+        net_sales_after_tax: number;
+        net_profit: number;
+    }[];
+    monthlySales: {
+        months: string[];
+        net_sales_after_tax: number[];
+        net_profit: number[];
+    };
+    yearlySales: {
+        years: string[];
+        net_sales_after_tax: number[];
+        net_profit: number[];
+    };
 };
 function DashboardContent({
     locationOptions,
@@ -82,11 +64,35 @@ function DashboardContent({
     salesRefundSummary,
     salesSummary,
     top5,
+    salesByDate,
+    monthlySales,
+    yearlySales,
 }: Props) {
     const params = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
     });
+    console.log(monthlySales);
+    const dailyData =
+        salesByDate?.map((item) => ({
+            name: item.local_sales_date,
+            sales: Number(item.net_sales_after_tax ?? 0),
+            profit: Number(item.net_profit ?? 0),
+        })) ?? [];
+    const months = monthlySales?.months ?? [];
+    const salesArr = monthlySales?.net_sales_after_tax ?? [];
+    const profitArr = monthlySales?.net_profit ?? [];
 
+    const monthlyChartData = months.map((m, i) => ({
+        name: m,
+        sales: Number(salesArr[i] ?? 0),
+        profit: Number(profitArr[i] ?? 0),
+    }));
+
+    const yearlyChartData = yearlySales.years.map((y, i) => ({
+        name: y,
+        sales: Number(yearlySales.net_sales_after_tax?.[i] ?? 0),
+        profit: Number(yearlySales.net_profit?.[i] ?? 0),
+    }));
     const handleApplyFilter = () => {
         router.get(
             dashboard().url,
@@ -194,27 +200,27 @@ function DashboardContent({
                 </div>
             </div>
             <Separator />
-
             <div className="items-center justify-between lg:flex">
                 <h2 className="text-lg font-semibold">Performa Harian</h2>
             </div>
             <DaillyOverview {...dailyOverviewData} />
-
+            <Separator />
             {/* Charts */}
             <ProfitChart data={dailyData} />
-
+            <Separator />
             <div className="grid-cols-2 gap-6 lg:grid">
                 <MonthlyProfitChart
-                    monthlyData={monthlyData}
+                    monthlyData={monthlyChartData}
                     years={years}
                     monthlyYear={2026}
                 />
                 <YearlyProfitChart
-                    yearlyData={yearlyData}
+                    yearlyData={yearlyChartData}
                     earlyYear={2022}
                     endYear={2026}
                 />
             </div>
+            <Separator />
             <TopFive top5={top5} />
         </div>
     );
@@ -233,6 +239,9 @@ export default function Dashboard({
     salesRefundSummary,
     salesSummary,
     top5,
+    salesByDate,
+    monthlySales,
+    yearlySales,
 }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -243,6 +252,9 @@ export default function Dashboard({
                 salesRefundSummary={salesRefundSummary}
                 salesSummary={salesSummary}
                 top5={top5}
+                salesByDate={salesByDate}
+                yearlySales={yearlySales}
+                monthlySales={monthlySales}
             />
         </AppLayout>
     );

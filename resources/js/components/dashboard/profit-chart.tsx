@@ -15,11 +15,15 @@ export default ({ data }: { data: any[] }) => {
         <Card>
             <CardContent className="h-100">
                 <ChartContainer config={{}} className="h-full w-full">
-                    <BarChart data={data}>
+                    <BarChart
+                        data={data}
+                        barSize={100}
+                        margin={{ top: 20, bottom: 0 }}
+                        barGap={data.length <= 1 ? 100 : 15}
+                    >
                         <CartesianGrid strokeDasharray="3 3" vertical={false} />
 
                         <XAxis dataKey="name" />
-
                         <ChartTooltip content={<ChartTooltipContent />} />
 
                         <Legend />

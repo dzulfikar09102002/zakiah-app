@@ -45,7 +45,7 @@ export default ({ top5 }: Props) => {
                                 <TableBody>
                                     {top5.products.length > 0 ? (
                                         top5.products.map((item, index) => (
-                                            <TableRow key={item.product_id}>
+                                            <TableRow>
                                                 <TableCell>
                                                     {index + 1}
                                                 </TableCell>
@@ -88,9 +88,7 @@ export default ({ top5 }: Props) => {
                                 <TableBody>
                                     {top5.categories.length > 0 ? (
                                         top5.categories.map((item, index) => (
-                                            <TableRow
-                                                key={item.product_category_id}
-                                            >
+                                            <TableRow>
                                                 <TableCell>
                                                     {index + 1}
                                                 </TableCell>
