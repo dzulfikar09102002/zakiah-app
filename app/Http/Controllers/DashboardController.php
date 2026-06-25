@@ -20,8 +20,8 @@ class DashboardController extends Controller
             'salesSummary' => $this->service->getSalesSummary(),
             'top5' => $this->service->getTopProductsAndCategories(),
             'salesByDate' => $this->service->getSalesByDate(),
-            'monthlySales' => $this->service->getMonthlySales(),
-            'yearlySales' => $this->service->getYearlySales(),
+            'monthlySales' => fn() => $this->service->getMonthlySales(),
+            'yearlySales' => fn() => $this->service->getYearlySales(),
         ]);
     }
 }

@@ -505,22 +505,6 @@ class DashboardService
             [$year]
         );
 
-        $query->where(
-            'local_sales_at',
-            '>=',
-            request('start_at')
-                ? Carbon::parse(request('start_at'))->startOfDay()
-                : Carbon::create($year)->startOfYear()
-        );
-
-        $query->where(
-            'local_sales_at',
-            '<=',
-            request('end_at')
-                ? Carbon::parse(request('end_at'))->endOfDay()
-                : Carbon::create($year)->endOfYear()
-        );
-
         $selectAll = request('select_all_location') == 'true';
 
         $locs = array_map('intval', (array) request('locs', []));
@@ -561,6 +545,7 @@ class DashboardService
         }
 
         return [
+            'year' => (int) $year,
             'months' => $months,
             'net_sales_after_tax' => $sales,
             'net_profit' => $profit,
@@ -579,12 +564,6 @@ class DashboardService
         $query->whereIn('location_id', $locationIds);
         $query->where('status', 'ok');
 
-        $year = request('monthly_year', now()->year);
-
-        $query->whereRaw(
-            "DATE_FORMAT(local_sales_at, '%Y') = ?",
-            [$year]
-        );
         $selectAll = request('select_all_location') == 'true';
 
         $locs = array_map('intval', (array) request('locs', []));
@@ -596,21 +575,20 @@ class DashboardService
             $query->whereIn('location_id', $locs);
         }
 
-        // $startYear = request('start_year', date('Y') - 1);
-        $startYear = request('start_year', date('Y'));
-        $endYear = request('end_year', date('Y'));
+        $startYear = request('start_year', now()->year - 1);
+        $endYear   = request('end_year', now()->year);
 
-        $query->whereRaw(
-            "YEAR(local_sales_at) BETWEEN ? AND ?",
+        $query->whereBetween(
+            DB::raw('YEAR(local_sales_at)'),
             [$startYear, $endYear]
         );
 
         $raw = $query
-            ->selectRaw("YEAR(local_sales_at) as year")
-            ->selectRaw("SUM(net_sales_after_tax) as net_sales_after_tax")
-            ->selectRaw("SUM(net_profit) as net_profit")
-            ->groupByRaw("YEAR(local_sales_at)")
-            ->orderBy("year")
+            ->selectRaw('YEAR(local_sales_at) as year')
+            ->selectRaw('SUM(net_sales_after_tax) as sales')
+            ->selectRaw('SUM(net_profit) as profit')
+            ->groupByRaw('YEAR(local_sales_at)')
+            ->orderBy('year')
             ->get()
             ->keyBy('year');
 
@@ -618,15 +596,15 @@ class DashboardService
         $sales = [];
         $profit = [];
 
-        for ($y = (int)$startYear; $y <= (int)$endYear; $y++) {
-            $years[] = (string)$y;
+        for ($y = $startYear; $y <= $endYear; $y++) {
+            $years[] = $y;
 
             $sales[] = isset($raw[$y])
-                ? (float) $raw[$y]->net_sales_after_tax
+                ? (float) $raw[$y]->sales
                 : 0;
 
             $profit[] = isset($raw[$y])
-                ? (float) $raw[$y]->net_profit
+                ? (float) $raw[$y]->profit
                 : 0;
         }
 

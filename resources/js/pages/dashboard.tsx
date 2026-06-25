@@ -48,6 +48,7 @@ type Props = {
         net_profit: number;
     }[];
     monthlySales: {
+        year: number;
         months: string[];
         net_sales_after_tax: number[];
         net_profit: number[];
@@ -71,7 +72,7 @@ function DashboardContent({
     const params = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
     });
-    console.log(monthlySales);
+
     const dailyData =
         salesByDate?.map((item) => ({
             name: item.local_sales_date,
@@ -84,12 +85,20 @@ function DashboardContent({
 
     const monthlyChartData = months.map((m, i) => ({
         name: m,
+        year: monthlySales.year,
         sales: Number(salesArr[i] ?? 0),
         profit: Number(profitArr[i] ?? 0),
     }));
 
-    const yearlyChartData = yearlySales.years.map((y, i) => ({
-        name: y,
+    const yearsData = yearlySales.years ?? [];
+
+    const earlyYear = Number(yearsData[0] ?? new Date().getFullYear() - 1);
+    const endYear = Number(
+        yearsData[yearsData.length - 1] ?? new Date().getFullYear(),
+    );
+
+    const yearlyChartData = yearsData.map((y, i) => ({
+        name: String(y),
         sales: Number(yearlySales.net_sales_after_tax?.[i] ?? 0),
         profit: Number(yearlySales.net_profit?.[i] ?? 0),
     }));
@@ -212,12 +221,12 @@ function DashboardContent({
                 <MonthlyProfitChart
                     monthlyData={monthlyChartData}
                     years={years}
-                    monthlyYear={2026}
+                    monthlyYear={monthlyChartData[0]?.year ?? currentYear}
                 />
                 <YearlyProfitChart
                     yearlyData={yearlyChartData}
-                    earlyYear={2022}
-                    endYear={2026}
+                    earlyYear={earlyYear}
+                    endYear={endYear}
                 />
             </div>
             <Separator />

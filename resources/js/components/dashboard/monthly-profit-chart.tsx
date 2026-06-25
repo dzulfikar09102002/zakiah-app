@@ -26,6 +26,7 @@ export default ({ monthlyYear, years, monthlyData }: Props) => {
                 monthly_year: year,
             },
             {
+                only: ['monthlySales'],
                 preserveState: true,
                 preserveScroll: true,
                 replace: true,
@@ -58,7 +59,11 @@ export default ({ monthlyYear, years, monthlyData }: Props) => {
                             {/* LIST */}
                             {filteredYears.length > 0 ? (
                                 filteredYears.slice(0, 10).map((y) => (
-                                    <SelectItem key={y} value={String(y)}>
+                                    <SelectItem
+                                        key={y}
+                                        value={String(y)}
+                                        className="cursor-pointer"
+                                    >
                                         {y}
                                     </SelectItem>
                                 ))
