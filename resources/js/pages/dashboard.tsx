@@ -162,15 +162,22 @@ function DashboardContent({
         let interval: ReturnType<typeof setInterval> | null = null;
 
         const reload = () => {
-            router.reload();
+            router.reload({
+                async: true,
+                only: [
+                    'profitPotential',
+                    'salesRefundSummary',
+                    'salesSummary',
+                    'top5',
+                    'salesByDate',
+                ],
+            });
         };
 
         const startPolling = () => {
             if (interval) return;
 
-            interval = setInterval(() => {
-                router.reload();
-            }, 5000);
+            interval = setInterval(reload, 5000);
         };
 
         const stopPolling = () => {
@@ -188,6 +195,7 @@ function DashboardContent({
                 stopPolling();
             }
         };
+
         if (document.visibilityState === 'visible') {
             startPolling();
         }
@@ -196,6 +204,7 @@ function DashboardContent({
 
         return () => {
             stopPolling();
+
             document.removeEventListener(
                 'visibilitychange',
                 handleVisibilityChange,
