@@ -39,7 +39,9 @@ export default ({ top5 }: Props) => {
                                     <TableRow>
                                         <TableHead>No. </TableHead>
                                         <TableHead>Nama</TableHead>
-                                        <TableHead>Kuantitas</TableHead>
+                                        <TableHead className="text-center">
+                                            Kuantitas
+                                        </TableHead>
                                         <TableHead>Total Penjualan</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -55,7 +57,7 @@ export default ({ top5 }: Props) => {
                                                 <TableCell>
                                                     {item.product_name}
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="text-center">
                                                     {item.quantity}
                                                 </TableCell>
                                                 <TableCell>
@@ -84,7 +86,9 @@ export default ({ top5 }: Props) => {
                                     <TableRow>
                                         <TableHead>No. </TableHead>
                                         <TableHead>Nama</TableHead>
-                                        <TableHead>Kuantitas</TableHead>
+                                        <TableHead className="text-center">
+                                            Kuantitas
+                                        </TableHead>
                                         <TableHead>Total Penjualan</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -100,7 +104,7 @@ export default ({ top5 }: Props) => {
                                                 <TableCell>
                                                     {item.product_category_name}
                                                 </TableCell>
-                                                <TableCell>
+                                                <TableCell className="text-center">
                                                     {item.quantity}
                                                 </TableCell>
                                                 <TableCell>
@@ -129,9 +133,7 @@ export default ({ top5 }: Props) => {
                                     <TableRow>
                                         <TableHead>No.</TableHead>
                                         <TableHead>Lokasi</TableHead>
-                                        <TableHead className="text-right">
-                                            Total Penjualan
-                                        </TableHead>
+                                        <TableHead>Total Penjualan</TableHead>
                                     </TableRow>
                                 </TableHeader>
 
@@ -149,7 +151,7 @@ export default ({ top5 }: Props) => {
                                                     {item.location_name}
                                                 </TableCell>
 
-                                                <TableCell className="text-right">
+                                                <TableCell>
                                                     {formatCurrency(
                                                         item.net_sales_after_tax,
                                                     )}
