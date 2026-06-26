@@ -58,6 +58,10 @@ type Props = {
         net_sales_after_tax: number[];
         net_profit: number[];
     };
+    topLocations: {
+        location_name: string;
+        net_sales_after_tax: number;
+    }[];
 };
 function DashboardContent({
     locationOptions,
@@ -68,6 +72,7 @@ function DashboardContent({
     salesByDate,
     monthlySales,
     yearlySales,
+    topLocations,
 }: Props) {
     const params = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
@@ -251,6 +256,7 @@ export default function Dashboard({
     salesByDate,
     monthlySales,
     yearlySales,
+    topLocations,
 }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -261,6 +267,7 @@ export default function Dashboard({
                 salesRefundSummary={salesRefundSummary}
                 salesSummary={salesSummary}
                 top5={top5}
+                topLocations={topLocations}
                 salesByDate={salesByDate}
                 yearlySales={yearlySales}
                 monthlySales={monthlySales}

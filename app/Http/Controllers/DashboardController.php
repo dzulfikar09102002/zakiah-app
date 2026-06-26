@@ -18,7 +18,12 @@ class DashboardController extends Controller
             'locationOptions' => $this->service->getLocationOptions(),
             'salesRefundSummary' => $this->service->getSalesRefundSummary(),
             'salesSummary' => $this->service->getSalesSummary(),
-            'top5' => $this->service->getTopProductsAndCategories(),
+            'top5' => array_merge(
+                $this->service->getTopProductsAndCategories(),
+                [
+                    'locations' => $this->service->getTopLocations(),
+                ]
+            ),
             'salesByDate' => $this->service->getSalesByDate(),
             'monthlySales' => fn() => $this->service->getMonthlySales(),
             'yearlySales' => fn() => $this->service->getYearlySales(),

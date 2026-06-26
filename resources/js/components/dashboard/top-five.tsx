@@ -31,6 +31,7 @@ export default ({ top5 }: Props) => {
                         <TabsList>
                             <TabsTrigger value="product">Produk</TabsTrigger>
                             <TabsTrigger value="category">Kategori</TabsTrigger>
+                            <TabsTrigger value="location">Lokasi</TabsTrigger>
                         </TabsList>
                         <TabsContent value="product">
                             <Table>
@@ -45,7 +46,9 @@ export default ({ top5 }: Props) => {
                                 <TableBody>
                                     {top5.products.length > 0 ? (
                                         top5.products.map((item, index) => (
-                                            <TableRow>
+                                            <TableRow
+                                                key={`${item.product_name}-${item.quantity}-${item.total_line_amount}`}
+                                            >
                                                 <TableCell>
                                                     {index + 1}
                                                 </TableCell>
@@ -88,7 +91,9 @@ export default ({ top5 }: Props) => {
                                 <TableBody>
                                     {top5.categories.length > 0 ? (
                                         top5.categories.map((item, index) => (
-                                            <TableRow>
+                                            <TableRow
+                                                key={`${item.product_category_name}-${item.quantity}-${item.total_line_amount}`}
+                                            >
                                                 <TableCell>
                                                     {index + 1}
                                                 </TableCell>
@@ -109,6 +114,52 @@ export default ({ top5 }: Props) => {
                                         <TableRow>
                                             <TableCell
                                                 colSpan={4}
+                                                className="text-center text-muted-foreground"
+                                            >
+                                                Data tidak ditemukan
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TabsContent>
+                        <TabsContent value="location">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>No.</TableHead>
+                                        <TableHead>Lokasi</TableHead>
+                                        <TableHead className="text-right">
+                                            Total Penjualan
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+
+                                <TableBody>
+                                    {top5.locations.length > 0 ? (
+                                        top5.locations.map((item, index) => (
+                                            <TableRow
+                                                key={`${item.location_name}-${item.net_sales_after_tax}`}
+                                            >
+                                                <TableCell>
+                                                    {index + 1}
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    {item.location_name}
+                                                </TableCell>
+
+                                                <TableCell className="text-right">
+                                                    {formatCurrency(
+                                                        item.net_sales_after_tax,
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={3}
                                                 className="text-center text-muted-foreground"
                                             >
                                                 Data tidak ditemukan

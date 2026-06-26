@@ -134,10 +134,15 @@ export interface Top5Category {
     total_line_amount: number;
     quantity: number;
 }
-
+export interface Top5Location {
+    location_name: string;
+    net_sales_after_tax: number;
+}
+[];
 export interface Top5Data {
     products: Top5Product[];
     categories: Top5Category[];
+    locations: Top5Location[];
 }
 
 export type ProfitPotential = {

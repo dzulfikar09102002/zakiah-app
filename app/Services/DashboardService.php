@@ -210,93 +210,6 @@ class DashboardService
             ')
             ->first();
     }
-
-    public function getTop5Products()
-    {
-        $query = SaleTransactionDetail::query();
-
-        $locationIds = auth()->user()
-            ->entity
-            ->locations()
-            ->pluck('id')
-            ->toArray();
-
-        $query->whereIn(
-            'location_id',
-            $locationIds
-        );
-
-        $query->where(
-            'status',
-            'ok'
-        );
-
-        $query->where(
-            'local_sales_at',
-            '>=',
-            request('start_at')
-                ? Carbon::parse(request('start_at'))->startOfDay()
-                : today()->startOfDay()
-        );
-
-        $query->where(
-            'local_sales_at',
-            '<=',
-            request('end_at')
-                ? Carbon::parse(request('end_at'))->endOfDay()
-                : today()->endOfDay()
-        );
-
-        $selectAll = request('select_all_location') == 'true';
-
-        $locs = array_map(
-            'intval',
-            (array) request('locs', [])
-        );
-
-        $excludeLocs = array_map(
-            'intval',
-            (array) request('exclude_locs', [])
-        );
-
-        if ($selectAll && count($excludeLocs) > 0) {
-            $query->whereNotIn(
-                'location_id',
-                $excludeLocs
-            );
-        } elseif (!$selectAll && count($locs) > 0) {
-            $query->whereIn(
-                'location_id',
-                $locs
-            );
-        }
-
-        return $query
-            ->select(
-                'product_id',
-                'product_name'
-            )
-            ->selectRaw('
-                SUM(total_line_amount)
-                as total_line_amount
-            ')
-            ->selectRaw('
-                SUM(quantity)
-                as quantity
-            ')
-            ->groupBy(
-                'product_id',
-                'product_name'
-            )
-            ->orderByDesc(
-                'total_line_amount'
-            )
-            ->orderByDesc(
-                'quantity'
-            )
-            ->limit(5)
-            ->get();
-    }
     public function getTopProductsAndCategories()
     {
         $query = SaleTransactionDetail::query();
@@ -413,6 +326,83 @@ class DashboardService
             'products' => $products,
             'categories' => $categories,
         ];
+    }
+
+    public function getTopLocations()
+    {
+        $query = SaleTransaction::query();
+
+        $locationIds = auth()->user()
+            ->entity
+            ->locations()
+            ->pluck('id')
+            ->toArray();
+
+        $query->whereIn(
+            'location_id',
+            $locationIds
+        );
+
+        $query->where(
+            'status',
+            'ok'
+        );
+
+        $query->where(
+            'local_sales_at',
+            '>=',
+            request('start_at')
+                ? Carbon::parse(request('start_at'))->startOfDay()
+                : today()->startOfDay()
+        );
+
+        $query->where(
+            'local_sales_at',
+            '<=',
+            request('end_at')
+                ? Carbon::parse(request('end_at'))->endOfDay()
+                : today()->endOfDay()
+        );
+
+        $selectAll = request('select_all_location') == 'true';
+
+        $locs = array_map(
+            'intval',
+            (array) request('locs', [])
+        );
+
+        $excludeLocs = array_map(
+            'intval',
+            (array) request('exclude_locs', [])
+        );
+
+        if ($selectAll && count($excludeLocs) > 0) {
+            $query->whereNotIn(
+                'location_id',
+                $excludeLocs
+            );
+        } elseif (!$selectAll && count($locs) > 0) {
+            $query->whereIn(
+                'location_id',
+                $locs
+            );
+        }
+
+        return $query
+            ->select(
+                'location_name'
+            )
+            ->selectRaw(
+                'SUM(net_sales_after_tax) as net_sales_after_tax'
+            )
+            ->groupBy(
+                'location_name'
+            )
+            ->orderByDesc(
+                'net_sales_after_tax'
+            )
+            ->limit(5)
+            ->get();
     }
     public function getSalesByDate()
     {
