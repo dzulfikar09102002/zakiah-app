@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import type { BreadcrumbItem, Option } from '@/types';
 import RangeDatePicker from '@/components/date-range-picker';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     Select,
     SelectTrigger,
@@ -58,10 +58,6 @@ type Props = {
         net_sales_after_tax: number[];
         net_profit: number[];
     };
-    topLocations: {
-        location_name: string;
-        net_sales_after_tax: number;
-    }[];
 };
 function DashboardContent({
     locationOptions,
@@ -72,7 +68,6 @@ function DashboardContent({
     salesByDate,
     monthlySales,
     yearlySales,
-    topLocations,
 }: Props) {
     const params = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
@@ -162,6 +157,51 @@ function DashboardContent({
             profitPotential.sell_price - profitPotential.cogs,
         ),
     };
+
+    useEffect(() => {
+        let interval: ReturnType<typeof setInterval> | null = null;
+
+        const reload = () => {
+            router.reload();
+        };
+
+        const startPolling = () => {
+            if (interval) return;
+
+            interval = setInterval(() => {
+                router.reload();
+            }, 5000);
+        };
+
+        const stopPolling = () => {
+            if (!interval) return;
+
+            clearInterval(interval);
+            interval = null;
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                reload();
+                startPolling();
+            } else {
+                stopPolling();
+            }
+        };
+        if (document.visibilityState === 'visible') {
+            startPolling();
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            stopPolling();
+            document.removeEventListener(
+                'visibilitychange',
+                handleVisibilityChange,
+            );
+        };
+    }, []);
     return (
         <div className="space-y-4">
             <input
@@ -256,7 +296,6 @@ export default function Dashboard({
     salesByDate,
     monthlySales,
     yearlySales,
-    topLocations,
 }: Props) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -267,7 +306,6 @@ export default function Dashboard({
                 salesRefundSummary={salesRefundSummary}
                 salesSummary={salesSummary}
                 top5={top5}
-                topLocations={topLocations}
                 salesByDate={salesByDate}
                 yearlySales={yearlySales}
                 monthlySales={monthlySales}
