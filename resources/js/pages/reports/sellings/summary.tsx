@@ -55,7 +55,14 @@ export const columns = [
         header: 'Tanggal',
         cell: (info) => {
             const date = new Date(info.getValue());
-            return date.toLocaleDateString('id-ID');
+
+            return date.toLocaleString('id-ID', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
         },
     }),
 

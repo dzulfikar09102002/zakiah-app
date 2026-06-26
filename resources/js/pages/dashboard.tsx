@@ -177,7 +177,7 @@ function DashboardContent({
         const startPolling = () => {
             if (interval) return;
 
-            interval = setInterval(reload, 5000);
+            interval = setInterval(reload, 10000);
         };
 
         const stopPolling = () => {

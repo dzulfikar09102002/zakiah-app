@@ -51,6 +51,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');
     Route::get('dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
+    Route::get(
+    '/dashboard/latest-transaction-id',
+    [DashboardController::class, 'latestTransactionId']
+);
 
     Route::resource('roles', RoleController::class);
 
