@@ -11,6 +11,8 @@ import { Card, CardContent } from '../ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
 
 export default ({ data }: { data: any[] }) => {
+    const formatCurrency = (value: number) =>
+        new Intl.NumberFormat('id-ID').format(value);
     return (
         <Card>
             <CardContent className="h-100">
@@ -38,6 +40,9 @@ export default ({ data }: { data: any[] }) => {
                                 dataKey="sales"
                                 position="top"
                                 fontSize={12}
+                                formatter={(value: number) =>
+                                    formatCurrency(value)
+                                }
                             />
                         </Bar>
 
@@ -51,6 +56,9 @@ export default ({ data }: { data: any[] }) => {
                                 dataKey="profit"
                                 position="top"
                                 fontSize={10}
+                                formatter={(value: number) =>
+                                    formatCurrency(value)
+                                }
                             />
                         </Bar>
                     </BarChart>
