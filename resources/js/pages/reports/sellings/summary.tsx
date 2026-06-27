@@ -295,31 +295,6 @@ export default ({ pagination, locationOptions }: Props) => {
                                     value={id}
                                 />
                             ))}
-                            {/* <MultiSelect
-                                name="locs"
-                                options={[
-                                    { label: 'Semua lokasi', value: 'all' },
-                                    ...locationOptions,
-                                ]}
-                                defaultValues={
-                                    query.locations ??
-                                    locationOptions.map((el) => el.value)
-                                }
-                                placeholder={multiSelectPlaceholder}
-                            />
-
-                            
-                            <input
-                                type="hidden"
-                                name="select_all_location"
-                                value={
-                                    !query.locations ||
-                                    query.locations.includes('all')
-                                        ? '1'
-                                        : '0'
-                                }
-                            /> */}
-
                             <Button type="submit">
                                 <Search /> Cari
                             </Button>

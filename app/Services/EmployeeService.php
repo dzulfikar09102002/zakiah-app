@@ -30,6 +30,22 @@ class EmployeeService
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }
+    public function getAllEmployees()
+    {
+        $entityId = auth()->user()?->entity?->id;
+        return Employee::with([
+                'role:id,name',
+                'user:id,email',
+                'employeeLocations:id,employee_id,location_id,role_id,entity_permission'
+            ])
+            ->where('entity_id', $entityId)
+            ->when(request('search'), fn(Builder $query, $search) => 
+                $query->where(function ($q) use ($search) {
+                    $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%");
+                })
+            );
+    }
     public function getRoles()
     {
         return Role::select('id', 'name')

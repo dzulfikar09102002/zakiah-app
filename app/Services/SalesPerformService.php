@@ -1,11 +1,27 @@
 <?php
 
 namespace App\Services;
+use App\Models\Employee;
 use App\Models\EmployeeSalesSummary;
+use App\Models\Location;
 use Carbon\Carbon;
-
+use Illuminate\Support\Str;
 class SalesPerformService
 {
+    public function getEmployeeOptions()
+    {
+        return (new EmployeeService())->getAllEmployees()->get()->map(fn (Employee $employee) => [
+            'label' => Str::title(Str::lower($employee->name)),
+            'value' => $employee->id,
+        ]);
+    }
+    public function getLocationOptions()
+    {
+        return (new LocationService)->getLocations()->get()->map(fn (Location $location) => [
+            'label' => Str::title(Str::lower($location->name)),
+            'value' => $location->id,
+        ]);
+    }
     public function getEmployeeSalesSummary()
     {
         $query = EmployeeSalesSummary::query();
