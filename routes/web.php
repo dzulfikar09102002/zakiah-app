@@ -8,6 +8,8 @@ use App\Http\Controllers\CustomerPointMovementController;
 use App\Http\Controllers\DailySaleController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\EmployeeReportDetailController;
+use App\Http\Controllers\EmployeeReportSummaryController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\LoyaltyController;
@@ -217,7 +219,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('product-adjustment-stocks.reject');
 
     /*
-    |--------------------------------------------------------------------------
+    |-----------------------------------------------------------------------p---
     | PROMO
     |--------------------------------------------------------------------------
     */
@@ -273,8 +275,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('report-by-locations', SalesReportByLocationController::class)->only(['index']);
     Route::resource('report-stock-movement', ReportStockMovementController::class)->only(['index']);
     Route::resource('report-stock-card', ReportStockCardController::class)->only(['index']);
-    Route::resource('report-employee-summary', ReportEmployeeSummaryController::class)->only(['index']);
-    Route::resource('report-employee-detail', ReportEmployeeDetailController::class)->only(['index']);
+    Route::resource('report-employee-summary', EmployeeReportSummaryController::class)->only(['index']);
+    Route::resource('report-employee-detail', EmployeeReportDetailController::class)->only(['index']);
 });
 
 require __DIR__ . '/settings.php';

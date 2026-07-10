@@ -30,3 +30,18 @@ export const toRupiah = (amount: number | string): string => {
         minimumFractionDigits: 0,
     }).format(numericAmount);
 };
+
+export function formatEmployeeName(name: string): string {
+    return name
+        .replace(/_sales$/i, '')
+        .replace(/sales$/i, '')
+        .replace(/_/g, ' ')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(
+            (word) =>
+                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join(' ');
+}

@@ -157,7 +157,22 @@ function DashboardContent({
             profitPotential.sell_price - profitPotential.cogs,
         ),
     };
+    const shouldPolling = () => {
+        if (!dateRange?.from || !dateRange?.to) {
+            return true;
+        }
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const from = new Date(dateRange.from);
+        from.setHours(0, 0, 0, 0);
+
+        const to = new Date(dateRange.to);
+        to.setHours(0, 0, 0, 0);
+
+        return today >= from && today <= to;
+    };
     useEffect(() => {
         let interval: ReturnType<typeof setInterval> | null = null;
 
@@ -188,7 +203,7 @@ function DashboardContent({
         };
 
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
+            if (document.visibilityState === 'visible' && shouldPolling()) {
                 reload();
                 startPolling();
             } else {
@@ -196,7 +211,7 @@ function DashboardContent({
             }
         };
 
-        if (document.visibilityState === 'visible') {
+        if (document.visibilityState === 'visible' && shouldPolling()) {
             startPolling();
         }
 
@@ -210,7 +225,7 @@ function DashboardContent({
                 handleVisibilityChange,
             );
         };
-    }, []);
+    }, [dateRange]);
     return (
         <div className="space-y-4">
             <input

@@ -1,9 +1,9 @@
 import { Form, Head } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import employee from '@/routes/report-employee-summary';
+import employee from '@/routes/report-employee-detail';
 import { Card, CardContent } from '@/components/ui/card';
-import { capitalize, toRupiah } from '@/lib/utils';
+import { capitalize, formatEmployeeName, toRupiah } from '@/lib/utils';
 import {
     createColumnHelper,
     getCoreRowModel,
@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import ColumnVisibilityDropdown from '@/components/column-visibility-dropdown';
 import DataTable from '@/components/data-table';
 import TablePagination from '@/components/table-pagination';
-import { EmployeeSalesPerformData, Pagination } from '@/lib/model';
+import { EmployeeSalesDetailData, Pagination } from '@/lib/model';
 import DateRangePicker from '@/components/date-range-picker';
 import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
@@ -23,32 +23,48 @@ import { Input } from '@/components/ui/input';
 import LocationDropdown from '@/components/location-dropdown';
 import QueryString from 'qs';
 
-const columnHelper = createColumnHelper<EmployeeSalesPerformData>();
+const columnHelper = createColumnHelper<EmployeeSalesDetailData>();
 
 export const columns = [
+    columnHelper.accessor('local_sales_date', {
+        header: 'Tanggal',
+        cell: (info) => {
+            const date = new Date(info.getValue());
+
+            return date.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+            });
+        },
+    }),
+
     columnHelper.accessor('employee_sales_name', {
         header: 'Nama Sales',
+        cell: (info) => formatEmployeeName(info.getValue()),
+    }),
+
+    columnHelper.accessor('location_name', {
+        header: 'Lokasi',
         cell: (info) => capitalize(info.getValue()),
     }),
 
     columnHelper.accessor('sales_count', {
-        header: () => <div className="text-center">Jumlah Transaksi</div>,
+        header: () => <div className="text-center">Transaksi</div>,
         cell: (info) => <div className="text-center">{info.getValue()}</div>,
-        meta: { label: 'Jumlah Transaksi' },
+        meta: { label: 'Transaksi' },
     }),
 
     columnHelper.accessor('refund_count', {
-        header: () => <div className="text-center">Jumlah Pengembalian</div>,
+        header: () => <div className="text-center">Pengembalian</div>,
         cell: (info) => <div className="text-center">{info.getValue()}</div>,
-        meta: { label: 'Jumlah Pengembalian' },
+        meta: { label: 'Pengembalian' },
     }),
 
     columnHelper.accessor('net_count', {
-        header: () => (
-            <div className="text-center">Jumlah Penjualan Bersih</div>
-        ),
+        header: () => <div className="text-center">Penjualan Bersih</div>,
         cell: (info) => <div className="text-center">{info.getValue()}</div>,
-        meta: { label: 'Jumlah Penjualan Bersih' },
+        meta: { label: 'Penjualan Bersih' },
     }),
 
     columnHelper.accessor('sales_quantity', {
@@ -86,15 +102,15 @@ export const columns = [
     }),
 
     columnHelper.accessor('net_sales_amount', {
-        header: () => <div className="text-right">Penjualan Bersih</div>,
+        header: () => <div className="text-right">Total Penjualan Bersih</div>,
         cell: (info) => (
             <div className="text-right">{toRupiah(info.getValue())}</div>
         ),
-        meta: { label: 'Penjualan Bersih' },
+        meta: { label: 'Total Penjualan Bersih' },
     }),
-] as ColumnDef<EmployeeSalesPerformData>[];
+] as ColumnDef<EmployeeSalesDetailData>[];
 
-const title = 'Laporan Performa Sales';
+const title = 'Detail Performa Sales';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -102,9 +118,10 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: employee.index().url,
     },
 ];
+
 const defaultColumn = {};
 
-const cachedColumnKey = 'employeeSalesPerformColumnVisibility';
+const cachedColumnKey = 'employeeSalesDetailColumnVisibility';
 const cachedColumn = JSON.parse(
     localStorage.getItem(cachedColumnKey) || JSON.stringify(defaultColumn),
 );
@@ -115,7 +132,7 @@ type Option = {
 };
 
 type Props = {
-    employeeSalesSummary: Pagination<EmployeeSalesPerformData>;
+    employeeSalesDetail: Pagination<EmployeeSalesDetailData>;
     locationOptions: Option[];
 };
 
@@ -128,8 +145,8 @@ type Params = {
     end_at: string;
 };
 
-export default ({ employeeSalesSummary, locationOptions }: Props) => {
-    const { data } = employeeSalesSummary;
+export default ({ employeeSalesDetail, locationOptions }: Props) => {
+    const { data } = employeeSalesDetail;
 
     const query = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
@@ -178,8 +195,10 @@ export default ({ employeeSalesSummary, locationOptions }: Props) => {
                 <CardContent>
                     <Form className="mb-4 grid gap-2 lg:flex lg:justify-between">
                         <ColumnVisibilityDropdown table={table} />
+
                         <div className="grid gap-2 lg:flex">
                             <DateRangePicker />
+
                             <LocationDropdown
                                 multiSelect
                                 options={locationOptions.map((l) => ({
@@ -217,7 +236,7 @@ export default ({ employeeSalesSummary, locationOptions }: Props) => {
 
                             <Input
                                 name="search"
-                                placeholder="Cari nama sales"
+                                placeholder="Cari nama sales / lokasi"
                                 defaultValue={query.search || ''}
                             />
                             <Button type="submit">
@@ -226,7 +245,7 @@ export default ({ employeeSalesSummary, locationOptions }: Props) => {
                         </div>
                     </Form>
                     <DataTable columns={columns} table={table} />
-                    <TablePagination pagination={employeeSalesSummary} />
+                    <TablePagination pagination={employeeSalesDetail} />
                 </CardContent>
             </Card>
         </AppLayout>

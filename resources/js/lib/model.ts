@@ -138,7 +138,6 @@ export interface Top5Location {
     location_name: string;
     net_sales_after_tax: number;
 }
-[];
 export interface Top5Data {
     products: Top5Product[];
     categories: Top5Category[];
@@ -193,6 +192,35 @@ export interface Customer {
     customer_category: CustomerCategory;
     location: Location;
 }
+
+export type EmployeeSalesPerformData = {
+    employee_sales_name: string;
+    sales_amount: number;
+    refund_amount: number;
+    net_sales_amount: number;
+    sales_count: number;
+    refund_count: number;
+    net_count: number;
+    sales_quantity: number;
+    refund_quantity: number;
+    net_quantity: number;
+};
+
+export type EmployeeSalesDetailData = {
+    employee_sales_name: string;
+    location_name: string;
+    local_sales_date: string;
+    sales_amount: number;
+    refund_amount: number;
+    net_sales_amount: number;
+    sales_count: number;
+    refund_count: number;
+    net_count: number;
+    sales_quantity: number;
+    refund_quantity: number;
+    net_quantity: number;
+};
+
 export interface Location {
     id: number;
     entity_id: number;

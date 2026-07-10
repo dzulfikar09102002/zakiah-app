@@ -31,6 +31,8 @@ import reportSales from '@/routes/report-sales';
 import comingsoon from '@/routes/comingsoon';
 import reportByProducts from '@/routes/report-by-products';
 import reportByLocations from '@/routes/report-by-locations';
+import reportEmployeeSummary from '@/routes/report-employee-summary';
+import reportEmployeeDetail from '@/routes/report-employee-detail';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -86,11 +88,11 @@ export const mainNavItems: NavItem[] = [
                 items: [
                     {
                         title: 'Ringkasan',
-                        href: '/playground/settings/general',
+                        href: reportEmployeeSummary.index().url,
                     },
                     {
                         title: 'Detail',
-                        href: '/playground/settings/team',
+                        href: reportEmployeeDetail.index().url,
                     },
                 ],
             },
