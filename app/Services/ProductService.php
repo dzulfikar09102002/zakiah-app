@@ -28,6 +28,7 @@ class ProductService
         }
 
         return $query
+        ->orderByDesc('updated_at')
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }

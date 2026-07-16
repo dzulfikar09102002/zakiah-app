@@ -130,7 +130,12 @@ export default ({
 
                 {/* <Button variant="outline"><FileDown /> Export</Button> */}
                 {/* <Button variant="outline"><FileUp /> Import</Button> */}
-                <ProductImportButton locations={locationOptions} onSuccess={() => console.log('berhasil')} categories={categoryOptions.slice(1)} units={unitOptions} />
+                <ProductImportButton
+                    locations={locationOptions}
+                    onSuccess={() => console.log('berhasil')}
+                    categories={categoryOptions.slice(1)}
+                    units={unitOptions}
+                />
             </div>
 
             <Card>
@@ -207,6 +212,7 @@ export default ({
                                 <TableHead>Harga Beli</TableHead>
                                 <TableHead>Harga Jual</TableHead>
                                 <TableHead>Stok</TableHead>
+                                <TableHead>Update</TableHead>
                                 <TableHead>Aksi</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -232,6 +238,19 @@ export default ({
                                         {toRupiah(product.sell_price)}
                                     </TableCell>
                                     <TableCell>{product.total_stock}</TableCell>
+                                    <TableCell>
+                                        {product.updated_at
+                                            ? new Intl.DateTimeFormat('id-ID', {
+                                                  day: '2-digit',
+                                                  month: 'long',
+                                                  year: 'numeric',
+                                                  hour: '2-digit',
+                                                  minute: '2-digit',
+                                              }).format(
+                                                  new Date(product.updated_at),
+                                              )
+                                            : '-'}
+                                    </TableCell>
                                     <TableCell>
                                         <div className="flex gap-2">
                                             <Button
