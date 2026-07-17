@@ -20,11 +20,24 @@ class StoreProductRequest extends BaseRequest
     public function rules(): array
     {
         $forImport = (bool) request()->boolean('for_import');
-
+        $entityId = auth()->user()?->entity?->id;
         return [
             "name" => 'required',
-            "sku" => $forImport ? 'required' : 'required|unique:products,sku',
-            "barcode" => $forImport ? 'required' : 'required|unique:products,barcode',
+            "sku" => $forImport
+                ? "required"
+                : [
+                    "required",
+                    Rule::unique('products', 'sku')
+                        ->where(fn ($query) => $query->where('entity_id', $entityId)),
+                ],
+
+            "barcode" => $forImport
+                ? "required"
+                : [
+                    "required",
+                    Rule::unique('products', 'barcode')
+                        ->where(fn ($query) => $query->where('entity_id', $entityId)),
+                ],
             "description" => 'nullable',
             "sell_price" => 'required|integer|min:0',
             "last_buying_price" => 'required|integer|min:0',
@@ -32,10 +45,10 @@ class StoreProductRequest extends BaseRequest
             "child_product_category_id" => 'nullable',
             "product_unit_id" => 'required',
             "product_sell_unit_id" => 'required',
-            "location_id" => 'required', # need to check base on entity
+            "location_id" => 'required', 
             "image_url" => 'nullable|image',
             "sell_to_customer" => 'boolean',
-            "service" => 'boolean',
+            "service" => 'boolean', 
             "modifier" => 'boolean',
             "allow_custom_price" => 'boolean',
             "select_all_location" => 'boolean',
