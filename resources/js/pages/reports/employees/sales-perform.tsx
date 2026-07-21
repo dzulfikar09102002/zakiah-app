@@ -3,7 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 import employee from '@/routes/report-employee-summary';
 import { Card, CardContent } from '@/components/ui/card';
-import { capitalize, toRupiah } from '@/lib/utils';
+import { capitalize, formatEmployeeName, toRupiah } from '@/lib/utils';
 import {
     createColumnHelper,
     getCoreRowModel,
@@ -28,7 +28,7 @@ const columnHelper = createColumnHelper<EmployeeSalesPerformData>();
 export const columns = [
     columnHelper.accessor('employee_sales_name', {
         header: 'Nama Sales',
-        cell: (info) => capitalize(info.getValue()),
+        cell: (info) => formatEmployeeName(info.getValue()),
     }),
 
     columnHelper.accessor('sales_count', {

@@ -74,7 +74,7 @@ export default (props: Props) => {
                     icon={DollarSign}
                 />
                 <StatCard
-                    title="Total Laba Bersih"
+                    title="Total Laba Kotor (Margin)"
                     value={props.total_profit}
                     icon={TrendingUp}
                 />

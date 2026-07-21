@@ -19,3 +19,4 @@ class SalesReportByProductController extends Controller
         return Inertia::render('reports/sellings/byproduct', compact('locationOptions', 'pagination'));
     }
 }
+    

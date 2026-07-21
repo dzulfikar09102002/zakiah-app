@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Location;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductLocationStock;
 use App\Models\ProductUnit;
 
 class ProductService
@@ -52,5 +53,24 @@ class ProductService
         return ProductUnit::where('entity_id', auth()->user()?->entity?->id)
             ->select('id as value', 'name as label')
             ->get();
+    }
+
+    public function getCurrentStockMap(array $skus): array
+    {
+        if (empty($skus)) {
+            return [];
+        }
+
+        $entityId = auth()->user()?->entity?->id;
+
+        return ProductLocationStock::query()
+            ->select('product_location_stocks.location_id', 'product_location_stocks.stock', 'products.sku')
+            ->join('products', 'products.id', '=', 'product_location_stocks.product_id')
+            ->where('products.entity_id', $entityId)
+            ->whereIn('products.sku', $skus)
+            ->get()
+            ->groupBy('sku')
+            ->map(fn ($rows) => $rows->pluck('stock', 'location_id')->toArray())
+            ->toArray();
     }
 }

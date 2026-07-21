@@ -1,5 +1,13 @@
-import { Head, router, usePage } from '@inertiajs/react';
-import { Plus, FileDown, FileUp, Pencil, SearchIcon, X } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import {
+    Plus,
+    FileDown,
+    FileUp,
+    Pencil,
+    SearchIcon,
+    X,
+    Upload,
+} from 'lucide-react';
 import { useState, useCallback, useEffect } from 'react';
 import { debounce } from 'lodash';
 
@@ -127,15 +135,11 @@ export default ({
                 <Button onClick={() => setIsModalOpen(true)}>
                     <Plus /> Produk Baru
                 </Button>
-
-                {/* <Button variant="outline"><FileDown /> Export</Button> */}
-                {/* <Button variant="outline"><FileUp /> Import</Button> */}
-                <ProductImportButton
-                    locations={locationOptions}
-                    onSuccess={() => console.log('berhasil')}
-                    categories={categoryOptions.slice(1)}
-                    units={unitOptions}
-                />
+                <Link href="/products/import-page">
+                    <Button variant="outline" type="button">
+                        <Upload /> Impor Produk
+                    </Button>
+                </Link>
             </div>
 
             <Card>

@@ -70,7 +70,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products.index');
         Route::post('/', [ProductController::class, 'store'])->name('products.store')->middleware(EntityCheckingMiddleware::class);
         Route::post('/import', [ProductController::class, 'import'])->name('products.import')->middleware(EntityCheckingMiddleware::class);
+        Route::get('/import-page', [ProductController::class, 'importPage'])->name('products.importPage');
         Route::put('/{product}', [ProductController::class, 'update'])->name('products.update')->middleware(EntityCheckingMiddleware::class);
+        Route::post('/import/stock-lookup', [ProductController::class, 'importStockLookup'])
+    ->name('products.import.stock-lookup');
     });
     Route::resource('product-categories', ProductCategoryController::class)->except(['show']);
 

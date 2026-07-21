@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\Services\Product\ProductCreatorServices;
 use App\Helpers\Services\Product\ProductTransformerFromRequestForUpdateServices;
 use App\Helpers\Services\Product\ProductTransformerFromRequestServices;
+use App\Helpers\Services\Product\ProductUpdaterImportServices;
 use App\Helpers\Services\Product\ProductUpdaterServices;
 use App\Http\Requests\BaseRequest;
 use App\Http\Requests\ImportProductRequest;
@@ -34,7 +35,22 @@ class ProductController extends Controller
 
         return Inertia::render('products/index', compact('pagination', 'categoryOptions', 'locationOptions', 'unitOptions'));
     }
+    public function importPage()
+    {
+        $categoryOptions = $this->service->getCategoryOptions();
+        $locationOptions = $this->service->getLocationOptions();
+        $unitOptions = $this->service->getProuductUnitOptions();
 
+        return Inertia::render('products/import', compact('categoryOptions', 'locationOptions', 'unitOptions'));
+    }
+    public function importStockLookup(Request $request)
+    {
+        $skus = $request->input('skus', []);
+
+        return response()->json(
+            $this->service->getCurrentStockMap($skus)
+        );
+    }
     public function store(StoreProductRequest $request)
     {
         # start transcation
@@ -121,7 +137,7 @@ class ProductController extends Controller
                     ->first();
 
                 if ($product) {
-                    (new ProductUpdaterServices($creatorRequest, $product))->update();
+                    (new ProductUpdaterImportServices($creatorRequest, $product))->update();
                 } else {
                     $creator = new ProductCreatorServices($creatorRequest);
                     $creator->create();
@@ -136,9 +152,6 @@ class ProductController extends Controller
         }
 
         $count = count($request->validated('products'));
-
-        Inertia::flash(key: 'success', value: "{$count} produk berhasil diimpor.");
-
-        return back();
+        return to_route('products.index')->with('success', "{$count} produk berhasil diimpor.");
     }
 }
