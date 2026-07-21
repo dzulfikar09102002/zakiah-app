@@ -12,11 +12,13 @@ use App\Http\Requests\ImportProductRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Responses\BaseJsonResponse;
+use App\Jobs\ImportProductLogJob;
 use App\Models\Product;
 use App\Services\ProductService;
 use DB;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -110,7 +112,11 @@ class ProductController extends Controller
         DB::beginTransaction();
 
         try {
+
+            $processedProducts = [];
+
             foreach ($request->validated('products') as $productData) {
+
                 $storeRequest = StoreProductRequest::createFrom($request);
 
                 $storeRequest->replace($productData);
@@ -118,40 +124,69 @@ class ProductController extends Controller
                 $storeRequest->merge([
                     'employee' => $employee,
                     'entity' => $entity,
+                    'for_import' => true,
                 ]);
-                $storeRequest->merge(['for_import' => true]);
-
 
                 $storeRequest->setRedirector(redirect());
 
-                // Tetap harus dipanggil agar validated() bekerja
                 $storeRequest->setContainer(app())->validateResolved();
 
                 $transforming = new ProductTransformerFromRequestServices($storeRequest);
                 $creatorRequest = $transforming->transform();
 
-                // update-or-create berdasarkan SKU (dalam konteks entity)
                 $product = Product::query()
                     ->where('entity_id', $entity->id)
                     ->where('sku', $storeRequest->validated('sku'))
                     ->first();
 
+                $isNew = ! $product;
+
                 if ($product) {
-                    (new ProductUpdaterImportServices($creatorRequest, $product))->update();
+                    (new ProductUpdaterImportServices(
+                        $creatorRequest,
+                        $product
+                    ))->update();
                 } else {
-                    $creator = new ProductCreatorServices($creatorRequest);
-                    $creator->create();
+                    (new ProductCreatorServices(
+                        $creatorRequest
+                    ))->create();
                 }
+
+                $processedProducts[] = array_merge($productData, [
+                    '_import_created' => $isNew,
+                ]);
             }
 
             DB::commit();
+
         } catch (Exception $e) {
+
             DB::rollBack();
+
+            Log::error('Error saat mengimpor produk: '.$e->getMessage(), [
+                'exception' => $e,
+            ]);
 
             throw $e;
         }
+        try {
+            ImportProductLogJob::dispatch(
+                $entity->id,
+                $employee->id,
+                $request->user()->id,  
+                $processedProducts       
+            )->afterCommit()->afterResponse();
+        } catch (Exception $e) {
+            Log::error('Gagal dispatch ImportProductLogJob (produk tetap tersimpan): '.$e->getMessage(), [
+                'entity_id' => $entity->id,
+                'employee_id' => $employee->id,
+                'exception' => $e,
+            ]);
+        }
 
         $count = count($request->validated('products'));
-        return to_route('products.index')->with('success', "{$count} produk berhasil diimpor.");
+
+        return to_route('products.index')
+            ->with('success', "{$count} produk berhasil diimpor.");
     }
 }

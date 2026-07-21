@@ -19,6 +19,7 @@ import {
     ChevronDown,
     ChevronRight,
     AlertTriangle,
+    ChevronLeft,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
@@ -26,6 +27,13 @@ import { ChangeEvent, DragEvent, useRef, useState } from 'react';
 import type { BreadcrumbItem, Option, SharedData } from '@/types';
 import products from '@/routes/products';
 import { toast } from 'sonner';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 const title = 'Impor Produk';
 
@@ -167,8 +175,31 @@ export default function ImportProductPage({
     locationOptions,
     unitOptions,
 }: Props) {
-    const employee_code = usePage<SharedData>().props.auth.user.employee.code;
+    const [rows, setRows] = useState<ImportRow[]>([]);
+    const [perPage, setPerPage] = useState<number | 'all'>(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
+    const totalRows = rows.length;
+
+    const totalPages =
+        perPage === 'all' ? 1 : Math.max(1, Math.ceil(totalRows / perPage));
+
+    const paginatedRows =
+        perPage === 'all'
+            ? rows
+            : rows.slice((currentPage - 1) * perPage, currentPage * perPage);
+
+    const handlePerPageChange = (value: string) => {
+        if (value === 'all') {
+            setPerPage('all');
+        } else {
+            setPerPage(Number(value));
+        }
+
+        setCurrentPage(1);
+    };
+
+    const employee_code = usePage<SharedData>().props.auth.user.employee.code;
     const { setData, post, processing } = useForm<{
         products: ReturnType<typeof buildPayload>[];
     }>({
@@ -179,7 +210,6 @@ export default function ImportProductPage({
 
     const [generating, setGenerating] = useState(false);
     const [fileName, setFileName] = useState<string | null>(null);
-    const [rows, setRows] = useState<ImportRow[]>([]);
     const [parseError, setParseError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -365,6 +395,7 @@ export default function ImportProductPage({
             }
 
             setRows(json);
+            setCurrentPage(1);
         } catch {
             setParseError(
                 'Gagal membaca file. Pastikan format file sesuai template.',
@@ -429,6 +460,7 @@ export default function ImportProductPage({
         setExpandedRows(new Set());
         setPreviewVisible(false);
         if (inputRef.current) inputRef.current.value = '';
+        setCurrentPage(1);
     };
 
     const handleGantiFile = () => {
@@ -436,6 +468,7 @@ export default function ImportProductPage({
         setFileName(null);
         setParseError(null);
         if (inputRef.current) inputRef.current.value = '';
+        setCurrentPage(1);
     };
 
     const toggleExpand = (idx: number) => {
@@ -666,7 +699,13 @@ export default function ImportProductPage({
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {rows.map((row, idx) => {
+                                {paginatedRows.map((row, index) => {
+                                    const idx =
+                                        perPage === 'all'
+                                            ? index
+                                            : (currentPage - 1) *
+                                                  (perPage as number) +
+                                              index;
                                     const kategoriValid =
                                         resolveId(
                                             categoryOptions,
@@ -857,7 +896,93 @@ export default function ImportProductPage({
                                 })}
                             </TableBody>
                         </Table>
+                        <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="flex items-center gap-2 text-sm">
+                                <span>Menampilkan</span>
 
+                                <Select
+                                    value={String(perPage)}
+                                    onValueChange={handlePerPageChange}
+                                >
+                                    <SelectTrigger className="w-28">
+                                        <SelectValue />
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="25">25</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                        <SelectItem value="100">100</SelectItem>
+                                        <SelectItem value="all">
+                                            Semua
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+
+                                <span>
+                                    dari <b>{rows.length}</b> baris data
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    size="icon"
+                                    variant="outline"
+                                    disabled={
+                                        currentPage === 1 || perPage === 'all'
+                                    }
+                                    onClick={() =>
+                                        setCurrentPage((p) =>
+                                            Math.max(1, p - 1),
+                                        )
+                                    }
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+
+                                <Select
+                                    value={String(currentPage)}
+                                    onValueChange={(value) =>
+                                        setCurrentPage(Number(value))
+                                    }
+                                    disabled={perPage === 'all'}
+                                >
+                                    <SelectTrigger className="w-36">
+                                        <SelectValue />
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        {Array.from(
+                                            { length: totalPages },
+                                            (_, i) => i + 1,
+                                        ).map((page) => (
+                                            <SelectItem
+                                                key={page}
+                                                value={String(page)}
+                                            >
+                                                {page}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Button
+                                    size="icon"
+                                    variant="outline"
+                                    disabled={
+                                        currentPage === totalPages ||
+                                        perPage === 'all'
+                                    }
+                                    onClick={() =>
+                                        setCurrentPage((p) =>
+                                            Math.min(totalPages, p + 1),
+                                        )
+                                    }
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        </div>
                         <div className="mt-6 flex justify-end gap-2">
                             <Button
                                 variant="destructive"
