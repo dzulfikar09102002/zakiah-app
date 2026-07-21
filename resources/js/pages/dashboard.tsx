@@ -24,6 +24,7 @@ import LocationDropdown from '@/components/location-dropdown';
 import { ProfitPotential, Top5Data } from '@/lib/model';
 import { DateRange } from 'node_modules/react-day-picker/dist/esm/types/shared';
 import { format } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const currentYear = new Date().getFullYear();
 
@@ -79,29 +80,77 @@ function DashboardContent({
             sales: Number(item.net_sales_after_tax ?? 0),
             profit: Number(item.net_profit ?? 0),
         })) ?? [];
+
     const months = monthlySales?.months ?? [];
     const salesArr = monthlySales?.net_sales_after_tax ?? [];
     const profitArr = monthlySales?.net_profit ?? [];
 
     const monthlyChartData = months.map((m, i) => ({
         name: m,
-        year: monthlySales.year,
+        year: monthlySales?.year ?? new Date().getFullYear(),
         sales: Number(salesArr[i] ?? 0),
         profit: Number(profitArr[i] ?? 0),
     }));
-
-    const yearsData = yearlySales.years ?? [];
+    const isMonthlyLoading = !monthlySales;
+    const isYearlyLoading = !yearlySales;
+    const yearsData = yearlySales?.years ?? [];
 
     const earlyYear = Number(yearsData[0] ?? new Date().getFullYear() - 1);
+
     const endYear = Number(
         yearsData[yearsData.length - 1] ?? new Date().getFullYear(),
     );
 
     const yearlyChartData = yearsData.map((y, i) => ({
         name: String(y),
-        sales: Number(yearlySales.net_sales_after_tax?.[i] ?? 0),
-        profit: Number(yearlySales.net_profit?.[i] ?? 0),
+        sales: Number(yearlySales?.net_sales_after_tax?.[i] ?? 0),
+        profit: Number(yearlySales?.net_profit?.[i] ?? 0),
     }));
+
+    const parseToNumberArray = (val: any): number[] => {
+        if (!val) return [];
+
+        if (Array.isArray(val)) {
+            return val.map(Number);
+        }
+
+        return String(val).split(',').map(Number);
+    };
+
+    const [dateRange, setDateRange] = useState<DateRange | undefined>();
+
+    const initialSelectAll = params.select_all_location !== '0';
+
+    const initialLocs = parseToNumberArray(params.locs);
+
+    const initialExcludeLocs = parseToNumberArray(params.exclude_locs);
+
+    const [selectAllLocation, setSelectAllLocation] =
+        useState<boolean>(initialSelectAll);
+
+    const [locs, setLocs] = useState<number[]>(initialLocs);
+
+    const [excludeLocs, setExcludeLocs] =
+        useState<number[]>(initialExcludeLocs);
+
+    const dailyOverviewData = {
+        total_sale: Number(salesSummary?.net_sales_after_tax ?? 0),
+
+        total_profit: Number(salesSummary?.net_profit ?? 0),
+
+        total_return: Number(salesRefundSummary?.net_sales_after_tax ?? 0),
+
+        total_stock: Number(profitPotential?.stock ?? 0),
+
+        total_hpp: Number(profitPotential?.cogs ?? 0),
+
+        total_stock_price: Number(profitPotential?.sell_price ?? 0),
+
+        potential_profit: Number(
+            (profitPotential?.sell_price ?? 0) - (profitPotential?.cogs ?? 0),
+        ),
+    };
+
     const handleApplyFilter = () => {
         router.get(
             dashboard().url,
@@ -115,7 +164,9 @@ function DashboardContent({
                     : undefined,
 
                 select_all_location: selectAllLocation ? 1 : 0,
+
                 locs,
+
                 exclude_locs: excludeLocs,
             },
             {
@@ -125,38 +176,7 @@ function DashboardContent({
             },
         );
     };
-    const parseToNumberArray = (val: any): number[] => {
-        if (!val) return [];
 
-        if (Array.isArray(val)) {
-            return val.map(Number);
-        }
-
-        return String(val).split(',').map(Number);
-    };
-    const [dateRange, setDateRange] = useState<DateRange | undefined>();
-    const initialSelectAll = params.select_all_location !== '0';
-    const initialLocs = parseToNumberArray(params.locs);
-    const initialExcludeLocs = parseToNumberArray(params.exclude_locs);
-
-    const [selectAllLocation, setSelectAllLocation] =
-        useState<boolean>(initialSelectAll);
-
-    const [locs, setLocs] = useState<number[]>(initialLocs);
-
-    const [excludeLocs, setExcludeLocs] =
-        useState<number[]>(initialExcludeLocs);
-    const dailyOverviewData = {
-        total_sale: Number(salesSummary?.net_sales_after_tax ?? 0),
-        total_profit: Number(salesSummary?.net_profit ?? 0),
-        total_return: Number(salesRefundSummary?.net_sales_after_tax ?? 0),
-        total_stock: Number(profitPotential.stock ?? 0),
-        total_hpp: Number(profitPotential.cogs ?? 0),
-        total_stock_price: Number(profitPotential.sell_price ?? 0),
-        potential_profit: Number(
-            profitPotential.sell_price - profitPotential.cogs,
-        ),
-    };
     const shouldPolling = () => {
         if (!dateRange?.from || !dateRange?.to) {
             return true;
@@ -173,12 +193,29 @@ function DashboardContent({
 
         return today >= from && today <= to;
     };
+
+    useEffect(() => {
+        router.reload({
+            only: [
+                'profitPotential',
+                'salesRefundSummary',
+                'salesSummary',
+                'top5',
+                'salesByDate',
+                'monthlySales',
+                'yearlySales',
+            ],
+            async: true,
+        });
+    }, []);
+
     useEffect(() => {
         let interval: ReturnType<typeof setInterval> | null = null;
 
         const reload = () => {
             router.reload({
                 async: true,
+
                 only: [
                     'profitPotential',
                     'salesRefundSummary',
@@ -287,16 +324,25 @@ function DashboardContent({
             <ProfitChart data={dailyData} />
             <Separator />
             <div className="grid-cols-2 gap-6 lg:grid">
-                <MonthlyProfitChart
-                    monthlyData={monthlyChartData}
-                    years={years}
-                    monthlyYear={monthlyChartData[0]?.year ?? currentYear}
-                />
-                <YearlyProfitChart
-                    yearlyData={yearlyChartData}
-                    earlyYear={earlyYear}
-                    endYear={endYear}
-                />
+                {isMonthlyLoading ? (
+                    <Skeleton className="h-[350px] w-full rounded-xl" />
+                ) : (
+                    <MonthlyProfitChart
+                        monthlyData={monthlyChartData}
+                        years={years}
+                        monthlyYear={monthlyChartData[0]?.year ?? currentYear}
+                    />
+                )}
+
+                {isYearlyLoading ? (
+                    <Skeleton className="h-[350px] w-full rounded-xl" />
+                ) : (
+                    <YearlyProfitChart
+                        yearlyData={yearlyChartData}
+                        earlyYear={earlyYear}
+                        endYear={endYear}
+                    />
+                )}
             </div>
             <Separator />
             <TopFive top5={top5} />

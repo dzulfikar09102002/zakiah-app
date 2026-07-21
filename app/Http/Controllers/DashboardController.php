@@ -14,19 +14,34 @@ class DashboardController extends Controller
     public function index()
     {
         return Inertia::render('dashboard', [
-            'profitPotential' => $this->service->getProfitPotential(),
-            'locationOptions' => $this->service->getLocationOptions(),
-            'salesRefundSummary' => $this->service->getSalesRefundSummary(),
-            'salesSummary' => $this->service->getSalesSummary(),
-            'top5' => array_merge(
+
+            'locationOptions' => fn() =>
+                $this->service->getLocationOptions(),
+
+            'profitPotential' => fn() =>
+                $this->service->getProfitPotential(),
+
+            'salesRefundSummary' => fn() =>
+                $this->service->getSalesRefundSummary(),
+
+            'salesSummary' => fn() =>
+                $this->service->getSalesSummary(),
+
+            'top5' => fn() => array_merge(
                 $this->service->getTopProductsAndCategories(),
                 [
                     'locations' => $this->service->getTopLocations(),
                 ]
             ),
-            'salesByDate' => $this->service->getSalesByDate(),
-            'monthlySales' => fn() => $this->service->getMonthlySales(),
-            'yearlySales' => fn() => $this->service->getYearlySales(),
+
+            'salesByDate' => fn() =>
+                $this->service->getSalesByDate(),
+
+            'monthlySales' => fn() =>
+                $this->service->getMonthlySales(),
+
+            'yearlySales' => fn() =>
+                $this->service->getYearlySales(),
         ]);
     }
 }
