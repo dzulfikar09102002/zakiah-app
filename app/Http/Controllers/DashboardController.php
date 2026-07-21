@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Services\DashboardService;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -11,37 +10,80 @@ class DashboardController extends Controller
     public function __construct(
         protected DashboardService $service
     ) {}
+
+
     public function index()
     {
-        return Inertia::render('dashboard', [
+        return Inertia::render('dashboard');
+    }
 
-            'locationOptions' => fn() =>
-                $this->service->getLocationOptions(),
 
-            'profitPotential' => fn() =>
-                $this->service->getProfitPotential(),
+    public function locationOptions()
+    {
+        return response()->json(
+            $this->service->getLocationOptions()
+        );
+    }
 
-            'salesRefundSummary' => fn() =>
-                $this->service->getSalesRefundSummary(),
 
-            'salesSummary' => fn() =>
-                $this->service->getSalesSummary(),
+    public function profitPotential()
+    {
+        return response()->json(
+            $this->service->getProfitPotential()
+        );
+    }
 
-            'top5' => fn() => array_merge(
+
+    public function salesRefundSummary()
+    {
+        return response()->json(
+            $this->service->getSalesRefundSummary()
+        );
+    }
+
+
+    public function salesSummary()
+    {
+        return response()->json(
+            $this->service->getSalesSummary()
+        );
+    }
+
+
+    public function top5()
+    {
+        return response()->json(
+            array_merge(
                 $this->service->getTopProductsAndCategories(),
                 [
-                    'locations' => $this->service->getTopLocations(),
+                    'locations' =>
+                        $this->service->getTopLocations()
                 ]
-            ),
+            )
+        );
+    }
 
-            'salesByDate' => fn() =>
-                $this->service->getSalesByDate(),
 
-            'monthlySales' => fn() =>
-                $this->service->getMonthlySales(),
+    public function salesByDate()
+    {
+        return response()->json(
+            $this->service->getSalesByDate()
+        );
+    }
 
-            'yearlySales' => fn() =>
-                $this->service->getYearlySales(),
-        ]);
+
+    public function monthlySales()
+    {
+        return response()->json(
+            $this->service->getMonthlySales()
+        );
+    }
+
+
+    public function yearlySales()
+    {
+        return response()->json(
+            $this->service->getYearlySales()
+        );
     }
 }

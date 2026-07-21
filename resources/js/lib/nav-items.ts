@@ -9,7 +9,7 @@ import {
     MonitorCog,
     UserCog,
 } from 'lucide-react';
-import { dashboard, settings } from '@/routes';
+import { settings } from '@/routes';
 
 import employees from '@/routes/employees';
 import locations from '@/routes/locations';
@@ -37,7 +37,7 @@ import reportEmployeeDetail from '@/routes/report-employee-detail';
 export const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: dashboard().url,
+        href: '/dashboard',
         icon: LayoutGrid,
     },
     {

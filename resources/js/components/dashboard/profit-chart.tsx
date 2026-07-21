@@ -9,10 +9,17 @@ import {
 
 import { Card, CardContent } from '../ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
+import { Skeleton } from '../ui/skeleton'; // PENTING: Import Skeleton
 
-export default ({ data }: { data: any[] }) => {
+export default ({ data, isLoading }: { data: any[]; isLoading?: boolean }) => {
+    // Tampilkan Skeleton jika sedang loading
+    if (isLoading) {
+        return <Skeleton className="h-[400px] w-full rounded-xl" />;
+    }
+
     const formatCurrency = (value: number) =>
         new Intl.NumberFormat('id-ID').format(value);
+
     return (
         <Card>
             <CardContent className="h-100">

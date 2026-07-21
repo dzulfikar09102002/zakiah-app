@@ -1,39 +1,38 @@
-import { useState } from 'react';
-import { router } from '@inertiajs/react';
-import { dashboard } from '@/routes';
+import { useState, useEffect } from 'react';
 import ProfitChart from './profit-chart';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Search } from 'lucide-react';
 
+// 1. Tambahkan onStartYearChange dan onEndYearChange
 type Props = {
     yearlyData: any;
     earlyYear: number;
     endYear: number;
+    onStartYearChange?: (year: number) => void;
+    onEndYearChange?: (year: number) => void;
 };
 
 export default function YearlyProfitChart({
     yearlyData,
     earlyYear,
     endYear,
+    onStartYearChange,
+    onEndYearChange,
 }: Props) {
     const [startYear, setStartYear] = useState(String(earlyYear));
     const [finishYear, setFinishYear] = useState(String(endYear));
 
+    // Sinkronisasi state lokal jika props berubah dari luar
+    useEffect(() => {
+        setStartYear(String(earlyYear));
+        setFinishYear(String(endYear));
+    }, [earlyYear, endYear]);
+
     const applyYearFilter = () => {
-        router.get(
-            dashboard().url,
-            {
-                start_year: startYear,
-                end_year: finishYear,
-            },
-            {
-                only: ['yearlySales'],
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            },
-        );
+        // 2. Ganti router.get dengan memanggil props
+        if (onStartYearChange) onStartYearChange(Number(startYear));
+        if (onEndYearChange) onEndYearChange(Number(finishYear));
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

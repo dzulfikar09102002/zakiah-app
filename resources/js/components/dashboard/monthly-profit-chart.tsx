@@ -8,31 +8,26 @@ import {
 } from '../ui/select';
 import ProfitChart from './profit-chart';
 import { Input } from '@base-ui/react';
-import { router } from '@inertiajs/react';
-import { dashboard } from '@/routes';
 
+// 1. Tambahkan onYearChange ke Props
 type Props = {
     monthlyYear: number;
     years: number[];
     monthlyData: any;
+    onYearChange?: (year: number) => void;
 };
-export default ({ monthlyYear, years, monthlyData }: Props) => {
+
+export default ({ monthlyYear, years, monthlyData, onYearChange }: Props) => {
     const [search, setSearch] = useState('');
     const filteredYears = years.filter((y) => y.toString().includes(search));
+
     const handleChangeYear = (year: string) => {
-        router.get(
-            dashboard().url,
-            {
-                monthly_year: year,
-            },
-            {
-                only: ['monthlySales'],
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            },
-        );
+        // 2. Ganti router.get dengan memanggil props onYearChange
+        if (onYearChange) {
+            onYearChange(Number(year));
+        }
     };
+
     return (
         <>
             <section className="mt-4 space-y-4">

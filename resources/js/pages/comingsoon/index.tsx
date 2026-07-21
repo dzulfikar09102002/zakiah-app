@@ -5,13 +5,12 @@ import { Mail } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import type { BreadcrumbItem } from '@/types';
-import { dashboard } from '@/routes';
 
 const title = 'Segera Hadir';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title,
-        href: dashboard().url,
+        href: '/dashboard',
     },
 ];
 

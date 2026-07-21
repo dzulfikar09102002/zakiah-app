@@ -47,8 +47,50 @@ Route::redirect('/', '/dashboard')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');
-    Route::get('dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard.index');
+    Route::prefix('dashboard')->name('dashboard.')->group(function () {
+
+        Route::get('/location-options',
+            [DashboardController::class, 'locationOptions']
+        )->name('location-options');
+
+
+        Route::get('/profit-potential',
+            [DashboardController::class, 'profitPotential']
+        )->name('profit-potential');
+
+
+        Route::get('/sales-refund-summary',
+            [DashboardController::class, 'salesRefundSummary']
+        )->name('sales-refund-summary');
+
+
+        Route::get('/sales-summary',
+            [DashboardController::class, 'salesSummary']
+        )->name('sales-summary');
+
+
+        Route::get('/top5',
+            [DashboardController::class, 'top5']
+        )->name('top5');
+
+
+        Route::get('/sales-by-date',
+            [DashboardController::class, 'salesByDate']
+        )->name('sales-by-date');
+
+
+        Route::get('/monthly-sales',
+            [DashboardController::class, 'monthlySales']
+        )->name('monthly-sales');
+
+
+        Route::get('/yearly-sales',
+            [DashboardController::class, 'yearlySales']
+        )->name('yearly-sales');
+
+    });
     Route::get(
     '/dashboard/latest-transaction-id',
     [DashboardController::class, 'latestTransactionId']
