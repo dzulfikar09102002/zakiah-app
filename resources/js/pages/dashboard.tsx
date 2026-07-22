@@ -255,8 +255,17 @@ function DashboardContent({ locationOptions }: Props) {
         );
     const fetchJson = async <T,>(url: string): Promise<T> => {
         const query = buildQuery();
+        const res = await fetch(query ? `${url}?${query}` : url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                Accept: 'application/json',
+            },
+        });
 
-        const res = await fetch(query ? `${url}?${query}` : url);
+        if (res.status === 401 || res.status === 419) {
+            window.location.href = '/login';
+            return Promise.reject('Session expired');
+        }
 
         if (!res.ok) {
             throw new Error(`Failed ${url}`);

@@ -91,10 +91,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         )->name('yearly-sales');
 
     });
-    Route::get(
-    '/dashboard/latest-transaction-id',
-    [DashboardController::class, 'latestTransactionId']
-);
 
     Route::resource('roles', RoleController::class);
 
