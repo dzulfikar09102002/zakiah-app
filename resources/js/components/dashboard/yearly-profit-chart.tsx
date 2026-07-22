@@ -3,14 +3,15 @@ import ProfitChart from './profit-chart';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Search } from 'lucide-react';
+import { Skeleton } from '../ui/skeleton';
 
-// 1. Tambahkan onStartYearChange dan onEndYearChange
 type Props = {
     yearlyData: any;
     earlyYear: number;
     endYear: number;
     onStartYearChange?: (year: number) => void;
     onEndYearChange?: (year: number) => void;
+    isLoading?: boolean;
 };
 
 export default function YearlyProfitChart({
@@ -19,18 +20,17 @@ export default function YearlyProfitChart({
     endYear,
     onStartYearChange,
     onEndYearChange,
+    isLoading,
 }: Props) {
     const [startYear, setStartYear] = useState(String(earlyYear));
     const [finishYear, setFinishYear] = useState(String(endYear));
 
-    // Sinkronisasi state lokal jika props berubah dari luar
     useEffect(() => {
         setStartYear(String(earlyYear));
         setFinishYear(String(endYear));
     }, [earlyYear, endYear]);
 
     const applyYearFilter = () => {
-        // 2. Ganti router.get dengan memanggil props
         if (onStartYearChange) onStartYearChange(Number(startYear));
         if (onEndYearChange) onEndYearChange(Number(finishYear));
     };
@@ -70,7 +70,11 @@ export default function YearlyProfitChart({
                 </div>
             </div>
 
-            <ProfitChart data={yearlyData} />
+            {isLoading ? (
+                <Skeleton className="h-[450px] w-full rounded-xl" />
+            ) : (
+                <ProfitChart data={yearlyData} />
+            )}
         </section>
     );
 }

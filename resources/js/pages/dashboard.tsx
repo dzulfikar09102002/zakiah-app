@@ -519,28 +519,22 @@ function DashboardContent({ locationOptions }: Props) {
             <Separator />
 
             <div className="grid-cols-2 gap-6 lg:grid">
-                {monthlyLoading ? (
-                    <Skeleton className="h-[520px] w-full rounded-xl" />
-                ) : (
-                    <MonthlyProfitChart
-                        monthlyData={monthlyChartData}
-                        years={years}
-                        monthlyYear={monthlyYear}
-                        onYearChange={(year) => setMonthlyYear(year)}
-                    />
-                )}
+                <MonthlyProfitChart
+                    monthlyData={monthlyChartData}
+                    years={years}
+                    monthlyYear={monthlyYear}
+                    onYearChange={(year) => setMonthlyYear(year)}
+                    isLoading={monthlyLoading}
+                />
 
-                {yearlyLoading ? (
-                    <Skeleton className="h-[520px] w-full rounded-xl" />
-                ) : (
-                    <YearlyProfitChart
-                        yearlyData={yearlyChartData}
-                        earlyYear={startYear}
-                        endYear={endYear}
-                        onStartYearChange={(year) => setStartYear(year)}
-                        onEndYearChange={(year) => setEndYear(year)}
-                    />
-                )}
+                <YearlyProfitChart
+                    yearlyData={yearlyChartData}
+                    earlyYear={startYear}
+                    endYear={endYear}
+                    onStartYearChange={(year) => setStartYear(year)}
+                    onEndYearChange={(year) => setEndYear(year)}
+                    isLoading={yearlyLoading}
+                />
             </div>
             <Separator />
             {top5Loading ? (

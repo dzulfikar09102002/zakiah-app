@@ -39,7 +39,7 @@ function StatCard({
                 <div className="text-2xl font-bold">
                     {isLoading ? (
                         <div className="flex items-center py-1">
-                            <Spinner className="size-5" />
+                            <Spinner className="size-6" />
                         </div>
                     ) : (
                         <>
@@ -84,7 +84,6 @@ export default (props: Props) => {
 
     return (
         <div className="space-y-4">
-            {/* Stats Atas - 3 Card */}
             <div className="grid gap-4 md:grid-cols-3">
                 <StatCard
                     title="Total Penjualan"
@@ -108,7 +107,6 @@ export default (props: Props) => {
                 />
             </div>
 
-            {/* Stats Bawah - 4 Card (Profit Potential) */}
             <div className="grid gap-4 md:grid-cols-4">
                 <StatCard
                     title="Total Stok"
