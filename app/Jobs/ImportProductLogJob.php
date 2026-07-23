@@ -87,8 +87,8 @@ class ImportProductLogJob implements ShouldQueue
             'note' => 'Import produk sistem baru',
             'created_by' => $this->userId,
             'updated_by' => $this->userId,
-            'created_at' => now('Asia/Jakarta'),
-            'updated_at' => now('Asia/Jakarta'),
+            'created_at' => $now,
+            'updated_at' => $now,
         ]);
 
         $detailRows = [];
@@ -256,8 +256,8 @@ class ImportProductLogJob implements ShouldQueue
             'barcode' => $product->barcode,
             'nama_lokasi' => $location->name ?? '',
             'stok' => $stockIn,
-            'created_at' => $now('Asia/Jakarta'),
-            'updated_at' => $now('Asia/Jakarta'),
+            'created_at' => $now,
+            'updated_at' => $now,
             'created_by' => $this->userId,
             'updated_by' => $this->userId,
         ];

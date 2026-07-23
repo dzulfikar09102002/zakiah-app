@@ -169,19 +169,21 @@ class ProductController extends Controller
 
             throw $e;
         }
+
         try {
             ImportProductLogJob::dispatch(
                 $entity->id,
                 $employee->id,
-                $request->user()->id,  
-                $processedProducts       
-            )->afterCommit()->afterResponse();
-        } catch (Exception $e) {
-            Log::error('Gagal dispatch ImportProductLogJob (produk tetap tersimpan): '.$e->getMessage(), [
-                'entity_id' => $entity->id,
-                'employee_id' => $employee->id,
-                'exception' => $e,
-            ]);
+                $request->user()->id,
+                $processedProducts
+            );
+            } 
+            catch (Exception $e) {
+                Log::error('Gagal dispatch ImportProductLogJob (produk tetap tersimpan): '.$e->getMessage(), [
+                    'entity_id' => $entity->id,
+                    'employee_id' => $employee->id,
+                    'exception' => $e,
+                ]);
         }
 
         $count = count($request->validated('products'));
