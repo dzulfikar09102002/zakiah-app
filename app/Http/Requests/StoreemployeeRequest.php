@@ -16,8 +16,8 @@ class StoreemployeeRequest extends FormRequest
     protected function prepareForValidation()
     {
         $this->merge([
-            'first_name' => strtoupper(trim($this->first_name)),
-            'last_name'  => strtoupper(trim($this->last_name)),
+            'first_name' => (trim($this->first_name)),
+            'last_name'  => (trim($this->last_name)),
         ]);
     }
 
@@ -27,7 +27,6 @@ class StoreemployeeRequest extends FormRequest
             'email' => [
                 'required',
                 'email',
-                Rule::unique('users', 'email'),
             ],
             'first_name' => [
                 'required',
