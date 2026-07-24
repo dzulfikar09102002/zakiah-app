@@ -18,8 +18,8 @@ class UpdateCustomerRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'first_name' => strtoupper(trim($this->first_name)),
-            'last_name'  => strtoupper(trim($this->last_name)),
+            'first_name' => (trim($this->first_name)),
+            'last_name'  => (trim($this->last_name)),
             'phone_number_country_code' => ltrim($this->phone_number_country_code, '+'),
         ]);
     }
