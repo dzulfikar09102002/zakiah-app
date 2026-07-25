@@ -61,6 +61,7 @@ interface ProductFormDialogProps {
     locations: Option[];
     categories: Option[];
     units: Option[];
+    suppliers: string[];
     product?: Product;
     onSuccess?: () => void;
 }
@@ -71,6 +72,7 @@ export function ProductFormDialog({
     locations,
     units,
     categories,
+    suppliers,
     product,
     onSuccess,
 }: ProductFormDialogProps) {
@@ -90,6 +92,16 @@ export function ProductFormDialog({
         String(product?.product_unit_id ?? ''),
     );
 
+    // State untuk input supplier & autocomplete dropdown
+    const [supplierName, setSupplierName] = useState(
+        String((product as any)?.supplier?.name ?? ''),
+    );
+    const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
+    const filteredSuppliers =
+        suppliers?.filter((s) =>
+            s.toLowerCase().includes(supplierName.toLowerCase()),
+        ) || [];
+
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [stockMovements, setStockMovements] = useState<StockMovementRow[]>(
@@ -105,6 +117,7 @@ export function ProductFormDialog({
         setCategoryId(String(product?.product_category_id ?? ''));
         setLocationId(String(product?.location_id ?? ''));
         setUnitId(String(product?.product_unit_id ?? ''));
+        setSupplierName(String((product as any)?.supplier?.name ?? ''));
         setStockMovements(buildStockMovements(product, locations));
     }, [open]);
 
@@ -126,7 +139,8 @@ export function ProductFormDialog({
             product_category_id: Number(categoryId),
             location_id: Number(locationId),
             product_unit_id: Number(unitId),
-            product_sell_unit_id: Number(unitId), // default sama dengan product_unit_id
+            product_sell_unit_id: Number(unitId),
+            supplier_name: supplierName,
             image_url: null,
             sell_to_customer: true,
             service: false,
@@ -137,7 +151,6 @@ export function ProductFormDialog({
             exclude_location_ids: [],
             tax_id: 0,
             tax_setting: null,
-            // buying_price disinkronkan dengan last_buying_price saat submit
             stock_movements: stockMovements.map((row, i) => ({
                 location_id: row.location_id,
                 buying_price: last_buying_price,
@@ -225,31 +238,106 @@ export function ProductFormDialog({
                                     )}
                                 </div>
 
-                                <div className="grid gap-2">
-                                    <Label htmlFor="category">Satuan</Label>
-                                    <Select
-                                        value={unitId}
-                                        onValueChange={setUnitId}
-                                    >
-                                        <SelectTrigger id="category">
-                                            <SelectValue placeholder="Pilih satuan" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {units.map((unit) => (
-                                                <SelectItem
-                                                    key={unit.value}
-                                                    value={String(unit.value)}
-                                                >
-                                                    {unit.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.product_unit_id && (
-                                        <p className="text-xs text-destructive">
-                                            {errors.product_unit_id}
-                                        </p>
-                                    )}
+                                {/* Satuan & Supplier (Dibuat Sejajar / 2 Kolom) */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="category">Satuan</Label>
+                                        <Select
+                                            value={unitId}
+                                            onValueChange={setUnitId}
+                                        >
+                                            <SelectTrigger id="category">
+                                                <SelectValue placeholder="Pilih satuan" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {units.map((unit) => (
+                                                    <SelectItem
+                                                        key={unit.value}
+                                                        value={String(
+                                                            unit.value,
+                                                        )}
+                                                    >
+                                                        {unit.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {errors.product_unit_id && (
+                                            <p className="text-xs text-destructive">
+                                                {errors.product_unit_id}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Field Supplier dengan Autocomplete */}
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="supplier_name">
+                                            Supplier
+                                        </Label>
+                                        <div className="relative">
+                                            <Input
+                                                id="supplier_name"
+                                                name="supplier_name"
+                                                placeholder="Pilih atau ketik supplier"
+                                                autoComplete="off"
+                                                value={supplierName}
+                                                onFocus={() =>
+                                                    setShowSupplierDropdown(
+                                                        true,
+                                                    )
+                                                }
+                                                onBlur={() => {
+                                                    setTimeout(
+                                                        () =>
+                                                            setShowSupplierDropdown(
+                                                                false,
+                                                            ),
+                                                        200,
+                                                    );
+                                                }}
+                                                onChange={(e) => {
+                                                    setSupplierName(
+                                                        e.target.value,
+                                                    );
+                                                    setShowSupplierDropdown(
+                                                        true,
+                                                    );
+                                                }}
+                                            />
+                                            {showSupplierDropdown &&
+                                                filteredSuppliers.length >
+                                                    0 && (
+                                                    <div className="absolute top-full left-0 z-50 mt-1 max-h-48 w-full overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+                                                        {filteredSuppliers.map(
+                                                            (
+                                                                supName,
+                                                                index,
+                                                            ) => (
+                                                                <div
+                                                                    key={index}
+                                                                    className="relative flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none hover:bg-accent hover:text-accent-foreground"
+                                                                    onClick={() => {
+                                                                        setSupplierName(
+                                                                            supName,
+                                                                        );
+                                                                        setShowSupplierDropdown(
+                                                                            false,
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    {supName}
+                                                                </div>
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                )}
+                                        </div>
+                                        {errors.supplier_name && (
+                                            <p className="text-xs text-destructive">
+                                                {errors.supplier_name}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* SKU & Barcode */}
@@ -328,7 +416,7 @@ export function ProductFormDialog({
                                     </div>
                                 </div>
 
-                                {/* Kategori & Lokasi — tetap pakai state karena bukan <select> native */}
+                                {/* Kategori & Lokasi */}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label htmlFor="category">
@@ -348,6 +436,7 @@ export function ProductFormDialog({
                                                         value={String(
                                                             cat.value,
                                                         )}
+                                                        className="cursor-pointer"
                                                     >
                                                         {cat.label}
                                                     </SelectItem>
@@ -378,6 +467,7 @@ export function ProductFormDialog({
                                                         value={String(
                                                             loc.value,
                                                         )}
+                                                        className="cursor-pointer"
                                                     >
                                                         {loc.label}
                                                     </SelectItem>
@@ -444,7 +534,6 @@ export function ProductFormDialog({
                                                 />
                                             </div>
                                             <div className="col-span-4">
-                                                {/* name="stock_new_{index}" dibaca FormData saat submit */}
                                                 <Input
                                                     type="number"
                                                     name={`stock_new_${index}`}

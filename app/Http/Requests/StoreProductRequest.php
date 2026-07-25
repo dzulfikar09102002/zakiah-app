@@ -71,6 +71,7 @@ class StoreProductRequest extends BaseRequest
             "product_sell_prices.*.tax_id" => 'nullable',
             "product_sell_prices.*.tax_setting" => ['nullable', Rule::enum(TaxSettingEnum::class)],
             "product_sell_prices.*.sell_price" => 'required|integer|min:0',
+            "supplier_name" => 'nullable',
         ];
     }
 }

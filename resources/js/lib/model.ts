@@ -111,8 +111,26 @@ export interface Product {
     product_unit_conversions?: any[];
     product_sell_prices?: number[];
     product_location_stocks?: ProductStock[];
+    supplier_name: string;
+    supplier: Supplier;
 }
 
+export type Supplier = {
+    id: number;
+    entity_id: number;
+    code: string;
+    initial: string;
+    name: string;
+    contact_phone_number: string | null;
+    contact_phone_number_country_code: string | null;
+    contact_email: string | null;
+    full_address: string;
+    postal_code: string;
+    city: string;
+    province: string;
+    country: string;
+    status: 'active' | 'archived';
+};
 export type StockMovement = {
     location_id: number;
     buying_price: number;

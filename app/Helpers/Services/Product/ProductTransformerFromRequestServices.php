@@ -6,6 +6,7 @@ use App\Helpers\Data\Product\ProductRequest;
 use App\Models\Entity;
 use App\Models\Location;
 use App\Models\ProductUnit;
+use App\Models\Supplier;
 use App\Models\Tax;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -30,6 +31,21 @@ class ProductTransformerFromRequestServices
 
     public function transform(): ProductRequest
     {
+        if (!empty($this->params['supplier_name'])) {
+            $supplier = Supplier::firstOrCreate(
+                [
+                    'name' => $this->params['supplier_name'],
+                    'entity_id' => $this->entity->id,
+                ],
+                [
+                    'status' => 'active',
+                    'code' => 'SUP' . strtoupper(substr(uniqid(), -6)), 
+                    'initial' => strtoupper(substr($this->params['supplier_name'], 0, 3)),
+                ]
+            );
+
+            $this->params['supplier_id'] = $supplier->id;
+        }
         return (new ProductRequest())
             ->setFillable($this->params)
             ->setCreatedBy($this->request->user())

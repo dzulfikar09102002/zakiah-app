@@ -46,6 +46,7 @@ class UpdateProductRequest extends BaseRequest
             "stock_movements.*.stock" => 'required',
             "stock_movements.*.buying_price" => 'required',
             "product_sell_prices" => 'nullable',
+            "supplier_name" => 'nullable',
         ];
     }
 }

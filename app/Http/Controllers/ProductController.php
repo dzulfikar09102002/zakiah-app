@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Helper;
 use App\Helpers\Services\Product\ProductCreatorServices;
 use App\Helpers\Services\Product\ProductTransformerFromRequestForUpdateServices;
 use App\Helpers\Services\Product\ProductTransformerFromRequestServices;
@@ -30,28 +31,60 @@ class ProductController extends Controller
 
     public function index()
     {
-        $pagination = $this->service->getProducts();
-        $categoryOptions = $this->service->getCategoryOptions();
-        $locationOptions = $this->service->getLocationOptions();
-        $unitOptions = $this->service->getProuductUnitOptions();
+        try {
+            $pagination = $this->service->getProducts();
+            $categoryOptions = $this->service->getCategoryOptions();
+            $locationOptions = $this->service->getLocationOptions();
+            $unitOptions = $this->service->getProuductUnitOptions();
+            $suppliers = $this->service->getSuppliersName();
 
-        return Inertia::render('products/index', compact('pagination', 'categoryOptions', 'locationOptions', 'unitOptions'));
+            return Inertia::render('products/index', compact(
+                'pagination',
+                'categoryOptions',
+                'locationOptions',
+                'unitOptions',
+                'suppliers'
+            ));
+        } catch (Exception $e) {
+            Helper::logException($e);
+            throw $e;
+        }
     }
     public function importPage()
     {
-        $categoryOptions = $this->service->getCategoryOptions();
-        $locationOptions = $this->service->getLocationOptions();
-        $unitOptions = $this->service->getProuductUnitOptions();
+        try {
+            $categoryOptions = $this->service->getCategoryOptions();
+            $locationOptions = $this->service->getLocationOptions();
+            $unitOptions = $this->service->getProuductUnitOptions();
+            $suppliers = $this->service->getSuppliersName();
 
-        return Inertia::render('products/import', compact('categoryOptions', 'locationOptions', 'unitOptions'));
+            return Inertia::render('products/import', compact(
+                'categoryOptions',
+                'locationOptions',
+                'unitOptions',
+                'suppliers'
+            ));
+        } catch (Exception $e) {
+            Helper::logException($e);
+            throw $e;
+        }
     }
     public function importStockLookup(Request $request)
     {
-        $skus = $request->input('skus', []);
+        try {
+            $skus = $request->input('skus', []);
 
-        return response()->json(
-            $this->service->getCurrentStockMap($skus)
-        );
+            return response()->json(
+                $this->service->getCurrentStockMap($skus)
+            );
+        } 
+        catch (Exception $e) {
+            Helper::logException($e, [
+                'skus' => $request->input('skus'),
+            ]);
+
+            throw $e;
+        }
     }
     public function store(StoreProductRequest $request)
     {
@@ -66,6 +99,10 @@ class ProductController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
 
+            Helper::logException($e, [
+                'request' => $request->except(['image']),
+            ]);
+
             throw $e;
         }
 
@@ -77,31 +114,54 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product)
     {
         if ($request->entity->id != $product->entity_id) {
-            Inertia::flash(key: 'error', value: 'Entitas tidak valid');
+            Inertia::flash('error', 'Entitas tidak valid');
             return back();
         }
 
-        # start transcation
-        DB::transaction(function () use ($request, $product) {
-            $transforming = new ProductTransformerFromRequestForUpdateServices($request, $product);
-            (new ProductUpdaterServices($transforming->transform(), $product))->update();
-        });
+        try {
+            DB::transaction(function () use ($request, $product) {
+                $transforming = new ProductTransformerFromRequestForUpdateServices($request, $product);
 
-        Inertia::flash(key: 'success', value: 'Produk berhasil diperbarui');
-        return back();
+                (new ProductUpdaterServices(
+                    $transforming->transform(),
+                    $product
+                ))->update();
+            });
+
+            Inertia::flash('success', 'Produk berhasil diperbarui');
+
+            return back();
+
+        } catch (Exception $e) {
+            Helper::logException($e, [
+                'product_id' => $product->id,
+            ]);
+
+            throw $e;
+        }
     }
 
     public function destroy(Product $product)
     {
         if ($product->entity_id != request()->entity->id) {
-            Inertia::flash(key: 'error', value: 'Entitas tidak valid');
+            Inertia::flash('error', 'Entitas tidak valid');
             return back();
         }
 
-        $product->delete();
+        try {
+            $product->delete();
 
-        Inertia::flash(key: 'success', value: 'Produk berhasil dihapus');
-        return back();
+            Inertia::flash('success', 'Produk berhasil dihapus');
+
+            return back();
+
+        } catch (Exception $e) {
+            Helper::logException($e, [
+                'product_id' => $product->id,
+            ]);
+
+            throw $e;
+        }
     }
 
     public function import(ImportProductRequest $request)
@@ -163,8 +223,10 @@ class ProductController extends Controller
 
             DB::rollBack();
 
-            Log::error('Error saat mengimpor produk: '.$e->getMessage(), [
-                'exception' => $e,
+            Helper::logException($e, [
+                'entity_id' => $entity?->id,
+                'employee_id' => $employee?->id,
+                'user_id' => $request->user()?->id,
             ]);
 
             throw $e;
@@ -179,11 +241,13 @@ class ProductController extends Controller
             );
             } 
             catch (Exception $e) {
-                Log::error('Gagal dispatch ImportProductLogJob (produk tetap tersimpan): '.$e->getMessage(), [
-                    'entity_id' => $entity->id,
-                    'employee_id' => $employee->id,
-                    'exception' => $e,
-                ]);
+            Helper::logException($e, [
+                'job' => ImportProductLogJob::class,
+                'message_context' => 'Produk sudah tersimpan, gagal membuat log import',
+                'entity_id' => $entity->id,
+                'employee_id' => $employee->id,
+                'user_id' => $request->user()?->id,
+            ]);
         }
 
         $count = count($request->validated('products'));

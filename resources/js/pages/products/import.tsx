@@ -51,6 +51,7 @@ type Props = {
     categoryOptions: Option[];
     locationOptions: Option[];
     unitOptions: Option[];
+    suppliers: string[];
 };
 
 interface ImportRow {
@@ -63,6 +64,7 @@ interface ImportRow {
     Kategori: string;
     'Lokasi Input': string;
     Satuan: string;
+    Supplier: string;
     [stockCol: string]: string | number;
 }
 
@@ -98,6 +100,7 @@ function buildPayload(
         location_id: resolveId(locations, row['Lokasi Input']),
         product_unit_id: unitId,
         product_sell_unit_id: unitId,
+        supplier_name: row['Supplier']?.toString().trim() ?? '',
         image_url: null,
         sell_to_customer: true,
         service: false,
@@ -174,6 +177,7 @@ export default function ImportProductPage({
     categoryOptions,
     locationOptions,
     unitOptions,
+    suppliers,
 }: Props) {
     const [rows, setRows] = useState<ImportRow[]>([]);
     const [perPage, setPerPage] = useState<number | 'all'>(10);
@@ -246,7 +250,7 @@ export default function ImportProductPage({
             const catLabels = categoryOptions.map((c) => c.label);
             const locLabels = locationOptions.map((l) => l.label);
             const unitLabels = unitOptions.map((u) => u.label);
-
+            const supplierLabels = suppliers ?? [];
             const refSheet = wb.addWorksheet('_Ref');
             refSheet.state = 'veryHidden';
 
@@ -254,11 +258,13 @@ export default function ImportProductPage({
                 catLabels.length,
                 locLabels.length,
                 unitLabels.length,
+                supplierLabels.length,
             );
             for (let i = 0; i < maxRef; i++) {
                 refSheet.getCell(i + 1, 1).value = catLabels[i] ?? null;
                 refSheet.getCell(i + 1, 2).value = locLabels[i] ?? null;
                 refSheet.getCell(i + 1, 3).value = unitLabels[i] ?? null;
+                refSheet.getCell(i + 1, 4).value = supplierLabels[i] ?? null;
             }
 
             wb.definedNames.add(
@@ -273,7 +279,10 @@ export default function ImportProductPage({
                 `'_Ref'!$C$1:$C$${unitLabels.length}`,
                 'SatuanList',
             );
-
+            wb.definedNames.add(
+                `'_Ref'!$D$1:$D$${supplierLabels.length}`,
+                'SupplierList',
+            );
             const ws = wb.addWorksheet('Data Produk');
             const stockCols = locationOptions.map((l) => stockColName(l.label));
 
@@ -287,6 +296,7 @@ export default function ImportProductPage({
                 { header: 'Kategori', key: 'Kategori', width: 24 },
                 { header: 'Lokasi Input', key: 'Lokasi Input', width: 24 },
                 { header: 'Satuan', key: 'Satuan', width: 18 },
+                { header: 'Supplier', key: 'Supplier', width: 24 },
                 ...stockCols.map((col) => ({
                     header: col,
                     key: col,
@@ -320,6 +330,7 @@ export default function ImportProductPage({
                 Kategori: catLabels[0] ?? '',
                 'Lokasi Input': locLabels[0] ?? '',
                 Satuan: unitLabels[0] ?? '',
+                Supplier: 'Zakiah',
                 ...exampleStockCols,
             });
 
@@ -327,6 +338,7 @@ export default function ImportProductPage({
                 Kategori: 'KategoriList',
                 'Lokasi Input': 'LokasiList',
                 Satuan: 'SatuanList',
+                Supplier: 'SupplierList',
             };
 
             const DATA_ROWS = 1000;
@@ -696,6 +708,7 @@ export default function ImportProductPage({
                                     <TableHead>Harga Beli</TableHead>
                                     <TableHead>Harga Jual</TableHead>
                                     <TableHead>Total Stok</TableHead>
+                                    <TableHead>Supplier</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -790,6 +803,9 @@ export default function ImportProductPage({
                                                     {totalStokSetelahImport(
                                                         row,
                                                     )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {row['Supplier']}
                                                 </TableCell>
                                             </TableRow>
 

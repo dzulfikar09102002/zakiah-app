@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductLocationStock;
 use App\Models\ProductUnit;
+use App\Models\Supplier;
 
 class ProductService
 {
@@ -14,7 +15,7 @@ class ProductService
     {
         $search = request('search', '');
         $product_category_id = request('product_category_id', 'all');
-        $query = Product::with('productCategory', 'productLocationStocks')
+        $query = Product::with('productCategory', 'productLocationStocks', 'supplier')
             ->where('entity_id', auth()->user()?->entity?->id)
             ->where(function ($q) use ($search) {
                 $q->whereLike('name', "%$search%")
@@ -33,7 +34,13 @@ class ProductService
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }
-
+    public function getSuppliersName()
+    {
+        return Supplier::
+        where('entity_id', auth()->user()?->entity?->id)
+        ->pluck('name')
+            ->toArray();
+    }
     public function getCategoryOptions()
     {
         return ProductCategory::where('entity_id', auth()->user()?->entity?->id)

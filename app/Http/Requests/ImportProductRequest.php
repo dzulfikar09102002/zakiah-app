@@ -57,6 +57,7 @@ class ImportProductRequest extends BaseRequest
             'products.*.product_sell_prices.*.tax_id' => ['nullable'],
             'products.*.product_sell_prices.*.tax_setting' => ['nullable', Rule::enum(TaxSettingEnum::class)],
             'products.*.product_sell_prices.*.sell_price' => ['required', 'integer', 'min:0'],
+            'products.*.supplier_name' => 'nullable',
         ];
     }
 

@@ -40,6 +40,7 @@ class Product extends Model
         'tax_setting',
         'sell_price',
         'last_buying_price',
+        'supplier_id'
     ];
 
     /**
@@ -110,7 +111,9 @@ class Product extends Model
     public function location(): BelongsTo {
         return $this->belongsTo(Location::class);
     }
-
+    public function supplier(): BelongsTo {
+        return $this->belongsTo(Supplier::class);
+    }
     public function scopeActive(Builder $query): void
     {
         $query->where('status', 'active');

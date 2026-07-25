@@ -26,7 +26,8 @@ class ProductTransformerFromRequestForUpdateServices extends ProductTransformerF
         $fields = [
             'sku', 'barcode',
             'select_all_location', 'location_ids', 'exclude_location_ids', 'sell_price', 'tax_id', 'tax_setting',
-            'location_id', 'product_unit_id', 'product_sell_unit_id',
+            'location_id', 'product_unit_id', 'product_sell_unit_id', 'supplier_id', 
+            'supplier_name'
         ];
 
         foreach ($fields as $field) {

@@ -61,6 +61,7 @@ type Props = {
     locationOptions: Option[];
     unitOptions: Option[];
     pagination: Pagination<Product>;
+    suppliers: string[];
 };
 
 const defaultCategoryOption: Option = {
@@ -73,6 +74,7 @@ export default ({
     pagination,
     locationOptions,
     unitOptions,
+    suppliers,
 }: Props) => {
     const flash = usePage<SharedData>().flash as {
         success?: string;
@@ -216,6 +218,7 @@ export default ({
                                 <TableHead>Harga Beli</TableHead>
                                 <TableHead>Harga Jual</TableHead>
                                 <TableHead>Stok</TableHead>
+                                <TableHead>Supplier</TableHead>
                                 <TableHead>Update</TableHead>
                                 <TableHead>Aksi</TableHead>
                             </TableRow>
@@ -242,6 +245,9 @@ export default ({
                                         {toRupiah(product.sell_price)}
                                     </TableCell>
                                     <TableCell>{product.total_stock}</TableCell>
+                                    <TableCell>
+                                        {product.supplier?.name ?? '-'}
+                                    </TableCell>
                                     <TableCell>
                                         {product.updated_at
                                             ? new Intl.DateTimeFormat('id-ID', {
@@ -305,6 +311,7 @@ export default ({
                 product={selectedProduct}
                 open={isModalOpen}
                 categories={coptions}
+                suppliers={suppliers}
             />
         </AppLayout>
     );
