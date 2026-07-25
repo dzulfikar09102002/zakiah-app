@@ -12,35 +12,12 @@ class RoleService
     {
         $search = request('search');
         $entityId = auth()->user()?->entity?->id;
-        return Role::with('parentRole:id,name')
-            ->when($search, fn ($query) =>
-                $query->whereLike('name', "%{$search}%")
-            )
-    
-            ->when(request('parent_ids'), fn ($query, $parentIds) =>
-                $query->whereIn('parent_id', (array) $parentIds)
-            )
-    
-            ->when(request('show_system') === 'true',
-                function ($query) use ($entityId) {
-                    $query->where(function (Builder $q) use ($entityId) {
-                        $q->where('entity_id', $entityId)
-                          ->orWhereNull('entity_id');
-                    });
-                },
-                function ($query) use ($entityId) {
-                    $query->where('entity_id', $entityId);
-                }
-            )
-    
+
+        return Role::where('name', 'like', "%{$search}%")
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }
 
-    public function getParents()
-    {
-        return Role::whereNull('entity_id')->get();
-    }
     public function store(array $data)
     {
     $user = auth()->user();

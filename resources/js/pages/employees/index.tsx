@@ -43,9 +43,10 @@ type Props = {
     onlyTrashed?: boolean;
     roles: Role[];
     locations: Location[];
+    existingEmails: string[];
 };
 
-export default ({ pagination, roles, locations }: Props) => {
+export default ({ pagination, roles, locations, existingEmails }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined,
@@ -180,6 +181,7 @@ export default ({ pagination, roles, locations }: Props) => {
                 onModalSuccess={onModalSuccess}
                 roles={roles}
                 locations={locations}
+                existingEmails={existingEmails}
                 tableData={pagination.data}
             />
 

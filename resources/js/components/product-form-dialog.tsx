@@ -7,6 +7,7 @@ import {
     DialogTitle,
     DialogFooter,
     DialogClose,
+    DialogCancel,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,8 +24,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Option, SharedData } from '@/types';
 import { Product } from '@/lib/model';
 import products from '@/routes/products';
-import { Spinner } from './ui/spinner'; import { toast } from "sonner";
-
+import { Spinner } from './ui/spinner';
+import { toast } from 'sonner';
 
 export interface StockMovementRow {
     location_id: number;
@@ -39,7 +40,7 @@ function buildStockMovements(
 ): StockMovementRow[] {
     const existingMap = new Map(
         product?.product_location_stocks?.map((sm) => [sm.location_id, sm]) ??
-        [],
+            [],
     );
 
     return locations.map((loc) => {
@@ -158,7 +159,7 @@ export function ProductFormDialog({
                     onOpenChange(false);
                     onSuccess?.();
                 },
-                onFinish: () => setIsSubmitting(false)
+                onFinish: () => setIsSubmitting(false),
             };
 
             if (product) {
@@ -172,16 +173,17 @@ export function ProductFormDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="overflow-y-auto sm:max-w-2xl md:max-w-3xl lg:max-w-4xl">
+                <DialogCancel />
                 <DialogHeader>
                     <DialogTitle>
                         {isEdit ? 'Edit Produk' : 'Produk Baru'}
                     </DialogTitle>
                 </DialogHeader>
 
-                <ScrollArea className="-mx-1 max-h-[70vh] px-1">
+                <ScrollArea className="-mx-4 max-h-[70vh] px-4">
                     <form ref={formRef} onSubmit={(e) => e.preventDefault()}>
-                        <div className="grid gap-6 py-2">
+                        <div className="grid gap-6 p-1 py-2">
                             <h4 className="text-sm font-medium">
                                 Informasi Dasar
                             </h4>

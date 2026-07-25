@@ -46,10 +46,15 @@ class EmployeeService
                 })
             );
     }
+    public function getEmailsByEntity()
+    {
+        return User::where('email', '!=', null)->
+        pluck('email')
+            ->toArray();
+    }
     public function getRoles()
     {
         return Role::select('id', 'name')
-    ->whereNotNull('parent_id')
     ->get();
     }
 
@@ -132,23 +137,15 @@ class EmployeeService
         return DB::transaction(function () use ($employee, $data) {
 
             $user = $employee->user;
-
-            // Update basic info
             $user->name = $data['first_name'] . ' ' . $data['last_name'];
             $user->email = $data['email'];
-
-            // Update password kalau diisi
             if (!empty($data['password'])) {
                 $user->password = bcrypt($data['password']);
             }
-
             $user->save();
-
             $employee->fill($data);
-
             $role = Role::find($data['role_id']);
 
-            // entity_permission
             if (array_key_exists('entity_permission', $data)) {
                 $employee->entity_permission = array_merge(
                     $data['entity_permission'],
@@ -157,8 +154,6 @@ class EmployeeService
             } else {
                 $employee->entity_permission = $role->entity_permission;
             }
-
-            // location_permission
             if (array_key_exists('location_permission', $data)) {
                 $employee->location_permission = array_merge(
                     $data['location_permission'],

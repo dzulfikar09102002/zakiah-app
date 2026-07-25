@@ -30,7 +30,6 @@ class StoreRoleRequest extends FormRequest
                     return $query->whereNotNull('parent_id');
                 }),
             ],
-            'parent_id' => ['required', 'exists:roles,id'],
             'entity_permission' => 'nullable|array',
             'location_permission' => 'nullable|array',
         ];

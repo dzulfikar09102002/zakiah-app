@@ -19,8 +19,9 @@ class EmployeeController extends Controller
         $pagination = $this->service->getEmployees();
         $roles = $this->service->getRoles();
         $locations = $this->service->getLocations();
+        $existingEmails = $this->service->getEmailsByEntity();
 
-        return Inertia::render('employees/index', compact('pagination', 'roles', 'locations'));
+        return Inertia::render('employees/index', compact('pagination', 'roles', 'locations', 'existingEmails'));
     }
     public function deleted()
     {

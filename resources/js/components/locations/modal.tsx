@@ -21,7 +21,6 @@ import { toast } from 'sonner';
 import { Location } from '@/lib/model';
 import { SharedData } from '@/types';
 
-
 import {
     Select,
     SelectContent,
@@ -92,7 +91,7 @@ export default ({
             status: selected.status ?? 'active',
             full_address: selected.full_address ?? '',
             postal_code: selected.postal_code ?? '',
-            district:selected.district ?? '',
+            district: selected.district ?? '',
             city: selected.city ?? '',
             province: selected.province ?? '',
             country: selected.country ?? '',
@@ -180,7 +179,7 @@ export default ({
                         {/* Nama */}
                         <Field>
                             <FieldLabel>Nama</FieldLabel>
-                            <Input    
+                            <Input
                                 placeholder="Store"
                                 value={data.name}
                                 onChange={(e) =>
@@ -208,7 +207,7 @@ export default ({
                         <Field>
                             <FieldLabel>Contact Email</FieldLabel>
                             <Input
-                            type="email"
+                                type="email"
                                 placeholder="email@example.com"
                                 value={data.contact_email}
                                 onChange={(e) =>
@@ -248,6 +247,7 @@ export default ({
                                                 <SelectItem
                                                     key={code.value}
                                                     value={code.value}
+                                                    className="cursor-pointer"
                                                 >
                                                     {code.label}
                                                 </SelectItem>
@@ -268,7 +268,9 @@ export default ({
                                             )
                                         }
                                     />
-                                    <FieldError>{errors.backoffice_phone_number}</FieldError>
+                                    <FieldError>
+                                        {errors.backoffice_phone_number}
+                                    </FieldError>
                                 </div>
                             </div>
                         </Field>
@@ -293,13 +295,22 @@ export default ({
                                 </SelectTrigger>
 
                                 <SelectContent>
-                                    <SelectItem value="main_office">
+                                    <SelectItem
+                                        className="cursor-pointer"
+                                        value="main_office"
+                                    >
                                         Office
                                     </SelectItem>
-                                    <SelectItem value="outlet">
+                                    <SelectItem
+                                        className="cursor-pointer"
+                                        value="outlet"
+                                    >
                                         Outlet
                                     </SelectItem>
-                                    <SelectItem value="warehouse">
+                                    <SelectItem
+                                        className="cursor-pointer"
+                                        value="warehouse"
+                                    >
                                         Gudang
                                     </SelectItem>
                                 </SelectContent>
@@ -360,6 +371,7 @@ export default ({
                                         <SelectItem
                                             key={prov.id}
                                             value={prov.id}
+                                            className="cursor-pointer"
                                         >
                                             {prov.name}
                                         </SelectItem>
@@ -402,7 +414,11 @@ export default ({
 
                                 <SelectContent>
                                     {regencies.map((reg) => (
-                                        <SelectItem key={reg.id} value={reg.id}>
+                                        <SelectItem
+                                            key={reg.id}
+                                            value={reg.id}
+                                            className="cursor-pointer"
+                                        >
                                             {reg.name}
                                         </SelectItem>
                                     ))}
@@ -437,7 +453,11 @@ export default ({
 
                                 <SelectContent>
                                     {districts.map((dist) => (
-                                        <SelectItem key={dist.id} value={dist.id}>
+                                        <SelectItem
+                                            key={dist.id}
+                                            value={dist.id}
+                                            className="cursor-pointer"
+                                        >
                                             {dist.name}
                                         </SelectItem>
                                     ))}

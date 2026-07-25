@@ -12,7 +12,7 @@ class UpdateRoleRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // penting!
+        return true; 
     }
 
     protected function prepareForValidation(): void
@@ -33,8 +33,6 @@ class UpdateRoleRequest extends FormRequest
             'max:100',
             Rule::unique('roles', 'name')->ignore($roleId),
         ],
-
-        'parent_id' => ['required', 'exists:roles,id'],
         'entity_permission' => ['nullable', 'array'],
         'location_permission' => ['nullable', 'array'],
         ];
