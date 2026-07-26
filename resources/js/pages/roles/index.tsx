@@ -34,11 +34,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 type Props = {
     pagination: Pagination<Role>;
-    parents: Role[];
 };
 
-export default ({ pagination, parents }: Props) => {
-
+export default ({ pagination }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined as unknown,
@@ -53,11 +51,9 @@ export default ({ pagination, parents }: Props) => {
 
     const search = useQuery().search || '';
 
-    const onModalSuccess = () =>
-        setModal({ isOpen: false, dataId: undefined });
+    const onModalSuccess = () => setModal({ isOpen: false, dataId: undefined });
 
-    const onModalClose = () =>
-        setModal({ isOpen: false, dataId: undefined });
+    const onModalClose = () => setModal({ isOpen: false, dataId: undefined });
 
     const onEdit = (id: unknown) =>
         setModal({
@@ -73,8 +69,7 @@ export default ({ pagination, parents }: Props) => {
             delete: true,
         });
 
-    const onAlertProccessing = () =>
-        setAlert({ ...alert, proccessing: true });
+    const onAlertProccessing = () => setAlert({ ...alert, proccessing: true });
 
     const onDelete = (id: unknown) =>
         setAlert({
@@ -83,6 +78,7 @@ export default ({ pagination, parents }: Props) => {
             delete: true,
             proccessing: false,
         });
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -92,7 +88,6 @@ export default ({ pagination, parents }: Props) => {
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
                 tableData={pagination.data}
-                parents={parents}
             />
 
             <Alert
@@ -104,18 +99,18 @@ export default ({ pagination, parents }: Props) => {
             <div className="mb-4">
                 <Button
                     className="size-9 lg:size-auto"
-                    onClick={() => setModal({ isOpen: true, dataId: undefined })}
+                    onClick={() =>
+                        setModal({ isOpen: true, dataId: undefined })
+                    }
                 >
                     <Plus />
-                    <span className="hidden lg:inline">
-                        Role Baru
-                    </span>
+                    <span className="hidden lg:inline">Role Baru</span>
                 </Button>
             </div>
 
             <Card>
                 <CardHeader>
-                    <Form method="GET" className="grid lg:flex gap-2">
+                    <Form method="GET" className="grid gap-2 lg:flex">
                         <input type="hidden" name="page" value={1} />
                         <Input
                             defaultValue={search}
@@ -140,4 +135,4 @@ export default ({ pagination, parents }: Props) => {
             </Card>
         </AppLayout>
     );
-}
+};

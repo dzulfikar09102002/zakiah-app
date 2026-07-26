@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Helpers\Helper;
 use App\Helpers\UniqueCodeGenerator;
 use App\Models\Entity;
 use App\Models\Employee;
@@ -59,6 +60,7 @@ class ImportProductLogJob implements ShouldQueue
 
     public function handle(): void
     {
+        try {
         $entity = Entity::findOrFail($this->entityId);
         $employee = Employee::findOrFail($this->employeeId);
 
@@ -133,6 +135,20 @@ class ImportProductLogJob implements ShouldQueue
             'order_type_created_count' => $orderTypeImport['created'] ? 1 : 0,
             'updated_by' => $this->userId,
         ]);
+         } 
+         catch (Throwable $e) {
+
+            Helper::logException($e, [
+                'source' => self::class,
+                'method' => __FUNCTION__,
+                'entity_id' => $this->entityId,
+                'employee_id' => $this->employeeId,
+                'user_id' => $this->userId,
+                'total_products' => count($this->products),
+            ]);
+
+            throw $e;
+        }
     }
 
     private function writeSnapshotFile(string $relativePath, array $detailRows): void

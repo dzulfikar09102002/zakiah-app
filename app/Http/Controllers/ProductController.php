@@ -21,6 +21,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Throwable;
 
 class ProductController extends Controller
 {
@@ -45,8 +46,12 @@ class ProductController extends Controller
                 'unitOptions',
                 'suppliers'
             ));
-        } catch (Exception $e) {
-            Helper::logException($e);
+        } catch (Throwable $e) {
+            Helper::logException($e, [
+                'source' => self::class,
+                'method' => __FUNCTION__,
+            ]);
+
             throw $e;
         }
     }
@@ -96,10 +101,12 @@ class ProductController extends Controller
             $data = $creator->create();
 
             DB::commit();
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
 
             Helper::logException($e, [
+                'source' => self::class,
+                'method' => __FUNCTION__,
                 'request' => $request->except(['image']),
             ]);
 
@@ -219,11 +226,13 @@ class ProductController extends Controller
 
             DB::commit();
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
 
             DB::rollBack();
 
             Helper::logException($e, [
+                'source' => self::class,
+                'method' => __FUNCTION__,
                 'entity_id' => $entity?->id,
                 'employee_id' => $employee?->id,
                 'user_id' => $request->user()?->id,
@@ -231,24 +240,12 @@ class ProductController extends Controller
 
             throw $e;
         }
-
-        try {
             ImportProductLogJob::dispatch(
                 $entity->id,
                 $employee->id,
                 $request->user()->id,
                 $processedProducts
             );
-            } 
-            catch (Exception $e) {
-            Helper::logException($e, [
-                'job' => ImportProductLogJob::class,
-                'message_context' => 'Produk sudah tersimpan, gagal membuat log import',
-                'entity_id' => $entity->id,
-                'employee_id' => $employee->id,
-                'user_id' => $request->user()?->id,
-            ]);
-        }
 
         $count = count($request->validated('products'));
 
