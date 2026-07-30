@@ -32,18 +32,28 @@ class ProductTransformerFromRequestServices
     public function transform(): ProductRequest
     {
         if (!empty($this->params['supplier_name'])) {
-            $supplier = Supplier::firstOrCreate(
-                [
-                    'name' => $this->params['supplier_name'],
-                    'entity_id' => $this->entity->id,
-                ],
-                [
-                    'status' => 'active',
-                    'code' => 'SUP' . strtoupper(substr(uniqid(), -6)), 
-                    'initial' => strtoupper(substr($this->params['supplier_name'], 0, 3)),
-                ]
-            );
+            $supplierName = $this->params['supplier_name'];
+            $entityId = $this->entity->id;
+            $supplier = Supplier::where('name', $supplierName)
+                ->where('entity_id', $entityId)
+                ->first();
+            if (!$supplier) {
+                $baseInitial = strtoupper(substr($supplierName, 0, 3));
+                $initial = $baseInitial;
+                $counter = 1;
+                while (Supplier::where('initial', $initial)->exists()) {
+                    $initial = substr($baseInitial, 0, 3 - strlen((string)$counter)) . $counter;
+                    $counter++;
+                }
 
+                $supplier = Supplier::create([
+                    'name'      => $supplierName,
+                    'entity_id' => $entityId,
+                    'status'    => 'active',
+                    'code'      => 'SUP' . strtoupper(substr(uniqid(), -6)), 
+                    'initial'   => $initial,
+                ]);
+            }
             $this->params['supplier_id'] = $supplier->id;
         }
         return (new ProductRequest())
