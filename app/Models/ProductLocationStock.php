@@ -9,13 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 #[ObservedBy([ProductLocationStockObserver::class])]
 class ProductLocationStock extends Model
 {
-
-
     protected $fillable = [
         'product_id',
         'location_id',
         'product_unit_id',
         'stock',
+        'checksum', // 1. Tambahkan checksum ke fillable
     ];
 
     /**
@@ -35,6 +34,25 @@ class ProductLocationStock extends Model
         'last_buy_price' => 'integer',
         'buying_price' => 'integer',
     ];
+
+    /**
+     * 2. Auto-generate Checksum jika belum terisi saat model dibuat
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (ProductLocationStock $model) {
+            if (empty($model->checksum)) {
+                // Generate hash unik berdasarkan atribut stok agar MySQL tidak error 1364
+                $model->checksum = hash('sha256', implode('-', [
+                    $model->product_id,
+                    $model->location_id,
+                    $model->product_unit_id ?? 0,
+                    $model->stock ?? 0,
+                    microtime(true)
+                ]));
+            }
+        });
+    }
 
     public function product()
     {
