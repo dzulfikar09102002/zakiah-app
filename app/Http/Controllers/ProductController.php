@@ -21,6 +21,7 @@ use DB;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Throwable;
 
@@ -172,85 +173,102 @@ class ProductController extends Controller
         }
     }
 
-    public function import(ImportProductRequest $request)
-    {
-        $employee = $request->employee;
-        $entity = $request->entity;
+public function import(ImportProductRequest $request)
+{
+    set_time_limit(300);
+    ini_set('memory_limit', '512M');
 
-        DB::beginTransaction();
+    $employee = $request->employee;
+    $entity   = $request->entity;
+    $products = $request->validated('products');
 
-        try {
+    // 1. LEPAS LOCK SESSION PHP!
+    // Supaya Inertia / Ajax di frontend gak ketahan/hanging di server
+    session_write_close();
 
-            $processedProducts = [];
+    DB::beginTransaction();
 
-            foreach ($request->validated('products') as $productData) {
+    try {
+        $processedProducts = [];
 
-                $storeRequest = StoreProductRequest::createFrom($request);
+        // 2. Query SKU sekaligus (1 Query saja untuk 118 data, bukan 118 Query!)
+        $skus = array_column($products, 'sku');
+        $existingProducts = Product::query()
+            ->where('entity_id', $entity->id)
+            ->whereIn('sku', $skus)
+            ->get()
+            ->keyBy('sku');
+foreach ($products as $productData) {
 
-                $storeRequest->replace($productData);
+    // 1. Buat StoreProductRequest dari $request awal (User & Auth state bawaan ter-copy sempurna!)
+    $storeRequest = StoreProductRequest::createFrom($request);
 
-                $storeRequest->merge([
-                    'employee' => $employee,
-                    'entity' => $entity,
-                    'for_import' => true,
-                ]);
+    // 2. Timpa input data khusus untuk item produk saat ini
+    $mergedData = array_merge($productData, [
+        'employee'   => $employee,
+        'entity'     => $entity,
+        'for_import' => true,
+    ]);
 
-                $storeRequest->setRedirector(redirect());
+    $storeRequest->replace($mergedData);
 
-                $storeRequest->setContainer(app())->validateResolved();
+    // 3. Set data yang dianggap "validated" tanpa menjalankan validateResolved() / query DB ulang
+    $storeRequest->setValidator(
+        validator($mergedData, $storeRequest->rules())
+    );
 
-                $transforming = new ProductTransformerFromRequestServices($storeRequest);
-                $creatorRequest = $transforming->transform();
+    // 4. Transformasi data (User/createdBy & data validasi dijamin terisi penuh!)
+    $transforming   = new ProductTransformerFromRequestServices($storeRequest);
+    $creatorRequest = $transforming->transform();
 
-                $product = Product::query()
-                    ->where('entity_id', $entity->id)
-                    ->where('sku', $storeRequest->validated('sku'))
-                    ->first();
+    $product = $existingProducts->get($productData['sku']);
+    $isNew   = ! $product;
 
-                $isNew = ! $product;
-
-                if ($product) {
-                    (new ProductUpdaterImportServices(
-                        $creatorRequest,
-                        $product
-                    ))->update();
-                } else {
-                    (new ProductCreatorImportServices(
-                        $creatorRequest
-                    ))->create();
-                }
-
-                $processedProducts[] = array_merge($productData, [
-                    '_import_created' => $isNew,
-                ]);
-            }
-
-            DB::commit();
-
-        } catch (Throwable $e) {
-
-            DB::rollBack();
-
-            Helper::logException($e, [
-                'source' => self::class,
-                'method' => __FUNCTION__,
-                'entity_id' => $entity?->id,
-                'employee_id' => $employee?->id,
-                'user_id' => $request->user()?->id,
-            ]);
-
-            throw $e;
-        }
-            ImportProductLogJob::dispatch(
-                $entity->id,
-                $employee->id,
-                $request->user()->id,
-                $processedProducts
-            );
-
-        $count = count($request->validated('products'));
-
-        return to_route('products.index')
-            ->with('success', "{$count} produk berhasil diimpor.");
+    if ($product) {
+        (new ProductUpdaterImportServices($creatorRequest, $product))->update();
+    } else {
+        (new ProductCreatorImportServices($creatorRequest))->create();
     }
+
+    $processedProducts[] = array_merge($productData, [
+        '_import_created' => $isNew,
+    ]);
+}
+
+        DB::commit();
+
+    } catch (Throwable $e) {
+        DB::rollBack();
+
+        Helper::logException($e, [
+            'source'      => self::class,
+            'method'      => __FUNCTION__,
+            'entity_id'   => $entity?->id,
+            'employee_id' => $employee?->id,
+            'user_id'     => $request->user()?->id,
+        ]);
+
+        throw $e;
+    }
+
+    // Log job jalan di background
+    ImportProductLogJob::dispatch(
+        $entity->id,
+        $employee->id,
+        $request->user()->id,
+        $processedProducts
+    );
+
+    // 4. Buka kembali Session untuk flash data ke Inertia
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    $count = count($products);
+
+    // Kirim balik respon redirect ke Inertia
+    return redirect()
+        ->back()
+        ->with('success', "{$count} produk berhasil diimpor.");
+}
 }
