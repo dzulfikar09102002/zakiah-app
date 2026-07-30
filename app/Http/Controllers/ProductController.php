@@ -176,76 +176,72 @@ class ProductController extends Controller
         $employee = $request->employee;
         $entity = $request->entity;
 
-        DB::beginTransaction();
-
         try {
+            // DB::transaction dengan retry 5x jika deadlock
+            $processedProducts = DB::transaction(function () use ($request, $employee, $entity) {
+                $processed = [];
 
-            $processedProducts = [];
+                foreach ($request->validated('products') as $productData) {
 
-            foreach ($request->validated('products') as $productData) {
+                    $storeRequest = StoreProductRequest::createFrom($request);
+                    $storeRequest->replace($productData);
+                    $storeRequest->merge([
+                        'employee'   => $employee,
+                        'entity'     => $entity,
+                        'for_import' => true,
+                    ]);
 
-                $storeRequest = StoreProductRequest::createFrom($request);
+                    $storeRequest->setRedirector(redirect());
+                    $storeRequest->setContainer(app())->validateResolved();
 
-                $storeRequest->replace($productData);
+                    $transforming = new ProductTransformerFromRequestServices($storeRequest);
+                    $creatorRequest = $transforming->transform();
 
-                $storeRequest->merge([
-                    'employee' => $employee,
-                    'entity' => $entity,
-                    'for_import' => true,
-                ]);
+                    $product = Product::query()
+                        ->where('entity_id', $entity->id)
+                        ->where('sku', $storeRequest->validated('sku'))
+                        ->first();
 
-                $storeRequest->setRedirector(redirect());
+                    $isNew = ! $product;
 
-                $storeRequest->setContainer(app())->validateResolved();
+                    if ($product) {
+                        (new ProductUpdaterImportServices(
+                            $creatorRequest,
+                            $product
+                        ))->update();
+                    } else {
+                        (new ProductCreatorServices(
+                            $creatorRequest
+                        ))->create();
+                    }
 
-                $transforming = new ProductTransformerFromRequestServices($storeRequest);
-                $creatorRequest = $transforming->transform();
-
-                $product = Product::query()
-                    ->where('entity_id', $entity->id)
-                    ->where('sku', $storeRequest->validated('sku'))
-                    ->first();
-
-                $isNew = ! $product;
-
-                if ($product) {
-                    (new ProductUpdaterImportServices(
-                        $creatorRequest,
-                        $product
-                    ))->update();
-                } else {
-                    (new ProductCreatorServices(
-                        $creatorRequest
-                    ))->create();
+                    $processed[] = array_merge($productData, [
+                        '_import_created' => $isNew,
+                    ]);
                 }
 
-                $processedProducts[] = array_merge($productData, [
-                    '_import_created' => $isNew,
-                ]);
-            }
-
-            DB::commit();
+                return $processed;
+            }, 5); // <--- Auto retry 5x
 
         } catch (Throwable $e) {
 
-            DB::rollBack();
-
             Helper::logException($e, [
-                'source' => self::class,
-                'method' => __FUNCTION__,
-                'entity_id' => $entity?->id,
+                'source'      => self::class,
+                'method'      => __FUNCTION__,
+                'entity_id'   => $entity?->id,
                 'employee_id' => $employee?->id,
-                'user_id' => $request->user()?->id,
+                'user_id'     => $request->user()?->id,
             ]);
 
             throw $e;
         }
-            ImportProductLogJob::dispatch(
-                $entity->id,
-                $employee->id,
-                $request->user()->id,
-                $processedProducts
-            );
+
+        ImportProductLogJob::dispatch(
+            $entity->id,
+            $employee->id,
+            $request->user()->id,
+            $processedProducts
+        );
 
         $count = count($request->validated('products'));
 
