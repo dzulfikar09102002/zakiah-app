@@ -173,77 +173,83 @@ class ProductController extends Controller
     }
 
     public function import(ImportProductRequest $request)
-    {
-        set_time_limit(300);
+{
+    if (ob_get_level() > 0) {
+        ob_end_clean();
+    }
 
-        $employee = $request->employee;
-        $entity   = $request->entity;
+    set_time_limit(300);
 
-        DB::beginTransaction();
+    $employee = $request->employee;
+    $entity   = $request->entity;
 
-        try {
-            $processedProducts = [];
+    DB::beginTransaction();
 
-            foreach ($request->validated('products') as $productData) {
+    try {
+        $processedProducts = [];
 
-                $storeRequest = StoreProductRequest::createFrom($request);
-                $storeRequest->replace($productData);
-                $storeRequest->merge([
-                    'employee'   => $employee,
-                    'entity'     => $entity,
-                    'for_import' => true,
-                ]);
+        foreach ($request->validated('products') as $productData) {
 
-                $storeRequest->setRedirector(redirect());
-                $storeRequest->setContainer(app())->validateResolved();
-
-                $transforming   = new ProductTransformerFromRequestServices($storeRequest);
-                $creatorRequest = $transforming->transform();
-
-                $product = Product::query()
-                    ->where('entity_id', $entity->id)
-                    ->where('sku', $storeRequest->validated('sku'))
-                    ->first();
-
-                $isNew = ! $product;
-                if ($product) {
-                    ProductLocationStock::withoutEvents(function () use ($creatorRequest, $product) {
-                        (new ProductUpdaterImportServices($creatorRequest, $product))->update();
-                    });
-                } else {
-                    ProductLocationStock::withoutEvents(function () use ($creatorRequest) {
-                        (new ProductCreatorServices($creatorRequest))->create();
-                    });
-                }
-
-                $processedProducts[] = array_merge($productData, [
-                    '_import_created' => $isNew,
-                ]);
-            }
-            DB::commit();
-
-        } catch (Throwable $e) {
-            DB::rollBack();
-            Helper::logException($e, [
-                'source'      => self::class,
-                'method'      => __FUNCTION__,
-                'entity_id'   => $entity?->id,
-                'employee_id' => $employee?->id,
-                'user_id'     => $request->user()?->id,
+            $storeRequest = StoreProductRequest::createFrom($request);
+            $storeRequest->replace($productData);
+            $storeRequest->merge([
+                'employee'   => $employee,
+                'entity'     => $entity,
+                'for_import' => true,
             ]);
 
-            throw $e;
+            $storeRequest->setRedirector(redirect());
+            $storeRequest->setContainer(app())->validateResolved();
+
+            $transforming   = new ProductTransformerFromRequestServices($storeRequest);
+            $creatorRequest = $transforming->transform();
+
+            $product = Product::query()
+                ->where('entity_id', $entity->id)
+                ->where('sku', $storeRequest->validated('sku'))
+                ->first();
+
+            $isNew = ! $product;
+
+            if ($product) {
+                ProductLocationStock::withoutEvents(function () use ($creatorRequest, $product) {
+                    (new ProductUpdaterImportServices($creatorRequest, $product))->update();
+                });
+            } else {
+                ProductLocationStock::withoutEvents(function () use ($creatorRequest) {
+                    (new ProductCreatorServices($creatorRequest))->create();
+                });
+            }
+
+            $processedProducts[] = array_merge($productData, [
+                '_import_created' => $isNew,
+            ]);
         }
-        ImportProductLogJob::dispatchSync(
-            $entity->id,
-            $employee->id,
-            $request->user()->id,
-            $processedProducts
-        );
 
-        $count = count($request->validated('products'));
+        DB::commit();
 
-        return to_route('products.index')
-            ->with('success', "{$count} produk berhasil diimpor.");
+    } catch (Throwable $e) {
+        DB::rollBack();
+
+        Helper::logException($e, [
+            'source'      => self::class,
+            'method'      => __FUNCTION__,
+            'entity_id'   => $entity?->id,
+            'employee_id' => $employee?->id,
+            'user_id'     => $request->user()?->id,
+        ]);
+
+        throw $e;
     }
+    ImportProductLogJob::dispatch(
+        $entity->id,
+        $employee->id,
+        $request->user()->id,
+        $processedProducts
+    );
+
+    $count = count($request->validated('products'));
+    return to_route('products.index')
+        ->with('success', "{$count} produk berhasil diimpor.");
+}
 }
