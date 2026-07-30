@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Helper;
+use App\Helpers\Services\Product\ProductCreatorImportServices;
 use App\Helpers\Services\Product\ProductCreatorServices;
 use App\Helpers\Services\Product\ProductTransformerFromRequestForUpdateServices;
 use App\Helpers\Services\Product\ProductTransformerFromRequestServices;
@@ -214,7 +215,7 @@ class ProductController extends Controller
                         $product
                     ))->update();
                 } else {
-                    (new ProductCreatorServices(
+                    (new ProductCreatorImportServices(
                         $creatorRequest
                     ))->create();
                 }
