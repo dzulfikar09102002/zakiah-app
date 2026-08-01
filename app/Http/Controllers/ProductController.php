@@ -56,7 +56,7 @@ class ProductController extends Controller
             throw $e;
         }
     }
-    public function importPage()
+   public function importPage()
     {
         try {
             $categoryOptions = $this->service->getCategoryOptions();
@@ -64,12 +64,18 @@ class ProductController extends Controller
             $unitOptions = $this->service->getProuductUnitOptions();
             $suppliers = $this->service->getSuppliersName();
 
+            $user = auth()->user();
+
             return Inertia::render('products/import', compact(
                 'categoryOptions',
                 'locationOptions',
                 'unitOptions',
                 'suppliers'
-            ));
+            ) + [
+                'entityId' => $user->employee->entity_id,
+                'employeeId' => $user->employee->id,
+                'userId' => $user->id,
+            ]);
         } catch (Exception $e) {
             Helper::logException($e);
             throw $e;

@@ -1,5 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Spinner } from '@/components/ui/spinner';
-import { ChangeEvent, DragEvent, useRef, useState } from 'react';
+import { ChangeEvent, DragEvent, Fragment, useRef, useState } from 'react';
 import type { BreadcrumbItem, Option, SharedData } from '@/types';
 import products from '@/routes/products';
 import { toast } from 'sonner';
@@ -47,11 +47,18 @@ const breadcrumbs: BreadcrumbItem[] = [
 const XLSX_MIME =
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
+// Endpoint dan Credentials static sesuai Controller C#
+const API_URL = 'https://backend-dotnet.secacastore.com/api/products/import';
+const API_USERNAME = 'K9#mX2$pL7!vR4@zQ8_w';
+const API_PASSWORD = 'xT5$mN8!vP2#qR9@zL4_k';
+
 type Props = {
     categoryOptions: Option[];
     locationOptions: Option[];
     unitOptions: Option[];
     suppliers: string[];
+    userId: number;
+    entityId?: number;
 };
 
 interface ImportRow {
@@ -81,6 +88,11 @@ function resolveId(options: Option[], name: string): number {
     return found ? (found.value as unknown as number) : 0;
 }
 
+function parseSafeNumber(val: any): number {
+    const num = Number(val);
+    return isNaN(num) ? 0 : Math.max(0, num);
+}
+
 function buildPayload(
     row: ImportRow,
     locations: Option[],
@@ -89,14 +101,24 @@ function buildPayload(
 ) {
     const unitId = resolveId(units, row['Satuan']);
 
+    // 1. Tangkap teks kategori mentah dari input/Excel
+    const rawCategoryName = row['Kategori']
+        ? String(row['Kategori']).trim()
+        : '';
+
+    // 2. Cari ID-nya (akan bernilai 0 jika ini kategori baru)
+    const categoryId = resolveId(categories, rawCategoryName);
+
     return {
-        name: row['Nama'],
-        sku: row['SKU'],
-        barcode: row['Barcode'],
-        description: row['Deskripsi'],
-        sell_price: Number(row['Harga Jual']),
-        last_buying_price: Number(row['Harga Beli']),
-        product_category_id: resolveId(categories, row['Kategori']),
+        name: String(row['Nama'] || '').trim(),
+        sku: String(row['SKU'] || '').trim(),
+        barcode: String(row['Barcode'] || '').trim(),
+        description: row['Deskripsi'] ? String(row['Deskripsi']) : null,
+        sell_price: parseSafeNumber(row['Harga Jual']),
+        last_buying_price: parseSafeNumber(row['Harga Beli']),
+
+        product_category_id: categoryId,
+        product_category_name: rawCategoryName,
         location_id: resolveId(locations, row['Lokasi Input']),
         product_unit_id: unitId,
         product_sell_unit_id: unitId,
@@ -114,8 +136,8 @@ function buildPayload(
         stock_movements: locations
             .map((loc) => ({
                 location_id: loc.value as unknown as number,
-                buying_price: Number(row['Harga Beli']),
-                stock: Number(row[stockColName(loc.label)] ?? 0),
+                buying_price: parseSafeNumber(row['Harga Beli']),
+                stock: parseSafeNumber(row[stockColName(loc.label)]),
             }))
             .filter((sm) => sm.stock !== 0),
         product_unit_conversions: [],
@@ -133,13 +155,11 @@ function toRupiah(value: number) {
 
 function isRowValid(
     row: ImportRow,
-    categoryOptions: Option[],
     locationOptions: Option[],
     unitOptions: Option[],
 ) {
     if (!row['Nama']?.toString().trim()) return false;
     if (!row['SKU']?.toString().trim()) return false;
-    if (resolveId(categoryOptions, row['Kategori']) === 0) return false;
     if (resolveId(locationOptions, row['Lokasi Input']) === 0) return false;
     if (resolveId(unitOptions, row['Satuan']) === 0) return false;
     return true;
@@ -178,7 +198,13 @@ export default function ImportProductPage({
     locationOptions,
     unitOptions,
     suppliers,
+    userId,
+    entityId = 1,
 }: Props) {
+    const sharedData = usePage<SharedData>().props;
+    const employee_code = sharedData.auth.user.employee.code;
+    const employeeId = sharedData.auth.user.employee.id ?? 1;
+
     const [rows, setRows] = useState<ImportRow[]>([]);
     const [perPage, setPerPage] = useState<number | 'all'>(10);
     const [currentPage, setCurrentPage] = useState(1);
@@ -203,16 +229,10 @@ export default function ImportProductPage({
         setCurrentPage(1);
     };
 
-    const employee_code = usePage<SharedData>().props.auth.user.employee.code;
-    const { setData, post, processing } = useForm<{
-        products: ReturnType<typeof buildPayload>[];
-    }>({
-        products: [],
-    });
-
     const inputRef = useRef<HTMLInputElement>(null);
 
     const [generating, setGenerating] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [fileName, setFileName] = useState<string | null>(null);
     const [parseError, setParseError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -225,8 +245,7 @@ export default function ImportProductPage({
     const hasRows = rows.length > 0;
 
     const invalidRows = rows.filter(
-        (row) =>
-            !isRowValid(row, categoryOptions, locationOptions, unitOptions),
+        (row) => !isRowValid(row, locationOptions, unitOptions),
     );
 
     // ── Download Template ───────────────────────────────────────────────────
@@ -283,6 +302,7 @@ export default function ImportProductPage({
                 `'_Ref'!$D$1:$D$${supplierLabels.length}`,
                 'SupplierList',
             );
+
             const ws = wb.addWorksheet('Data Produk');
             const stockCols = locationOptions.map((l) => stockColName(l.label));
 
@@ -347,14 +367,24 @@ export default function ImportProductPage({
                 if (!namedRange) return;
 
                 const excelCol = colIdx + 1;
+
+                // --- PERUBAHAN: Tentukan kolom mana yang bebas diketik (tidak muncul error popup) ---
+                const isFreeTextAllowed =
+                    col.header === 'Kategori' || col.header === 'Supplier';
+
                 for (let row = 2; row <= DATA_ROWS + 1; row++) {
                     ws.getCell(row, excelCol).dataValidation = {
                         type: 'list',
                         allowBlank: true,
                         formulae: [namedRange],
-                        showErrorMessage: true,
-                        errorTitle: 'Pilihan tidak valid',
-                        error: 'Pilih salah satu dari daftar yang tersedia.',
+                        // Jika kolom Kategori atau Supplier, showErrorMessage di set false
+                        showErrorMessage: !isFreeTextAllowed,
+                        errorTitle: isFreeTextAllowed
+                            ? undefined
+                            : 'Pilihan tidak valid',
+                        error: isFreeTextAllowed
+                            ? undefined
+                            : 'Pilih salah satu dari daftar yang tersedia.',
                     };
                 }
             });
@@ -375,7 +405,7 @@ export default function ImportProductPage({
         }
     };
 
-    // ── Upload & Parse (belum menampilkan preview) ──────────────────────────
+    // ── Upload & Parse ──────────────────────────────────────────────────────
     const processFile = async (file: File) => {
         setParseError(null);
         setRows([]);
@@ -429,7 +459,7 @@ export default function ImportProductPage({
         processFile(file);
     };
 
-    // ── Klik "Tinjau & Import" — baru di sini preview ditampilkan ───────────
+    // ── Klik "Tinjau & Import" ──────────────────────────────────────────────
     const handleTinjau = async () => {
         if (rows.length === 0) return;
 
@@ -442,16 +472,6 @@ export default function ImportProductPage({
             const map = await fetchStockMap(skus);
             setStockMap(map);
 
-            const payloads = rows.map((row) =>
-                buildPayload(
-                    row,
-                    locationOptions,
-                    categoryOptions,
-                    unitOptions,
-                ),
-            );
-            setData('products', payloads);
-
             setExpandedRows(new Set());
             setPreviewVisible(true);
         } catch (err) {
@@ -462,12 +482,11 @@ export default function ImportProductPage({
         }
     };
 
-    // ── Reset total ──────────────────────────────────────────────────────────
+    // ── Reset ───────────────────────────────────────────────────────────────
     const handleBatalkan = () => {
         setRows([]);
         setFileName(null);
         setParseError(null);
-        setData('products', []);
         setStockMap({});
         setExpandedRows(new Set());
         setPreviewVisible(false);
@@ -495,7 +514,6 @@ export default function ImportProductPage({
         });
     };
 
-    /** Ringkasan total stok (stok sekarang + stok baru) lintas semua lokasi, untuk kolom utama. */
     const totalStokSetelahImport = (row: ImportRow) => {
         const sku = row['SKU']?.toString().trim();
         const currentBySku = sku ? (stockMap[sku] ?? {}) : {};
@@ -507,27 +525,73 @@ export default function ImportProductPage({
             return sum + stokSekarang + stokBaru;
         }, 0);
     };
-
-    const handleSimpan = () => {
+    const [importSuccess, setImportSuccess] = useState(false);
+    // ── Handle Simpan: Mengirim data ke API C# & menampilkan respon message ──
+    const handleSimpan = async () => {
         if (rows.length === 0) return;
 
         if (invalidRows.length > 0) {
             toast.error(
-                `${invalidRows.length} produk memiliki data tidak valid (Kategori/Lokasi/Satuan tidak dikenal). Periksa kembali sebelum menyimpan.`,
+                `${invalidRows.length} produk memiliki data tidak valid (Lokasi/Satuan tidak dikenal). Periksa kembali sebelum menyimpan.`,
             );
             return;
         }
 
-        post(products.import().url, {
-            headers: { 'x-employee-code': employee_code },
-            onSuccess: () => {
-                toast.success(`${rows.length} produk berhasil diimpor.`);
-                handleBatalkan();
-            },
-            onError: () => {
-                toast.error('Import gagal. Periksa kembali data pada file.');
-            },
-        });
+        const payloads = rows.map((row) =>
+            buildPayload(row, locationOptions, categoryOptions, unitOptions),
+        );
+
+        const requestData = {
+            entity_id: entityId || 1,
+            employee_id: employeeId || 1,
+            user_id: userId || 1,
+            products: payloads,
+        };
+
+        const basicAuthToken = btoa(`${API_USERNAME}:${API_PASSWORD}`);
+
+        setSaving(true);
+
+        try {
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    Authorization: `Basic ${basicAuthToken}`,
+                    'x-employee-code': employee_code ?? '',
+                },
+                body: JSON.stringify(requestData),
+            });
+
+            const result = await res.json().catch(() => null);
+
+            if (res.ok && result?.success) {
+                toast.success(
+                    result.message || `${rows.length} produk berhasil diimpor.`,
+                );
+
+                setImportSuccess(true);
+
+                setTimeout(() => {
+                    router.visit(products.index().url);
+                }, 1500);
+            } else {
+                // Menampilkan respon error spesifik dari C# controller
+                // Contoh: "Akses ditolak: Username atau Password salah."
+                const errorMessage =
+                    result?.message ||
+                    'Terjadi kesalahan saat memproses impor produk.';
+                toast.error(errorMessage);
+            }
+        } catch (err) {
+            console.error('Fetch error:', err);
+            toast.error(
+                'Gagal terhubung ke API backend (localhost:7266). Pastikan server berjalan dan SSL/CORS diizinkan.',
+            );
+        } finally {
+            setSaving(false);
+        }
     };
 
     return (
@@ -690,9 +754,9 @@ export default function ImportProductPage({
                             <div className="mb-4 flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
                                 <AlertTriangle className="h-4 w-4 shrink-0" />
                                 {invalidRows.length} dari {rows.length} produk
-                                memiliki Kategori/Lokasi/Satuan yang tidak
-                                dikenal. Perbaiki file Excel lalu unggah ulang
-                                sebelum menyimpan.
+                                memiliki Lokasi/Satuan yang tidak dikenal.
+                                Perbaiki file Excel lalu unggah ulang sebelum
+                                menyimpan.
                             </div>
                         )}
 
@@ -719,16 +783,15 @@ export default function ImportProductPage({
                                             : (currentPage - 1) *
                                                   (perPage as number) +
                                               index;
-                                    const kategoriValid =
-                                        resolveId(
-                                            categoryOptions,
-                                            row['Kategori'],
-                                        ) !== 0;
+                                    const kategoriValid = !!row['Kategori']
+                                        ?.toString()
+                                        .trim();
                                     const lokasiValid =
                                         resolveId(
                                             locationOptions,
                                             row['Lokasi Input'],
                                         ) !== 0;
+
                                     const satuanValid =
                                         resolveId(
                                             unitOptions,
@@ -742,8 +805,11 @@ export default function ImportProductPage({
                                         : {};
 
                                     return (
-                                        <>
-                                            <TableRow key={idx}>
+                                        /* Wajib menggunakan Fragment key={...} sebagai elemen terluar di map */
+                                        <Fragment
+                                            key={`row-group-${idx}-${row['SKU'] || index}`}
+                                        >
+                                            <TableRow>
                                                 <TableCell>
                                                     <button
                                                         type="button"
@@ -810,7 +876,7 @@ export default function ImportProductPage({
                                             </TableRow>
 
                                             {isExpanded && (
-                                                <TableRow key={`${idx}-detail`}>
+                                                <TableRow>
                                                     <TableCell
                                                         colSpan={9}
                                                         className="bg-muted/30 p-0"
@@ -874,9 +940,7 @@ export default function ImportProductPage({
 
                                                                             return (
                                                                                 <TableRow
-                                                                                    key={
-                                                                                        loc.value
-                                                                                    }
+                                                                                    key={`loc-${loc.value}`}
                                                                                 >
                                                                                     <TableCell>
                                                                                         {
@@ -907,7 +971,7 @@ export default function ImportProductPage({
                                                     </TableCell>
                                                 </TableRow>
                                             )}
-                                        </>
+                                        </Fragment>
                                     );
                                 })}
                             </TableBody>
@@ -999,30 +1063,33 @@ export default function ImportProductPage({
                                 </Button>
                             </div>
                         </div>
-                        <div className="mt-6 flex justify-end gap-2">
-                            <Button
-                                variant="destructive"
-                                type="button"
-                                disabled={processing}
-                                onClick={handleBatalkan}
-                            >
-                                <X /> Batalkan
-                            </Button>
-                            <Button
-                                type="button"
-                                disabled={
-                                    processing ||
-                                    rows.length === 0 ||
-                                    invalidRows.length > 0
-                                }
-                                onClick={handleSimpan}
-                            >
-                                {processing ? <Spinner /> : <Check />}
-                                {processing
-                                    ? 'Menyimpan…'
-                                    : `Simpan (${rows.length})`}
-                            </Button>
-                        </div>
+                        {!importSuccess && (
+                            <div className="mt-6 flex justify-end gap-2">
+                                <Button
+                                    variant="destructive"
+                                    type="button"
+                                    disabled={saving}
+                                    onClick={handleBatalkan}
+                                >
+                                    <X /> Batalkan
+                                </Button>
+
+                                <Button
+                                    type="button"
+                                    disabled={
+                                        saving ||
+                                        rows.length === 0 ||
+                                        invalidRows.length > 0
+                                    }
+                                    onClick={handleSimpan}
+                                >
+                                    {saving ? <Spinner /> : <Check />}
+                                    {saving
+                                        ? 'Menyimpan…'
+                                        : `Simpan (${rows.length})`}
+                                </Button>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}
