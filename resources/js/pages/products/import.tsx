@@ -577,8 +577,6 @@ export default function ImportProductPage({
                     router.visit(products.index().url);
                 }, 1500);
             } else {
-                // Menampilkan respon error spesifik dari C# controller
-                // Contoh: "Akses ditolak: Username atau Password salah."
                 const errorMessage =
                     result?.message ||
                     'Terjadi kesalahan saat memproses impor produk.';
@@ -586,9 +584,7 @@ export default function ImportProductPage({
             }
         } catch (err) {
             console.error('Fetch error:', err);
-            toast.error(
-                'Gagal terhubung ke API backend (localhost:7266). Pastikan server berjalan dan SSL/CORS diizinkan.',
-            );
+            toast.error('Gagal terhubung ke server.');
         } finally {
             setSaving(false);
         }
