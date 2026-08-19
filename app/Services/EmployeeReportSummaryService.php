@@ -11,10 +11,7 @@ class EmployeeReportSummaryService
 {
     public function getLocationOptions()
     {
-        return (new LocationService)->getLocations()->get()->map(fn (Location $location) => [
-            'label' => Str::title(Str::lower($location->name)),
-            'value' => $location->id,
-        ]);
+        return (new LocationService)->getLocationOptions();
     }
 
     public function getEmployeeSalesSummary()

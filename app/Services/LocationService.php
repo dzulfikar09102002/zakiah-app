@@ -6,6 +6,7 @@ use App\Helpers\UniqueCodeGenerator;
 use App\Models\Location;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class LocationService
 {
@@ -28,6 +29,18 @@ class LocationService
             ->orderBy('id');
     }
 
+    public function getLocationOptions()
+    {
+        return Location::query()
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->where('status', 'active')
+            ->orderBy('name', 'asc')
+            ->get()
+            ->map(fn (Location $location) => [
+                'label' => Str::title(Str::lower($location->name)),
+                'value' => $location->id,
+            ]);
+    }
     public function getDeletedLocations()
     {
         $search = request('search', '');
