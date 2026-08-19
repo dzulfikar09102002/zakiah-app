@@ -33,6 +33,7 @@ import reportByProducts from '@/routes/report-by-products';
 import reportByLocations from '@/routes/report-by-locations';
 import reportEmployeeSummary from '@/routes/report-employee-summary';
 import reportEmployeeDetail from '@/routes/report-employee-detail';
+import assetsByCategory from '@/routes/reports/assets-by-category';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -79,6 +80,10 @@ export const mainNavItems: NavItem[] = [
                     {
                         title: 'Sisa Stok',
                         href: stockRemaining.chooseLocation().url,
+                    },
+                    {
+                        title: 'Nilai Aset',
+                        href: assetsByCategory.index().url,
                     },
                 ],
             },

@@ -34,6 +34,16 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const title = 'Impor Produk';
 
@@ -526,8 +536,8 @@ export default function ImportProductPage({
         }, 0);
     };
     const [importSuccess, setImportSuccess] = useState(false);
-    // ── Handle Simpan: Mengirim data ke API C# & menampilkan respon message ──
-    const handleSimpan = async () => {
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const handleKlikSimpan = () => {
         if (rows.length === 0) return;
 
         if (invalidRows.length > 0) {
@@ -536,6 +546,11 @@ export default function ImportProductPage({
             );
             return;
         }
+
+        setConfirmOpen(true);
+    };
+    const handleSimpan = async () => {
+        setConfirmOpen(false);
 
         const payloads = rows.map((row) =>
             buildPayload(row, locationOptions, categoryOptions, unitOptions),
@@ -1077,7 +1092,7 @@ export default function ImportProductPage({
                                         rows.length === 0 ||
                                         invalidRows.length > 0
                                     }
-                                    onClick={handleSimpan}
+                                    onClick={handleKlikSimpan}
                                 >
                                     {saving ? <Spinner /> : <Check />}
                                     {saving
@@ -1089,6 +1104,29 @@ export default function ImportProductPage({
                     </CardContent>
                 </Card>
             )}
+            <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Konfirmasi Impor Produk
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Anda akan mengimpor <b>{rows.length}</b> produk ke
+                            dalam sistem. Data yang sudah tersimpan tidak dapat
+                            dibatalkan secara otomatis. Apakah Anda yakin ingin
+                            melanjutkan?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive">
+                            Batal
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSimpan}>
+                            Ya, Simpan
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AppLayout>
     );
 }

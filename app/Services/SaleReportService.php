@@ -45,7 +45,6 @@ class SaleReportService
             ->whereBetween('local_sales_at', [$startAt, $endAt])
             ->whereIn('status', $statuses);
 
-        // semua lokasi milik entity
         $locationIds = auth()->user()
             ->entity
             ->locations()

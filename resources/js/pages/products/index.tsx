@@ -1,17 +1,15 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { Plus, Pencil, Search, X, Upload } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import {
-    Plus,
-    FileDown,
-    FileUp,
-    Pencil,
-    SearchIcon,
-    X,
-    Upload,
-} from 'lucide-react';
-import { useState, useCallback, useEffect } from 'react';
-import { debounce } from 'lodash';
+    createColumnHelper,
+    getCoreRowModel,
+    useReactTable,
+    type ColumnDef,
+} from '@tanstack/react-table';
 
 import TablePagination from '@/components/table-pagination';
+import DataTable from '@/components/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -24,14 +22,6 @@ import {
     ComboboxList,
 } from '@/components/ui/combobox';
 import { Input } from '@/components/ui/input';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination, Product } from '@/lib/model';
@@ -40,7 +30,6 @@ import products from '@/routes/products';
 import type { BreadcrumbItem, SharedData } from '@/types';
 import { ProductFormDialog } from '../../components/product-form-dialog';
 import { toast } from 'sonner';
-import { ProductImportButton } from '@/components/product-import-button';
 
 const title = 'Kelola Produk';
 
@@ -69,6 +58,8 @@ const defaultCategoryOption: Option = {
     value: 'all',
 };
 
+const columnHelper = createColumnHelper<Product>();
+
 export default ({
     categoryOptions: coptions,
     pagination,
@@ -93,41 +84,101 @@ export default ({
     const categoryOptions = [defaultCategoryOption, ...coptions];
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<Product>();
 
     const query = useQuery();
     const search = query.search || '';
     const product_category_id = query.product_category_id || 'all';
 
-    const [searchValue, setSearchValue] = useState(search);
     const [categoryValue, setCategoryValue] = useState(product_category_id);
 
     const startIndex = (pagination.current_page - 1) * pagination.per_page;
 
-    const [selectedProduct, setSelectedProduct] = useState<Product>();
+    const columns = [
+        columnHelper.display({
+            id: 'no',
+            header: 'No.',
+            cell: (info) => startIndex + info.row.index + 1 + '.',
+        }),
+        columnHelper.accessor('name', {
+            header: 'Nama',
+            cell: (info) => info.getValue(),
+        }),
+        columnHelper.accessor((row) => row.product_category?.name, {
+            id: 'category',
+            header: 'Kategori',
+            cell: (info) => (
+                <Badge variant="secondary">{info.getValue()}</Badge>
+            ),
+        }),
+        columnHelper.accessor('sku', {
+            header: 'SKU',
+            cell: (info) => info.getValue(),
+        }),
+        columnHelper.accessor('barcode', {
+            header: 'Barcode',
+            cell: (info) => info.getValue(),
+        }),
+        columnHelper.accessor('last_buying_price', {
+            header: 'Harga Beli',
+            cell: (info) => toRupiah(info.getValue()),
+        }),
+        columnHelper.accessor('sell_price', {
+            header: 'Harga Jual',
+            cell: (info) => toRupiah(info.getValue()),
+        }),
+        columnHelper.accessor('total_stock', {
+            header: 'Stok',
+            cell: (info) => info.getValue(),
+        }),
+        columnHelper.accessor((row) => row.supplier?.name, {
+            id: 'supplier',
+            header: 'Supplier',
+            cell: (info) => info.getValue() ?? '-',
+        }),
+        columnHelper.accessor('updated_at', {
+            header: 'Update',
+            cell: (info) => {
+                const val = info.getValue();
+                return val
+                    ? new Intl.DateTimeFormat('id-ID', {
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                      }).format(new Date(val))
+                    : '-';
+            },
+        }),
+        columnHelper.display({
+            id: 'actions',
+            header: 'Aksi',
+            cell: (info) => (
+                <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                            setSelectedProduct(info.row.original);
+                            setIsModalOpen(true);
+                        }}
+                    >
+                        <Pencil />
+                    </Button>
+                    <Button variant="destructive" size="icon">
+                        <X />
+                    </Button>
+                </div>
+            ),
+        }),
+    ] as ColumnDef<Product>[];
 
-    const debouncedSearch = useCallback(
-        debounce((value: string, category: any) => {
-            router.get(
-                products.index().url,
-                {
-                    search: value,
-                    product_category_id: category,
-                    page: 1,
-                },
-                {
-                    preserveState: true,
-                    replace: true,
-                },
-            );
-        }, 500),
-        [],
-    );
-
-    useEffect(() => {
-        return () => {
-            debouncedSearch.cancel();
-        };
-    }, [debouncedSearch]);
+    const table = useReactTable({
+        data: pagination.data,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+    });
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -144,159 +195,61 @@ export default ({
                 </Link>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <div className="grid gap-2 lg:flex">
-                        <Combobox
-                            items={categoryOptions}
-                            value={categoryOptions.find(
-                                (el) => el.value == categoryValue,
-                            )}
-                            onValueChange={(val: Option | null) => {
-                                const newValue = val?.value ?? 'all';
-
-                                setCategoryValue(newValue);
-                                router.get(
-                                    products.index().url,
-                                    {
-                                        search: searchValue,
-                                        product_category_id: newValue,
-                                        page: 1,
-                                    },
-                                    {
-                                        preserveState: true,
-                                        replace: true,
-                                    },
-                                );
-                            }}
-                        >
-                            <ComboboxInput
-                                placeholder="Pilih Kategori"
-                                className="w-full"
+            <Card className="border-0 bg-background p-0 lg:border lg:bg-card lg:py-6">
+                <CardHeader className="p-0 lg:px-6">
+                    <Form method="GET" action={products.index().url}>
+                        <div className="grid gap-2 lg:flex">
+                            <input type="hidden" name="page" value={1} />
+                            <input
+                                type="hidden"
+                                name="product_category_id"
+                                value={categoryValue}
                             />
-                            <ComboboxContent>
-                                <ComboboxEmpty>Tidak ditemukan</ComboboxEmpty>
-                                <ComboboxList>
-                                    {(el) => (
-                                        <ComboboxItem key={el.value} value={el}>
-                                            {el.label}
-                                        </ComboboxItem>
-                                    )}
-                                </ComboboxList>
-                            </ComboboxContent>
-                        </Combobox>
-                        <Input
-                            placeholder="Cari..."
-                            value={searchValue}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setSearchValue(value);
-                                debouncedSearch(value, categoryValue);
-                            }}
-                        />
-
-                        <Button
-                            variant="secondary"
-                            onClick={() =>
-                                debouncedSearch(searchValue, categoryValue)
-                            }
-                        >
-                            <SearchIcon /> Cari
-                        </Button>
-                    </div>
+                            <Combobox
+                                items={categoryOptions}
+                                value={categoryOptions.find(
+                                    (el) => el.value == categoryValue,
+                                )}
+                                onValueChange={(val: Option | null) => {
+                                    const newValue = val?.value ?? 'all';
+                                    setCategoryValue(newValue);
+                                }}
+                            >
+                                <ComboboxInput
+                                    placeholder="Pilih Kategori"
+                                    className="w-full lg:w-[250px]"
+                                />
+                                <ComboboxContent>
+                                    <ComboboxEmpty>
+                                        Tidak ditemukan
+                                    </ComboboxEmpty>
+                                    <ComboboxList>
+                                        {(el) => (
+                                            <ComboboxItem
+                                                key={el.value}
+                                                value={el}
+                                                className="cursor-pointer"
+                                            >
+                                                {el.label}
+                                            </ComboboxItem>
+                                        )}
+                                    </ComboboxList>
+                                </ComboboxContent>
+                            </Combobox>
+                            <Input
+                                placeholder="Cari..."
+                                name="search"
+                                defaultValue={search}
+                            />
+                            <Button variant="secondary" type="submit">
+                                <Search /> Cari
+                            </Button>
+                        </div>
+                    </Form>
                 </CardHeader>
 
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>No.</TableHead>
-                                <TableHead>Nama</TableHead>
-                                <TableHead>Kategori</TableHead>
-                                <TableHead>SKU</TableHead>
-                                <TableHead>Barcode</TableHead>
-                                <TableHead>Harga Beli</TableHead>
-                                <TableHead>Harga Jual</TableHead>
-                                <TableHead>Stok</TableHead>
-                                <TableHead>Supplier</TableHead>
-                                <TableHead>Update</TableHead>
-                                <TableHead>Aksi</TableHead>
-                            </TableRow>
-                        </TableHeader>
-
-                        <TableBody>
-                            {pagination.data.map((product, idx) => (
-                                <TableRow key={product.sku}>
-                                    <TableCell>
-                                        {startIndex + idx + 1}.
-                                    </TableCell>
-                                    <TableCell>{product.name}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary">
-                                            {product.product_category?.name}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>{product.sku}</TableCell>
-                                    <TableCell>{product.barcode}</TableCell>
-                                    <TableCell>
-                                        {toRupiah(product.last_buying_price)}
-                                    </TableCell>
-                                    <TableCell>
-                                        {toRupiah(product.sell_price)}
-                                    </TableCell>
-                                    <TableCell>{product.total_stock}</TableCell>
-                                    <TableCell>
-                                        {product.supplier?.name ?? '-'}
-                                    </TableCell>
-                                    <TableCell>
-                                        {product.updated_at
-                                            ? new Intl.DateTimeFormat('id-ID', {
-                                                  day: '2-digit',
-                                                  month: 'long',
-                                                  year: 'numeric',
-                                                  hour: '2-digit',
-                                                  minute: '2-digit',
-                                              }).format(
-                                                  new Date(product.updated_at),
-                                              )
-                                            : '-'}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="icon"
-                                                onClick={() => {
-                                                    setSelectedProduct(product);
-                                                    setIsModalOpen(true);
-                                                }}
-                                            >
-                                                <Pencil />
-                                            </Button>
-                                            <Button
-                                                variant="destructive"
-                                                size="icon"
-                                            >
-                                                <X />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-
-                            {!pagination.data.length && (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={9}
-                                        className="py-2 text-center text-muted-foreground"
-                                    >
-                                        Data tidak ditemukan
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-
+                <CardContent className="mt-4 border-t p-0 lg:border-0 lg:px-6">
+                    <DataTable columns={columns} table={table} />
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

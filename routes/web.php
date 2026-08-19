@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AssetCategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ComingSoonController;
 use App\Http\Controllers\CustomerCategoryController;
@@ -145,6 +146,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('stock-remaining.report');
     Route::get('/stock-remaining/{location}/export', [StockRemainingController::class, 'export'])
         ->name('stock-remaining.export');
+
+    Route::get('assets-by-category', [AssetCategoryController::class, 'index'])
+    ->name('reports.assets-by-category.index');
     // Categories
     Route::get('product-categories/deleted', [ProductCategoryController::class, 'deleted'])
         ->name('product-categories.deleted');
