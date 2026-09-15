@@ -6,6 +6,7 @@ use App\Models\Location;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductLocationStock;
+use Illuminate\Support\Facades\DB;
 
 class StockRemainingService
 {
@@ -61,43 +62,50 @@ class StockRemainingService
         return $options;
     }
     public function getAllStockForExport(int $locationId)
-{
-    $entityId = auth()->user()?->entity?->id;
-    $product_category_id = request('product_category_id', 'all');
+    {
+        ini_set('memory_limit', '512M');
+        
+        if (function_exists('db') && method_exists(db(), 'disableQueryLog')) {
+            DB::disableQueryLog();
+        }
 
-    $results = collect();
+        $entityId = auth()->user()?->entity?->id;
+        $product_category_id = request('product_category_id', 'all');
 
-    Product::query()
-        ->with(['productCategory'])
-        ->where('entity_id', $entityId)
-        ->when($product_category_id !== 'all', function ($q) use ($product_category_id) {
-            $q->where('product_category_id', $product_category_id);
-        })
-        ->with(['productLocationStocks' => function ($q) use ($locationId) {
-            $q->where('location_id', $locationId);
-        }])
-        ->chunk(500, function ($products) use (&$results) {
-
-            $mapped = $products->map(function ($product) {
-                $stock = $product->productLocationStocks->first();
-
+        return Product::query()
+            ->select([
+                'products.id',
+                'products.sku',
+                'products.barcode',
+                'products.name',
+                'products.product_category_id',
+                'products.cost_of_goods_sold',
+                'products.last_buying_price',
+                'products.sell_price',
+                'pls.stock'
+            ])
+            ->leftJoin('product_location_stocks as pls', function ($join) use ($locationId) {
+                $join->on('products.id', '=', 'pls.product_id')
+                    ->where('pls.location_id', '=', $locationId);
+            })
+            ->with(['productCategory:id,name'])
+            ->where('products.entity_id', $entityId)
+            ->when($product_category_id !== 'all', function ($q) use ($product_category_id) {
+                $q->where('products.product_category_id', $product_category_id);
+            })
+            ->orderByRaw('COALESCE(pls.stock, 0) DESC')
+            ->cursor()
+            ->map(function ($product) {
                 return [
                     'SKU' => $product->sku ?? '-',
                     'Barcode' => $product->barcode ?? '-',
                     'Nama' => $product->name ?? '-',
                     'Kategori' => $product->productCategory?->name ?? '-',
-                    'Stok' => $stock?->stock ?? 0,
+                    'Stok' => (int) ($product->stock ?? 0),
                     'HPP' => $product->cost_of_goods_sold ?? 0,
                     'Harga Beli' => $product->last_buying_price ?? 0,
                     'Harga Jual' => $product->sell_price ?? 0,
                 ];
             });
-
-            $results = $results->concat($mapped);
-        });
-
-    return $results
-        ->sortByDesc('Stok')
-        ->values();
-}
+    }
 }

@@ -24,11 +24,6 @@ use App\Http\Controllers\ProductOpnameServiceController;
 use App\Http\Controllers\ProductTransferServiceController;
 use App\Http\Controllers\ProductUnitController;
 use App\Http\Controllers\PromoController;
-use App\Http\Controllers\Report\ReportByProductController;
-use App\Http\Controllers\Report\ReportEmployeeDetailController;
-use App\Http\Controllers\Report\ReportEmployeeSummaryController;
-use App\Http\Controllers\Report\ReportSalesByLocationController;
-use App\Http\Controllers\Report\ReportSalesController;
 use App\Http\Controllers\Report\ReportStockCardController;
 use App\Http\Controllers\Report\ReportStockMovementController;
 use App\Http\Controllers\RoleController;
@@ -123,7 +118,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('locations.deleted');
     Route::post('locations/{id}/restore', [LocationController::class, 'restore'])
         ->name('locations.restore');
-    // Payment Methods
+
     Route::get('payment-methods/deleted', [PaymentMethodController::class, 'deleted'])
         ->name('payment-methods.deleted');
     Route::resource('payment-methods', PaymentMethodController::class);
@@ -134,11 +129,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('order-types/{id}/restore', [OrderTypeController::class, 'restore'])
         ->name('order-types.restore');
 
-    // Selling Summary
+
     Route::get('sellings/summary', [SellingController::class, 'summary'])
         ->name('sellings.summary');
 
-    // Stock Remaining
+
     Route::get('stock-remaining', [StockRemainingController::class, 'chooseLocation'])
         ->name('stock-remaining.choose-location');
 
@@ -149,7 +144,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('assets-by-category', [AssetCategoryController::class, 'index'])
     ->name('reports.assets-by-category.index');
-    // Categories
+
     Route::get('product-categories/deleted', [ProductCategoryController::class, 'deleted'])
         ->name('product-categories.deleted');
 
@@ -160,34 +155,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('payment-methods/{id}/restore', [PaymentMethodController::class, 'restore'])
         ->name('payment-methods.restore');
 
-    // Order Types
     Route::get('order-types/deleted', [OrderTypeController::class, 'deleted'])
         ->name('order-types.deleted');
 
     Route::post('order-types/{id}/restore', [OrderTypeController::class, 'restore'])
         ->name('order-types.restore');
 
-    /*
-|--------------------------------------------------------------------------
-| ENTITY
-|--------------------------------------------------------------------------
-*/
     Route::resource('entities', EntityController::class)
         ->only(['show', 'update']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | MASTER TAMBAHAN
-    |--------------------------------------------------------------------------
-    */
     Route::resource('brands', BrandController::class)->except(['destroy']);
     Route::resource('taxes', TaxController::class)->except(['destroy']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | DROPDOWN TAMBAHAN
-    |--------------------------------------------------------------------------
-    */
     Route::get('locations-dropdown', [LocationController::class, 'dropdown'])
         ->name('locations.dropdown');
 
@@ -200,11 +179,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('products-export', [ProductController::class, 'export'])
         ->name('products.export');
 
-    /*
-    |--------------------------------------------------------------------------
-    | CUSTOMER CATEGORY
-    |--------------------------------------------------------------------------
-    */
     Route::resource('customers', CustomerController::class)
         ->except(['show']);
 
@@ -223,11 +197,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('customer-categories/deleted', [CustomerCategoryController::class, 'deleted'])
         ->name('customer-categories.deleted');
 
-    /*
-    |--------------------------------------------------------------------------
-    | PRODUCT SERVICES
-    |--------------------------------------------------------------------------
-    */
     Route::resource('product-import-services', ProductImportServiceController::class)
         ->except(['destroy']);
 
@@ -259,26 +228,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('product-adjustment-stocks/{id}/reject', [ProductAdjustmentStockController::class, 'reject'])
         ->name('product-adjustment-stocks.reject');
 
-    /*
-    |-----------------------------------------------------------------------p---
-    | PROMO
-    |--------------------------------------------------------------------------
-    */
     Route::resource('promos', PromoController::class)->except(['destroy']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | EMPLOYEE TAMBAHAN
-    |--------------------------------------------------------------------------
-    */
     Route::get('employees-dropdown', [EmployeeController::class, 'dropdown'])
         ->name('employees.dropdown');
 
-    /*
-    |--------------------------------------------------------------------------
-    | SALES & CUSTOMER
-    |--------------------------------------------------------------------------
-    */
     Route::resource('daily-sales', DailySaleController::class)
         ->only(['index', 'show']);
 
@@ -295,11 +249,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('customer-point-movements', CustomerPointMovementController::class)
         ->only(['index']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | LOYALTY
-    |--------------------------------------------------------------------------
-    */
     Route::resource('loyalties', LoyaltyController::class)->except(['destroy']);
 
     Route::patch('loyalties/{id}/activate', [LoyaltyController::class, 'activate'])
