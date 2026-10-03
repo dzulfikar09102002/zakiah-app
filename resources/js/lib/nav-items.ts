@@ -34,6 +34,8 @@ import reportByLocations from '@/routes/report-by-locations';
 import reportEmployeeSummary from '@/routes/report-employee-summary';
 import reportEmployeeDetail from '@/routes/report-employee-detail';
 import assetsByCategory from '@/routes/reports/assets-by-category';
+import dailySales from '@/routes/daily-sales';
+import saleTransactions from '@/routes/sale-transactions';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -179,11 +181,11 @@ export const mainNavItems: NavItem[] = [
                 items: [
                     {
                         title: 'Rekapan',
-                        href: comingsoon.index().url,
+                        href: dailySales.index().url,
                     },
                     {
                         title: 'Data Penjualan',
-                        href: comingsoon.index().url,
+                        href: saleTransactions.index().url,
                     },
                 ],
             },
