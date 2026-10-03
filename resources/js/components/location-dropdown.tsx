@@ -73,6 +73,7 @@ const LocationDropdown: FC<LocationDropdownProps> = (props) => {
     }, [selectAll]);
 
     const itemChecked = (selectedId: number) => {
+        if (!props.multiSelect) return id === selectedId;
         if (selectAll && !excludeIds.includes(selectedId)) return true;
         if (!selectAll && ids.includes(selectedId)) return true;
         return id === selectedId;
@@ -155,7 +156,7 @@ const LocationDropdown: FC<LocationDropdownProps> = (props) => {
                     variant="outline"
                     disabled={props.disabled || props.loading}
                     className={cn(
-                        'w-full justify-start lg:w-[180px]',
+                        'w-full cursor-pointer justify-start lg:w-[180px]',
                         props.full && 'w-full',
                     )}
                 >
@@ -175,7 +176,10 @@ const LocationDropdown: FC<LocationDropdownProps> = (props) => {
                         <CommandEmpty>Tidak ditemukan</CommandEmpty>
 
                         {props.multiSelect && (
-                            <CommandItem onSelect={handleSelectAll}>
+                            <CommandItem
+                                className="cursor-pointer"
+                                onSelect={handleSelectAll}
+                            >
                                 {checkMark(selectAll)} Semua lokasi
                             </CommandItem>
                         )}
@@ -183,6 +187,7 @@ const LocationDropdown: FC<LocationDropdownProps> = (props) => {
                         {filteredOptions.map((loc) => (
                             <CommandItem
                                 key={loc.id}
+                                className="cursor-pointer"
                                 value={loc.id.toString()}
                                 onSelect={() => handleSelect(loc)}
                             >

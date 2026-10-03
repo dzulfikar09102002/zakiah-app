@@ -2,24 +2,35 @@
 
 namespace App\Http\Requests;
 
-use App\Helpers\Constants\ActionConstants;
-use App\Helpers\Constants\PageNameConstants;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTaxRequest extends BaseRequest
+class StoreTaxRequest extends FormRequest
 {
-    protected $page = PageNameConstants::TaxMenu;
-    protected $action = ActionConstants::StoreAction;
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            "name" => 'required',
-            "rate" => 'required|integer|min:0',
+            'name' => 'required|string|max:255',
+            'rate' => 'required|integer|min:0|max:100',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'name' => 'nama',
+            'rate' => 'besaran',
         ];
     }
 }

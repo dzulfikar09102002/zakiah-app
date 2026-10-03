@@ -24,20 +24,18 @@ use App\Http\Controllers\ProductOpnameServiceController;
 use App\Http\Controllers\ProductTransferServiceController;
 use App\Http\Controllers\ProductUnitController;
 use App\Http\Controllers\PromoController;
-use App\Http\Controllers\Report\ReportStockCardController;
-use App\Http\Controllers\Report\ReportStockMovementController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SalesReportByLocationController;
 use App\Http\Controllers\SalesReportByProductController;
 use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\SaleTransactionController;
 use App\Http\Controllers\SellingController;
+use App\Http\Controllers\StockCardReportController;
+use App\Http\Controllers\StockMovementReportController;
 use App\Http\Controllers\StockRemainingController;
 use App\Http\Controllers\TaxController;
 use App\Http\Middleware\EntityCheckingMiddleware;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Laravel\Fortify\Features;
 
 Route::redirect('/', '/dashboard')->name('home');
 
@@ -51,36 +49,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
             [DashboardController::class, 'locationOptions']
         )->name('location-options');
 
-
         Route::get('/profit-potential',
             [DashboardController::class, 'profitPotential']
         )->name('profit-potential');
-
 
         Route::get('/sales-refund-summary',
             [DashboardController::class, 'salesRefundSummary']
         )->name('sales-refund-summary');
 
-
         Route::get('/sales-summary',
             [DashboardController::class, 'salesSummary']
         )->name('sales-summary');
-
 
         Route::get('/top5',
             [DashboardController::class, 'top5']
         )->name('top5');
 
-
         Route::get('/sales-by-date',
             [DashboardController::class, 'salesByDate']
         )->name('sales-by-date');
 
-
         Route::get('/monthly-sales',
             [DashboardController::class, 'monthlySales']
         )->name('monthly-sales');
-
 
         Route::get('/yearly-sales',
             [DashboardController::class, 'yearlySales']
@@ -103,7 +94,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/import-page', [ProductController::class, 'importPage'])->name('products.importPage');
         Route::put('/{product}', [ProductController::class, 'update'])->name('products.update')->middleware(EntityCheckingMiddleware::class);
         Route::post('/import/stock-lookup', [ProductController::class, 'importStockLookup'])
-    ->name('products.import.stock-lookup');
+            ->name('products.import.stock-lookup');
     });
     Route::resource('product-categories', ProductCategoryController::class)->except(['show']);
 
@@ -129,10 +120,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('order-types/{id}/restore', [OrderTypeController::class, 'restore'])
         ->name('order-types.restore');
 
-
     Route::get('sellings/summary', [SellingController::class, 'summary'])
         ->name('sellings.summary');
-
 
     Route::get('stock-remaining', [StockRemainingController::class, 'chooseLocation'])
         ->name('stock-remaining.choose-location');
@@ -141,16 +130,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('stock-remaining.report');
     Route::get('/stock-remaining/{location}/export', [StockRemainingController::class, 'export'])
         ->name('stock-remaining.export');
+    Route::get('stock-remaining/{location}/pdf', [StockRemainingController::class, 'pdf'])
+        ->name('stock-remaining.pdf');
 
     Route::get('assets-by-category', [AssetCategoryController::class, 'index'])
-    ->name('reports.assets-by-category.index');
+        ->name('reports.assets-by-category.index');
+    Route::get('assets-by-category/pdf', [AssetCategoryController::class, 'pdf'])
+        ->name('reports.assets-by-category.pdf');
 
     Route::get('product-categories/deleted', [ProductCategoryController::class, 'deleted'])
         ->name('product-categories.deleted');
 
     Route::post('product-categories/{id}/restore', [ProductCategoryController::class, 'restore'])
         ->name('product-categories.restore');
-
 
     Route::post('payment-methods/{id}/restore', [PaymentMethodController::class, 'restore'])
         ->name('payment-methods.restore');
@@ -161,11 +153,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('order-types/{id}/restore', [OrderTypeController::class, 'restore'])
         ->name('order-types.restore');
 
-    Route::resource('entities', EntityController::class)
-        ->only(['show', 'update']);
+    Route::get('entity', [EntityController::class, 'edit'])->name('entity.edit');
+    Route::put('entity', [EntityController::class, 'update'])->name('entity.update');
 
     Route::resource('brands', BrandController::class)->except(['destroy']);
-    Route::resource('taxes', TaxController::class)->except(['destroy']);
+    Route::resource('taxes', TaxController::class)->only(['index', 'store', 'update']);
+    Route::patch('taxes/{tax}/toggle-status', [TaxController::class, 'toggleStatus'])
+        ->name('taxes.toggle-status');
 
     Route::get('locations-dropdown', [LocationController::class, 'dropdown'])
         ->name('locations.dropdown');
@@ -204,7 +198,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('product-import-services.upload');
 
     Route::resource('product-transfer-services', ProductTransferServiceController::class)
-        ->except(['destroy']);
+        ->only(['index', 'create', 'store', 'show']);
 
     Route::post('product-transfer-services/{product_transfer_service}/approve', [ProductTransferServiceController::class, 'approve'])
         ->name('product-transfer-services.approve');
@@ -217,10 +211,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('product-opname-services', ProductOpnameServiceController::class);
 
-    Route::get('product-opname-services/{id}/preview', [ProductOpnameServiceController::class, 'preview'])
-        ->name('product-opname-services.preview');
+    Route::post('product-opname-services/{id}/approve', [ProductOpnameServiceController::class, 'approve'])
+        ->name('product-opname-services.approve');
 
-    Route::resource('product-adjustment-stocks', ProductAdjustmentStockController::class);
+    Route::post('product-opname-services/{id}/reject', [ProductOpnameServiceController::class, 'reject'])
+        ->name('product-opname-services.reject');
+
+    Route::resource('product-adjustment-stocks', ProductAdjustmentStockController::class)
+        ->only(['index', 'create', 'store', 'show']);
 
     Route::post('product-adjustment-stocks/{id}/approve', [ProductAdjustmentStockController::class, 'approve'])
         ->name('product-adjustment-stocks.approve');
@@ -242,14 +240,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('sale-transactions/{id}/void', [SaleTransactionController::class, 'void'])
         ->name('sale-transactions.void');
 
-
     Route::patch('customers/{id}/activate', [CustomerController::class, 'activate'])
         ->name('customers.activate');
 
     Route::resource('customer-point-movements', CustomerPointMovementController::class)
         ->only(['index']);
 
-    Route::resource('loyalties', LoyaltyController::class)->except(['destroy']);
+    Route::resource('loyalties', LoyaltyController::class);
 
     Route::patch('loyalties/{id}/activate', [LoyaltyController::class, 'activate'])
         ->name('loyalties.activate');
@@ -260,13 +257,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('loyalties/{id}/archive', [LoyaltyController::class, 'archive'])
         ->name('loyalties.archive');
 
+    Route::get('report-by-products/pdf', [SalesReportByProductController::class, 'pdf'])->name('report-by-products.pdf');
+    Route::get('report-sales/pdf', [SalesReportController::class, 'pdf'])->name('report-sales.pdf');
+    Route::get('report-by-locations/pdf', [SalesReportByLocationController::class, 'pdf'])->name('report-by-locations.pdf');
+    Route::get('report-stock-movement/pdf', [StockMovementReportController::class, 'pdf'])->name('report-stock-movement.pdf');
+    Route::get('report-stock-card/pdf', [StockCardReportController::class, 'pdf'])->name('report-stock-card.pdf');
+    Route::get('report-employee-summary/pdf', [EmployeeReportSummaryController::class, 'pdf'])->name('report-employee-summary.pdf');
+    Route::get('report-employee-detail/pdf', [EmployeeReportDetailController::class, 'pdf'])->name('report-employee-detail.pdf');
+
     Route::resource('report-by-products', SalesReportByProductController::class)->only(['index']);
     Route::resource('report-sales', SalesReportController::class)->only(['index']);
     Route::resource('report-by-locations', SalesReportByLocationController::class)->only(['index']);
-    Route::resource('report-stock-movement', ReportStockMovementController::class)->only(['index']);
-    Route::resource('report-stock-card', ReportStockCardController::class)->only(['index']);
+    Route::resource('report-stock-movement', StockMovementReportController::class)->only(['index']);
+    Route::resource('report-stock-card', StockCardReportController::class)->only(['index']);
     Route::resource('report-employee-summary', EmployeeReportSummaryController::class)->only(['index']);
     Route::resource('report-employee-detail', EmployeeReportDetailController::class)->only(['index']);
 });
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

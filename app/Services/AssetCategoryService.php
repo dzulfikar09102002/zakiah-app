@@ -4,7 +4,9 @@ namespace App\Services;
 
 use App\Models\Location;
 use App\Models\ProductCategory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 
 class AssetCategoryService
@@ -24,6 +26,20 @@ class AssetCategoryService
 
     public function getCategoryAssets()
     {
+        return $this->categoryAssetQuery()
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
+    }
+
+    public function getCategoryAssetsForPdf(): LazyCollection
+    {
+        return $this->categoryAssetQuery()
+            ->limit(ReportPdfService::MAX_ROWS + 1)
+            ->cursor();
+    }
+
+    private function categoryAssetQuery(): Builder
+    {
         $search = request('search', '');
         $entityId = auth()->user()?->entity?->id;
 
@@ -37,7 +53,7 @@ class AssetCategoryService
             ?->pluck('id')
             ?->toArray() ?? [];
 
-        $query = ProductCategory::query()
+        return ProductCategory::query()
             ->where('product_categories.entity_id', $entityId)
             ->where('product_categories.status', 'active')
             ->when($search, function ($q) use ($search) {
@@ -55,15 +71,15 @@ class AssetCategoryService
                 $join->on('product_location_stocks.product_id', '=', 'products.id')
                     ->whereNull('product_location_stocks.deleted_at');
 
-                if (!empty($allowedLocationIds)) {
+                if (! empty($allowedLocationIds)) {
                     $join->whereIn('product_location_stocks.location_id', $allowedLocationIds);
                 }
 
                 if ($selectAll && count($excludeLocs) > 0) {
                     $join->whereNotIn('product_location_stocks.location_id', $excludeLocs);
-                } elseif (!$selectAll && count($locs) > 0) {
+                } elseif (! $selectAll && count($locs) > 0) {
                     $join->whereIn('product_location_stocks.location_id', $locs);
-                } elseif (!$selectAll && empty($locs)) {
+                } elseif (! $selectAll && empty($locs)) {
                     $join->whereRaw('1 = 0');
                 }
             })
@@ -77,10 +93,6 @@ class AssetCategoryService
             ])
             ->groupBy('product_categories.id', 'product_categories.name')
             ->orderBy('product_categories.name', 'asc');
-
-        return $query
-            ->paginate(request('per_page', 10))
-            ->withQueryString();
     }
 
     public function getAssetSummary()
@@ -108,15 +120,15 @@ class AssetCategoryService
                 $join->on('product_location_stocks.product_id', '=', 'products.id')
                     ->whereNull('product_location_stocks.deleted_at');
 
-                if (!empty($allowedLocationIds)) {
+                if (! empty($allowedLocationIds)) {
                     $join->whereIn('product_location_stocks.location_id', $allowedLocationIds);
                 }
 
                 if ($selectAll && count($excludeLocs) > 0) {
                     $join->whereNotIn('product_location_stocks.location_id', $excludeLocs);
-                } elseif (!$selectAll && count($locs) > 0) {
+                } elseif (! $selectAll && count($locs) > 0) {
                     $join->whereIn('product_location_stocks.location_id', $locs);
-                } elseif (!$selectAll && empty($locs)) {
+                } elseif (! $selectAll && empty($locs)) {
                     $join->whereRaw('1 = 0');
                 }
             })

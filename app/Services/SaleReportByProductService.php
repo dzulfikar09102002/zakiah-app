@@ -3,9 +3,10 @@
 namespace App\Services;
 
 use App\Models\Location;
-use App\Models\SaleTransaction;
 use App\Models\SaleTransactionDetail;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 
 class SaleReportByProductService
@@ -19,6 +20,22 @@ class SaleReportByProductService
     }
 
     public function getSaleReportByProducts()
+    {
+        return $this->saleReportByProductQuery()
+            ->paginate(request('per_page', 10))
+            ->through(fn ($row) => $this->transformRow($row))
+            ->withQueryString();
+    }
+
+    public function getSaleReportByProductsForPdf(): LazyCollection
+    {
+        return $this->saleReportByProductQuery()
+            ->limit(ReportPdfService::MAX_ROWS + 1)
+            ->cursor()
+            ->map(fn ($row) => $this->transformRow($row));
+    }
+
+    private function saleReportByProductQuery(): Builder
     {
         $startAt = request('start_at')
             ? Carbon::parse(request('start_at'))->startOfDay()
@@ -46,13 +63,13 @@ class SaleReportByProductService
 
         if ($selectAll && count($excludeLocs) > 0) {
             $query->whereNotIn('location_id', $excludeLocs);
-        } elseif (!$selectAll && count($locs) > 0) {
+        } elseif (! $selectAll && count($locs) > 0) {
             $query->whereIn('location_id', $locs);
         }
 
         $query->whereBetween('local_sales_at', [
             $startAt,
-            $endAt
+            $endAt,
         ]);
         $query->whereIn('status', $statuses);
 
@@ -176,29 +193,30 @@ class SaleReportByProductService
                 'product_description',
                 'sell_price',
                 'cost_of_goods_sold'
-            )
-            ->paginate(request('per_page', 10))
-            ->through(fn($row) => [
-                'product_name' => $row->product_name,
-                'product_sku' => $row->product_sku,
-                'category' => $row->product_category_name,
-                'description' => $row->product_description,
-                'quantity' => (int) $row->quantity,
-                'sell_price' => (int) $row->sell_price,
-                'cost_of_goods_sold' => (int) $row->cost_of_goods_sold,
+            );
+    }
 
-                'gross_sales' => (int) $row->gross_sales,
+    private function transformRow($row): array
+    {
+        return [
+            'product_name' => $row->product_name,
+            'product_sku' => $row->product_sku,
+            'category' => $row->product_category_name,
+            'description' => $row->product_description,
+            'quantity' => (int) $row->quantity,
+            'sell_price' => (int) $row->sell_price,
+            'cost_of_goods_sold' => (int) $row->cost_of_goods_sold,
 
-                'discount' =>
-                    (int) $row->discount_amount +
-                    (int) $row->promo_amount +
-                    (int) $row->prorate_discount_amount +
-                    (int) $row->prorate_promo_amount,
+            'gross_sales' => (int) $row->gross_sales,
 
-                'total' => (int) $row->total_amount,
+            'discount' => (int) $row->discount_amount +
+                (int) $row->promo_amount +
+                (int) $row->prorate_discount_amount +
+                (int) $row->prorate_promo_amount,
 
-                'profit' => (int) $row->profit,
-            ])
-            ->withQueryString();
+            'total' => (int) $row->total_amount,
+
+            'profit' => (int) $row->profit,
+        ];
     }
 }

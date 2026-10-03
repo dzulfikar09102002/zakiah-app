@@ -2,67 +2,79 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\AvailableChannelEnum;
-use App\Enums\PromoConditionEnum;
-use App\Enums\PromoGoalEnum;
-use App\Enums\PromoRewardAppliedToEnum;
 use App\Enums\PromoRewardTemplateEnum;
-use App\Helpers\Constants\ActionConstants;
-use App\Helpers\Constants\PageNameConstants;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StorePromoRequest extends BaseRequest
+class StorePromoRequest extends FormRequest
 {
-    protected $page = PageNameConstants::PromoMenu;
-    protected $action = ActionConstants::StoreAction;
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Field mengikuti form promo backoffice lama (pos-secaca); nilai lain diisi default di PromoService.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        $entityId = $this->user()?->entity?->id;
+
         return [
-            //
-            'owner_location_id' => 'required|exists:locations,id',
-            'name' => 'required',
-            'description' => 'nullable',
-            'channel' => ['nullable', Rule::enum(AvailableChannelEnum::class)],
+            'owner_location_id' => [
+                'required',
+                Rule::exists('locations', 'id')->where('entity_id', $entityId),
+            ],
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
             'start_at' => 'required|date',
-            'end_at' => 'nullable|date',
-            'goal' => ['nullable', Rule::enum(PromoGoalEnum::class)],
-            'auto_apply' => 'boolean',
-            'combine_promo' => 'boolean',
-            'select_all_location' => 'boolean',
-            'location_ids' => 'nullable|exists:location,id',
-            'exclude_location_ids' => 'nullable|exists:location,id',
-            'promo_rule' => 'required',
+            'end_at' => 'nullable|date|after_or_equal:start_at',
+            'promo_rule' => 'required|array',
             'promo_rule.minimum_sales_purchase' => 'nullable|integer|min:0',
-            'promo_rule.customer_only' => 'boolean',
-            'promo_rule.customer_category_ids' => 'nullable|array|exists:customer_categories,id',
-            'promo_rule.order_type_ids' => 'nullable|array|exists:order_types,id',
-            'promo_rule.product_buy_condition' => ['nullable', Rule::enum(PromoConditionEnum::class)],
-            'promo_rule.product_category_buy_condition' => ['nullable', Rule::enum(PromoConditionEnum::class)],
-            'promo_rule.products' => 'nullable|array',
-            'promo_rule.products.*.product_id' => 'nullable|integer',
-            'promo_rule.products.*.product_category_id' => 'nullable|integer',
-            'promo_rule.products.*.product_unit_id' => 'nullable|integer',
-            'promo_rule.products.*.minimum_purchase' => 'nullable|integer|min:0',
-            'promo_reward' => 'required',
-            'promo_reward.template' => ['required', Rule::enum(PromoRewardTemplateEnum::class)],
-            'promo_reward.applied_to' => ['required', Rule::enum(PromoRewardAppliedToEnum::class)],
-            'promo_reward.percentage' => 'boolean',
-            'promo_reward.reward_amount' => 'nullable|integer|min:0',
+            'promo_rule.customer_category_ids' => 'nullable|array',
+            'promo_rule.customer_category_ids.*' => [
+                'integer',
+                Rule::exists('customer_categories', 'id')->where('entity_id', $entityId),
+            ],
+            'promo_reward' => 'required|array',
+            'promo_reward.template' => [
+                'required',
+                Rule::in([
+                    PromoRewardTemplateEnum::DiscountPercentage->value,
+                    PromoRewardTemplateEnum::DiscountFixed->value,
+                ]),
+            ],
+            'promo_reward.reward_amount' => [
+                'required',
+                'integer',
+                'min:1',
+                Rule::when(
+                    $this->input('promo_reward.template') === PromoRewardTemplateEnum::DiscountPercentage->value,
+                    'max:100'
+                ),
+            ],
             'promo_reward.reward_maximum_amount' => 'nullable|integer|min:0',
-            'promo_reward.in_house_percentage' => 'required|integer|min:0|max:100',
-            'promo_reward.products' => 'nullable|array',
-            'promo_reward.products.*.product_id' => 'nullable|integer',
-            'promo_reward.products.*.product_category_id' => 'nullable|integer',
-            'promo_reward.products.*.sell_price' => 'nullable|integer',
-            'promo_reward.products.*.reward_quantity' => 'nullable|integer',
-            'promo_reward.products.*.maximum_reward_quantity' => 'nullable|integer',
-            'promo_reward.products.*.reward_maximum_amount' => 'nullable|integer',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'owner_location_id' => 'lokasi',
+            'name' => 'nama promo',
+            'start_at' => 'tanggal mulai',
+            'end_at' => 'tanggal selesai',
+            'promo_rule.minimum_sales_purchase' => 'minimal belanja',
+            'promo_rule.customer_category_ids' => 'kategori pelanggan',
+            'promo_reward.template' => 'jenis diskon',
+            'promo_reward.reward_amount' => 'besaran diskon',
+            'promo_reward.reward_maximum_amount' => 'maksimal diskon',
         ];
     }
 }

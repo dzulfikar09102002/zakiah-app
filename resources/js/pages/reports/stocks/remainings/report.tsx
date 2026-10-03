@@ -1,3 +1,8 @@
+import { Form, Head, router } from '@inertiajs/react';
+import { FileDown, MapPinPen, Search } from 'lucide-react';
+import type { SubmitEvent } from 'react';
+import { useState } from 'react';
+import PrintPdfButton from '@/components/print-pdf-button';
 import {
     LocationChooserContainer,
     LocationChooserFilter,
@@ -34,13 +39,10 @@ import {
 } from '@/components/ui/table';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
-import { Location, Pagination, ProductStock } from '@/lib/model';
+import type { Location, Pagination, ProductStock } from '@/lib/model';
 import { capitalize, toRupiah } from '@/lib/utils';
 import stockRemaining from '@/routes/stock-remaining';
-import { BreadcrumbItem } from '@/types';
-import { Form, Head, router } from '@inertiajs/react';
-import { FileDown, MapPinPen, Search } from 'lucide-react';
-import { SubmitEvent, useState } from 'react';
+import type { BreadcrumbItem } from '@/types';
 
 const title = 'Laporan Stok Sisa';
 
@@ -130,6 +132,7 @@ export default ({
                 >
                     <FileDown /> Export
                 </Button>
+                <PrintPdfButton url={stockRemaining.pdf(location.id).url} />
             </div>
             <Card>
                 <CardHeader>

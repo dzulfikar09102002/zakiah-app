@@ -6,16 +6,58 @@ use App\Models\Location;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductLocationStock;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 
 class StockRemainingService
 {
     public function getRemainingStock(int $locationId)
     {
+        return $this->remainingStockQuery($locationId)
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
+    }
+
+    /**
+     * Versi PDF memakai join (bukan relasi) karena cursor() tidak menjalankan eager loading.
+     */
+    public function getRemainingStockForPdf(int $locationId): LazyCollection
+    {
+        return $this->remainingStockQuery($locationId)
+            ->setEagerLoads([])
+            ->join('products', 'products.id', '=', 'product_location_stocks.product_id')
+            ->leftJoin('product_categories', 'product_categories.id', '=', 'products.product_category_id')
+            ->select([
+                'products.sku',
+                'products.barcode',
+                'products.name',
+                'product_categories.name as category',
+                'product_location_stocks.stock',
+                'products.cost_of_goods_sold',
+                'products.sell_price',
+            ])
+            ->limit(ReportPdfService::MAX_ROWS + 1)
+            ->toBase()
+            ->cursor()
+            ->map(fn (object $row) => [
+                'sku' => $row->sku,
+                'barcode' => $row->barcode,
+                'name' => $row->name,
+                'category' => $row->category,
+                'stock' => (int) $row->stock,
+                'cost_of_goods_sold' => (int) $row->cost_of_goods_sold,
+                'sell_price' => (int) $row->sell_price,
+            ]);
+    }
+
+    private function remainingStockQuery(int $locationId): Builder
+    {
         $entityId = auth()->user()?->entity?->id;
         $product_category_id = request('product_category_id', 'all');
         $search = request('search', '');
-        $query = ProductLocationStock::query()
+
+        return ProductLocationStock::query()
             ->with([
                 'product',
                 'product.productCategory:id,name',
@@ -30,13 +72,9 @@ class StockRemainingService
             ->whereHas('location', function ($q) use ($entityId) {
                 $q->where('entity_id', $entityId);
             })
-            ->where('location_id', $locationId)
-            ->where('stock', '>', 1)
-            ->orderByDesc('stock');
-
-        return $query
-            ->paginate(request('per_page', 10))
-            ->withQueryString();
+            ->where('product_location_stocks.location_id', $locationId)
+            ->where('product_location_stocks.stock', '>', 1)
+            ->orderByDesc('product_location_stocks.stock');
     }
 
     public function getLocations()
@@ -61,10 +99,11 @@ class StockRemainingService
 
         return $options;
     }
+
     public function getAllStockForExport(int $locationId)
     {
         ini_set('memory_limit', '512M');
-        
+
         if (function_exists('db') && method_exists(db(), 'disableQueryLog')) {
             DB::disableQueryLog();
         }
@@ -82,7 +121,7 @@ class StockRemainingService
                 'products.cost_of_goods_sold',
                 'products.last_buying_price',
                 'products.sell_price',
-                'pls.stock'
+                'pls.stock',
             ])
             ->leftJoin('product_location_stocks as pls', function ($join) use ($locationId) {
                 $join->on('products.id', '=', 'pls.product_id')

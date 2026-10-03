@@ -198,7 +198,7 @@ class PromoCreator
         }
 
         $id = $product['product_id'];
-        if (array_key_exists($id, $this->mappedProducts))
+        if (! array_key_exists($id, $this->mappedProducts))
         {
             $this->mappedProducts[$id] = Product::find($id);
         }
@@ -214,7 +214,7 @@ class PromoCreator
         }
 
         $id = $product['product_category_id'];
-        if (array_key_exists($id, $this->mappedProductCategories))
+        if (! array_key_exists($id, $this->mappedProductCategories))
         {
             $this->mappedProductCategories[$id] = ProductCategory::find($id);
         }

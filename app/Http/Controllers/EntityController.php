@@ -2,36 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreentityRequest;
 use App\Http\Requests\UpdateEntityRequest;
-use App\Http\Responses\BaseJsonResponse;
-use App\Models\Entity;
+use App\Services\EntityService;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class EntityController extends Controller
 {
+    public function __construct(
+        protected EntityService $service
+    ) {}
+
     /**
-     * Display the specified resource.
+     * Profil entity milik user yang sedang login.
      */
-    public function show(Entity $entity)
+    public function edit(): Response
     {
-        $response = new BaseJsonResponse($entity);
-        return $response->response();
+        $entity = $this->service->current();
+
+        return Inertia::render('entity/index', [
+            'entity' => $entity,
+            'logoUrl' => $this->service->logoUrl($entity),
+            'timezoneOptions' => $this->service->timezoneOptions(),
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateEntityRequest $request, Entity $entity)
+    public function update(UpdateEntityRequest $request): RedirectResponse
     {
-        if ($request->entity->id != $entity->id) {
-            # TEJA check error message
-            $response = new BaseJsonResponse(null, __('auth.password'));
-            return $response->response(422);
-        }
+        $this->service->update($this->service->current(), $request->validated());
 
-        $entity->update($request->validated());
-
-        $response = new BaseJsonResponse($entity);
-        return $response->response();
+        return back()->with('success', 'Entity berhasil diperbarui');
     }
 }

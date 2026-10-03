@@ -259,4 +259,17 @@ class ProductController extends Controller
         return to_route('products.index')
             ->with('success', "{$count} produk berhasil diimpor.");
     }
+
+    /**
+     * Pencarian produk (JSON) untuk komponen ProductPicker; opsional ?location_id untuk stok lokasi.
+     */
+    public function dropdown(Request $request)
+    {
+        return response()->json(
+            $this->service->getDropdownOptions(
+                (string) $request->query('search', ''),
+                $request->integer('location_id') ?: null,
+            )
+        );
+    }
 }

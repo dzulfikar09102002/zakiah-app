@@ -3,9 +3,9 @@
 namespace App\Services;
 
 use App\Models\EmployeeSalesSummary;
-use App\Models\Location;
 use Carbon\Carbon;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\LazyCollection;
 
 class EmployeeReportDetailService
 {
@@ -13,7 +13,24 @@ class EmployeeReportDetailService
     {
         return (new LocationService)->getLocationOptions();
     }
+
     public function getEmployeeSalesDetail()
+    {
+        return $this->employeeSalesDetailQuery()
+            ->paginate(request('per_page', 10))
+            ->through(fn ($row) => $this->transformRow($row))
+            ->withQueryString();
+    }
+
+    public function getEmployeeSalesDetailForPdf(): LazyCollection
+    {
+        return $this->employeeSalesDetailQuery()
+            ->limit(ReportPdfService::MAX_ROWS + 1)
+            ->cursor()
+            ->map(fn ($row) => $this->transformRow($row));
+    }
+
+    private function employeeSalesDetailQuery(): Builder
     {
         $startAt = request('start_at')
             ? Carbon::parse(request('start_at'))->startOfDay()
@@ -39,7 +56,7 @@ class EmployeeReportDetailService
 
         if ($selectAllLocation && count($excludeLocs) > 0) {
             $query->whereNotIn('location_id', $excludeLocs);
-        } elseif (!$selectAllLocation && count($locs) > 0) {
+        } elseif (! $selectAllLocation && count($locs) > 0) {
             $query->whereIn('location_id', $locs);
         }
 
@@ -57,7 +74,7 @@ class EmployeeReportDetailService
 
         if ($selectAllEmployee && count($excludeEmployees) > 0) {
             $query->whereNotIn('employee_sales_id', $excludeEmployees);
-        } elseif (!$selectAllEmployee && count($employees) > 0) {
+        } elseif (! $selectAllEmployee && count($employees) > 0) {
             $query->whereIn('employee_sales_id', $employees);
         }
 
@@ -92,26 +109,27 @@ class EmployeeReportDetailService
                 'net_quantity',
             )
             ->orderByDesc('local_sales_date')
-            ->orderBy('employee_sales_name')
-            ->paginate(request('per_page', 10))
-            ->through(fn ($row) => [
-                'employee_sales_name' => $row->employee_sales_name,
-                'location_name' => $row->location_name,
-                'local_sales_date' => $row->local_sales_date,
+            ->orderBy('employee_sales_name');
+    }
 
-                'sales_amount' => (int) $row->sales_amount,
-                'refund_amount' => (int) $row->refund_amount,
-                'net_sales_amount' => (int) $row->net_sales_amount,
+    private function transformRow($row): array
+    {
+        return [
+            'employee_sales_name' => $row->employee_sales_name,
+            'location_name' => $row->location_name,
+            'local_sales_date' => $row->local_sales_date,
 
-                'sales_count' => (int) $row->sales_count,
-                'refund_count' => (int) $row->refund_count,
-                'net_count' => (int) $row->net_count,
+            'sales_amount' => (int) $row->sales_amount,
+            'refund_amount' => (int) $row->refund_amount,
+            'net_sales_amount' => (int) $row->net_sales_amount,
 
-                'sales_quantity' => (int) $row->sales_quantity,
-                'refund_quantity' => (int) $row->refund_quantity,
-                'net_quantity' => (int) $row->net_quantity,
-            ])
-            ->withQueryString();
+            'sales_count' => (int) $row->sales_count,
+            'refund_count' => (int) $row->refund_count,
+            'net_count' => (int) $row->net_count,
+
+            'sales_quantity' => (int) $row->sales_quantity,
+            'refund_quantity' => (int) $row->refund_quantity,
+            'net_quantity' => (int) $row->net_quantity,
+        ];
     }
 }
-

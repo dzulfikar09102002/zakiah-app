@@ -28,12 +28,18 @@ import customerCategories from '@/routes/customer-categories';
 import loyalties from '@/routes/loyalties';
 import taxes from '@/routes/taxes';
 import reportSales from '@/routes/report-sales';
-import comingsoon from '@/routes/comingsoon';
+import entityRoutes from '@/routes/entity';
+import productAdjustmentStocks from '@/routes/product-adjustment-stocks';
+import productOpnameServices from '@/routes/product-opname-services';
+import productTransferServices from '@/routes/product-transfer-services';
+import promos from '@/routes/promos';
 import reportByProducts from '@/routes/report-by-products';
 import reportByLocations from '@/routes/report-by-locations';
 import reportEmployeeSummary from '@/routes/report-employee-summary';
 import reportEmployeeDetail from '@/routes/report-employee-detail';
 import assetsByCategory from '@/routes/reports/assets-by-category';
+import reportStockCard from '@/routes/report-stock-card';
+import reportStockMovement from '@/routes/report-stock-movement';
 import dailySales from '@/routes/daily-sales';
 import saleTransactions from '@/routes/sale-transactions';
 
@@ -73,11 +79,11 @@ export const mainNavItems: NavItem[] = [
                 items: [
                     {
                         title: 'Kartu Stok',
-                        href: comingsoon.index().url,
+                        href: reportStockCard.index().url,
                     },
                     {
                         title: 'Pergerakan',
-                        href: comingsoon.index().url,
+                        href: reportStockMovement.index().url,
                     },
                     {
                         title: 'Sisa Stok',
@@ -131,15 +137,15 @@ export const mainNavItems: NavItem[] = [
         items: [
             {
                 title: 'Stok Opname',
-                href: comingsoon.index().url,
+                href: productOpnameServices.index().url,
             },
             {
                 title: 'Pindah Stok',
-                href: comingsoon.index().url,
+                href: productTransferServices.index().url,
             },
             {
                 title: 'Penyesuaian Stok',
-                href: comingsoon.index().url,
+                href: productAdjustmentStocks.index().url,
             },
         ],
     },
@@ -191,7 +197,7 @@ export const mainNavItems: NavItem[] = [
             },
             {
                 title: 'Promosi',
-                href: comingsoon.index().url,
+                href: promos.index().url,
             },
         ],
     },
@@ -202,7 +208,7 @@ export const mainNavItems: NavItem[] = [
         items: [
             {
                 title: 'Entity',
-                href: comingsoon.index().url,
+                href: entityRoutes.edit().url,
             },
             {
                 title: 'Lokasi',

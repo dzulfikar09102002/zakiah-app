@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\EntityBrandingService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -36,13 +37,20 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $entityName = $user?->entity?->name;
+        $branding = app(EntityBrandingService::class);
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'branding' => [
+                'name' => $branding->displayName($entityName),
+                'logo' => $branding->logoUrl($entityName),
+            ],
             'auth' => [
                 'user' => $user ? $user->load('entity', 'employee') : $user,
             ],
-            'sidebarOpen' => !$request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
 }

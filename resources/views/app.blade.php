@@ -32,15 +32,12 @@
     </style>
 
     @php
-        $entityName = auth()->user()?->entity?->name;
-        $slug = \Illuminate\Support\Str::slug($entityName);
+        $branding = $page['props']['branding'] ?? null;
     @endphp
-    <title inertia>{{ config('app.name', 'Laravel') }}</title>
+    <title inertia>{{ ($branding['name'] ?? config('app.name', 'Laravel')) . ' Backoffice' }}</title>
 
-    <link
-        rel="icon"
-        href="{{ $entityName ? "/assets/images/{$slug}.png" : '/assets/images/zakiah.png' }}"
-    >
+    {{-- Favicon = logo entity (sama dengan kop PDF); diperbarui di app.tsx saat navigasi. --}}
+    <link id="app-favicon" rel="icon" type="image/png" href="{{ $branding['logo'] ?? '/favicon.ico' }}">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
@@ -49,9 +46,6 @@
     @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
     @inertiaHead
 </head>
-<script>
-    window.entityName = @json($entityName);
-</script>
 <body class="font-sans antialiased">
     @inertia
 </body>

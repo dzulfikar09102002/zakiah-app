@@ -1,26 +1,39 @@
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
-import { StrictMode } from 'react';
+import { createElement, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '../css/app.css';
 import { initializeTheme } from './hooks/use-appearance';
 import { toast } from 'sonner';
+import type { Branding } from './types';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
-const rawEntityName = (window as any).entityName || appName;
 
-const entityName =
-    rawEntityName === rawEntityName.toUpperCase() ||
-    rawEntityName === rawEntityName.toLowerCase()
-        ? rawEntityName
-              .toLowerCase()
-              .replace(/\b\w/g, (c: string) => c.toUpperCase())
-        : rawEntityName;
+// Nama & logo entity dari shared props `branding` (lihat EntityBrandingService).
+// Disinkronkan setiap halaman dirender, sehingga title & favicon ikut berubah
+// tanpa reload penuh (mis. setelah login atau ganti user).
+let brandName = appName;
+
+const syncBranding = (branding?: Branding) => {
+    brandName = branding?.name || appName;
+
+    const favicon = document.getElementById(
+        'app-favicon',
+    ) as HTMLLinkElement | null;
+    if (
+        favicon &&
+        branding?.logo &&
+        favicon.getAttribute('href') !== branding.logo
+    ) {
+        favicon.setAttribute('href', branding.logo);
+    }
+};
+
 createInertiaApp({
     title: (title) =>
         title
-            ? `${title} | ${entityName} Backoffice`
-            : `${entityName} Backoffice`,
+            ? `${title} | ${brandName} Backoffice`
+            : `${brandName} Backoffice`,
     resolve: (name) =>
         resolvePageComponent(
             `./pages/${name}.tsx`,
@@ -31,7 +44,15 @@ createInertiaApp({
 
         root.render(
             <StrictMode>
-                <App {...props} />
+                <App {...props}>
+                    {({ Component, props: pageProps, key }) => {
+                        syncBranding(
+                            pageProps.branding as Branding | undefined,
+                        );
+
+                        return createElement(Component, { key, ...pageProps });
+                    }}
+                </App>
             </StrictMode>,
         );
     },

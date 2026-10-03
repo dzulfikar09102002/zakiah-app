@@ -2,45 +2,58 @@
 
 namespace App\Http\Requests;
 
-use App\Helpers\Constants\ActionConstants;
-use App\Helpers\Constants\PageNameConstants;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class UpdateLoyaltyRequest extends BaseRequest
+class UpdateLoyaltyRequest extends FormRequest
 {
-    protected $page = PageNameConstants::LoyaltyMenu;
-    protected $action = ActionConstants::UpdateAction;
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        $entityId = $this->user()?->entity?->id;
+
         return [
-            //
-            "name" => 'required',
-            "description" => 'nullable',
-            "miniminal_transaction_value" => 'required|integer|min:1',
-            "reward_point" => 'required|integer|min:1',
-            "conversion_point" => 'nullable|integer|min:1',
-            "conversion_amount" => 'nullable|integer|min:1',
-            "allow_multiple" => 'boolean',
-            "include_discount_and_promo" => 'boolean',
-            "include_surcharge" => 'boolean',
-            "include_free_of_charge" => 'boolean',
-            "include_tax" => 'boolean',
-            "include_service_charge" => 'boolean',
-            "select_all_location" => 'boolean',
-            "allow_convert_point_as_amount" => 'boolean',
-            "active" => 'boolean',
-            "reward_products" => 'nullable|array',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'miniminal_transaction_value' => 'required|integer|min:1',
+            'reward_point' => 'required|integer|min:1',
+            'allow_multiple' => 'boolean',
+            'reward_products' => 'required|array|min:1',
             'reward_products.*.id' => 'nullable|integer',
-            'reward_products.*._destroy' => 'boolean',
-            "reward_products.*.product_id" => 'required|integer',
-            "reward_products.*.product_unit_id" => 'required|integer',
-            "reward_products.*.point_needed" => 'required|integer|min:1',
-            "reward_products.*.maximum_quantity" => 'nullable|integer',
+            'reward_products.*.product_id' => [
+                'required',
+                'integer',
+                'distinct',
+                Rule::exists('products', 'id')->where('entity_id', $entityId),
+            ],
+            'reward_products.*.product_unit_id' => 'required|integer|exists:product_units,id',
+            'reward_products.*.point_needed' => 'required|integer|min:1',
+            'reward_products.*.maximum_quantity' => 'nullable|integer|min:1',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'name' => 'nama loyalty',
+            'miniminal_transaction_value' => 'minimal transaksi',
+            'reward_point' => 'poin hadiah',
+            'reward_products' => 'produk hadiah',
+            'reward_products.*.product_id' => 'produk',
+            'reward_products.*.product_unit_id' => 'satuan',
+            'reward_products.*.point_needed' => 'poin dibutuhkan',
+            'reward_products.*.maximum_quantity' => 'maksimal kuantitas',
         ];
     }
 }

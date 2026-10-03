@@ -1,16 +1,18 @@
 import { Form, Head } from '@inertiajs/react';
-import { Search, Layers, Package, Wallet, TrendingUp } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import QueryString from 'qs';
 import {
     createColumnHelper,
     getCoreRowModel,
     useReactTable,
     type ColumnDef,
 } from '@tanstack/react-table';
+import { Search, Layers, Package, Wallet, TrendingUp } from 'lucide-react';
+import QueryString from 'qs';
+import { useEffect, useState } from 'react';
 
-import TablePagination from '@/components/table-pagination';
 import DataTable from '@/components/data-table';
+import LocationDropdown from '@/components/location-dropdown';
+import PrintPdfButton from '@/components/print-pdf-button';
+import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -20,10 +22,10 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import LocationDropdown from '@/components/location-dropdown';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination } from '@/lib/model';
 import { cn, toRupiah } from '@/lib/utils';
+import assetsByCategory from '@/routes/reports/assets-by-category';
 import type { BreadcrumbItem } from '@/types';
 
 export type CategoryAsset = {
@@ -344,6 +346,7 @@ export default ({ pagination, locationOptions, summary }: Props) => {
                             <Button variant="secondary" type="submit">
                                 <Search /> Cari
                             </Button>
+                            <PrintPdfButton url={assetsByCategory.pdf().url} />
                         </div>
                     </Form>
                 </CardHeader>

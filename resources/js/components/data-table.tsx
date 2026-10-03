@@ -5,9 +5,10 @@ import { ColumnDef, flexRender, type Table as ITable } from '@tanstack/react-tab
 type Props<T> = {
     table: ITable<T>,
     columns: ColumnDef<T>[]
+    emptyMessage?: string
 }
 
-export default function <T>({ table, columns }: Props<T>) {
+export default function <T>({ table, columns, emptyMessage = 'Data tidak ditemukan' }: Props<T>) {
     return (
         <Table>
             <TableHeader>
@@ -45,7 +46,7 @@ export default function <T>({ table, columns }: Props<T>) {
                 ) : (
                     <TableRow>
                         <TableCell colSpan={columns.length} className="text-center">
-                            Data tidak ditemukan
+                            {emptyMessage}
                         </TableCell>
                     </TableRow>
                 )}

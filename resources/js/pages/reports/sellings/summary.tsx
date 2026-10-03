@@ -1,19 +1,11 @@
 import { Form, Head } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem } from '@/types';
-import sellings from '@/routes/sellings';
-import { Card, CardContent } from '@/components/ui/card';
-import { capitalize, toRupiah } from '@/lib/utils';
+import type { VisibilityState } from '@tanstack/react-table';
 import {
     createColumnHelper,
     getCoreRowModel,
     useReactTable,
-    VisibilityState,
     type ColumnDef,
 } from '@tanstack/react-table';
-import { useEffect, useState } from 'react';
-import ColumnVisibilityDropdown from '@/components/column-visibility-dropdown';
-import DataTable from '@/components/data-table';
 import TablePagination from '@/components/table-pagination';
 import { Pagination } from '@/lib/model';
 import DateRangePicker from '@/components/date-range-picker';
@@ -22,7 +14,17 @@ import { Search } from 'lucide-react';
 import Select from '@/components/select';
 import MultiSelect from '@/components/multi-select';
 import QueryString from 'qs';
+import { useEffect, useState } from 'react';
+import ColumnVisibilityDropdown from '@/components/column-visibility-dropdown';
+import DataTable from '@/components/data-table';
 import LocationDropdown from '@/components/location-dropdown';
+import PrintPdfButton from '@/components/print-pdf-button';
+import { Card, CardContent } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
+import { capitalize, toRupiah } from '@/lib/utils';
+import reportSales from '@/routes/report-sales';
+import sellings from '@/routes/sellings';
+import type { BreadcrumbItem } from '@/types';
 
 type SalesData = {
     transaction_no: string;
@@ -298,6 +300,7 @@ export default ({ pagination, locationOptions }: Props) => {
                             <Button type="submit">
                                 <Search /> Cari
                             </Button>
+                            <PrintPdfButton url={reportSales.pdf().url} />
                         </div>
                     </Form>
                     <DataTable columns={columns} table={table} />

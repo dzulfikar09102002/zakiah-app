@@ -3,9 +3,10 @@
 namespace App\Services;
 
 use App\Models\Location;
-use App\Models\SaleTransaction;
 use App\Models\SaleTransactionDetail;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 
 class SaleReportByLocationService
@@ -19,6 +20,22 @@ class SaleReportByLocationService
     }
 
     public function getSaleReportByLocations()
+    {
+        return $this->saleReportByLocationQuery()
+            ->paginate(request('per_page', 10))
+            ->through(fn ($row) => $this->transformRow($row))
+            ->withQueryString();
+    }
+
+    public function getSaleReportByLocationsForPdf(): LazyCollection
+    {
+        return $this->saleReportByLocationQuery()
+            ->limit(ReportPdfService::MAX_ROWS + 1)
+            ->cursor()
+            ->map(fn ($row) => $this->transformRow($row));
+    }
+
+    private function saleReportByLocationQuery(): Builder
     {
         $startAt = request('start_at')
             ? Carbon::parse(request('start_at'))->startOfDay()
@@ -46,7 +63,7 @@ class SaleReportByLocationService
 
         if ($selectAll && count($excludeLocs) > 0) {
             $query->whereNotIn('location_id', $excludeLocs);
-        } elseif (!$selectAll && count($locs) > 0) {
+        } elseif (! $selectAll && count($locs) > 0) {
             $query->whereIn('location_id', $locs);
         }
 
@@ -171,33 +188,31 @@ class SaleReportByLocationService
                 ) as total_amount
             ')
 
-            ->groupBy('location_name')
+            ->groupBy('location_name');
+    }
 
-            ->paginate(request('per_page', 10))
+    private function transformRow($row): array
+    {
+        return [
+            'location_name' => $row->location_name,
 
-            ->through(fn ($row) => [
-                'location_name' => $row->location_name,
+            'quantity' => (int) $row->quantity,
+            'cancelled_quantity' => (int) $row->cancelled_quantity,
 
-                'quantity' => (int) $row->quantity,
-                'cancelled_quantity' => (int) $row->cancelled_quantity,
+            'cost_of_goods_sold' => (int) $row->cost_of_goods_sold,
 
-                'cost_of_goods_sold' => (int) $row->cost_of_goods_sold,
+            'gross_sales' => (int) $row->gross_sales,
+            'gross_refund' => (int) $row->gross_refund,
 
-                'gross_sales' => (int) $row->gross_sales,
-                'gross_refund' => (int) $row->gross_refund,
+            'discount' => (int) $row->discount_amount +
+                (int) $row->promo_amount +
+                (int) $row->prorate_discount_amount +
+                (int) $row->prorate_promo_amount,
 
-                'discount' =>
-                    (int) $row->discount_amount +
-                    (int) $row->promo_amount +
-                    (int) $row->prorate_discount_amount +
-                    (int) $row->prorate_promo_amount,
+            'total' => (int) $row->total_amount,
 
-                'total' => (int) $row->total_amount,
-
-                'gross_profit' => (int) $row->gross_profit,
-                'profit' => (int) $row->net_profit,
-            ])
-
-            ->withQueryString();
+            'gross_profit' => (int) $row->gross_profit,
+            'profit' => (int) $row->net_profit,
+        ];
     }
 }

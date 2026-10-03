@@ -355,3 +355,170 @@ export interface ProductStock {
     product: Product;
     location: Location;
 }
+
+export interface Tax {
+    id: number;
+    entity_id: number;
+    name: string;
+    rate: number;
+    status: 'active' | 'archived';
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface LoyaltyRewardProduct {
+    id?: number;
+    product_id: number;
+    product_unit_id: number;
+    point_needed: number;
+    maximum_quantity: number | null;
+    product?: {
+        id: number;
+        name: string;
+        sku: string | null;
+        barcode: string | null;
+        sell_price: number;
+    };
+    product_unit?: { id: number; name: string };
+}
+
+export interface Loyalty {
+    id: number;
+    entity_id: number;
+    code: string;
+    name: string;
+    description: string | null;
+    miniminal_transaction_value: number;
+    reward_point: number;
+    allow_multiple: boolean;
+    status: 'active' | 'in_active' | 'archived';
+    reward_products_count?: number;
+    reward_products?: LoyaltyRewardProduct[];
+    created_at?: string;
+    updated_at?: string;
+}
+
+export type StockDocumentStatus =
+    | 'requested'
+    | 'approved'
+    | 'rejected'
+    | 'cancelled';
+
+export type EmployeeName = {
+    id: number;
+    first_name: string;
+    last_name: string | null;
+};
+
+type StockDocumentProduct = {
+    id: number;
+    name: string;
+    sku: string | null;
+    barcode: string | null;
+    sell_price: number;
+};
+
+/** Detail Stok Opname & Penyesuaian Stok (skema identik). */
+export interface StockCountDetail {
+    id: number;
+    product_id: number;
+    product_name: string;
+    product_sku: string;
+    product_unit_id: number;
+    product_unit_name: string | null;
+    product_category_name: string | null;
+    recorded_stock: number;
+    counted_stock: number;
+    difference_stock: number;
+    note: string | null;
+    product?: StockDocumentProduct | null;
+}
+
+/** Stok Opname & Penyesuaian Stok. */
+export interface StockCountDocument {
+    id: number;
+    code: string;
+    location_id: number;
+    status: StockDocumentStatus;
+    note: string | null;
+    auto_approve: boolean;
+    local_requested_at: string | null;
+    local_approved_at: string | null;
+    local_rejected_at: string | null;
+    approval_note: string | null;
+    rejected_note: string | null;
+    recorded_product_count: number;
+    difference_product_count: number;
+    recorded_stock: number;
+    counted_stock: number;
+    difference_stock: number;
+    details_count?: number;
+    location?: { id: number; name: string } | null;
+    employee_requested_by?: EmployeeName | null;
+    employee_approved_by?: EmployeeName | null;
+    employee_rejected_by?: EmployeeName | null;
+    product_opname_service_details?: StockCountDetail[];
+    product_adjustment_stock_details?: StockCountDetail[];
+}
+
+export interface StockTransferDetail {
+    id: number;
+    product_id: number;
+    product_name: string;
+    product_sku: string;
+    product_unit_name: string | null;
+    quantity: number;
+    buying_price: number;
+    product?: StockDocumentProduct | null;
+}
+
+export interface StockTransfer {
+    id: number;
+    code: string;
+    from_location_id: number;
+    to_location_id: number;
+    status: StockDocumentStatus;
+    request_note: string | null;
+    approval_note: string | null;
+    rejected_note: string | null;
+    cancelled_note: string | null;
+    local_requested_at: string | null;
+    local_approved_at: string | null;
+    local_rejected_at: string | null;
+    local_cancelled_at: string | null;
+    details_count?: number;
+    total_quantity?: number | string | null;
+    from_location?: { id: number; name: string } | null;
+    to_location?: { id: number; name: string } | null;
+    employee_requested_by?: EmployeeName | null;
+    employee_approved_by?: EmployeeName | null;
+    employee_rejected_by?: EmployeeName | null;
+    employee_cancelled_by?: EmployeeName | null;
+    product_transfer_service_details?: StockTransferDetail[];
+}
+
+export type PromoTemplate = 'discount_percentage' | 'discount_fixed';
+
+export interface Promo {
+    id: number;
+    code: string;
+    name: string;
+    description: string | null;
+    owner_location_id: number;
+    start_at: string;
+    end_at: string | null;
+    status: string;
+    owner_location?: { id: number; name: string } | null;
+    promo_rule?: {
+        minimum_sales_purchase: number | null;
+        promo_rule_customer_categories?: {
+            customer_category_id: number;
+            customer_category_name: string;
+        }[];
+    } | null;
+    promo_reward?: {
+        template: PromoTemplate | string;
+        reward_amount: number;
+        reward_maximum_amount: number | null;
+    } | null;
+}

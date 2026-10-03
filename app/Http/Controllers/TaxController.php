@@ -2,91 +2,47 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\IndexTaxRequest;
-use App\Http\Requests\ShowTaxRequest;
 use App\Http\Requests\StoreTaxRequest;
 use App\Http\Requests\UpdateTaxRequest;
-use App\Http\Responses\BaseJsonResponse;
 use App\Models\Tax;
-use Illuminate\Support\Facades\DB;
+use App\Services\TaxService;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class TaxController extends Controller
 {
-    public function index()
+    public function __construct(
+        protected TaxService $service
+    ) {}
+
+    public function index(): Response
     {
-        return Inertia::render("comingsoon/index");
+        $pagination = $this->service->getTaxes();
+
+        return Inertia::render('taxes/index', compact('pagination'));
     }
-    // /**
-    //  * Display a listing of the resource.
-    //  */
-    // public function index(IndexTaxRequest $request)
-    // {
-    //     $params = $request->validated();
 
-    //     $payments = Tax::where('name', 'like', "%" . $request->search . "%")->where('entity_id', $request->entity->id);
+    public function store(StoreTaxRequest $request): RedirectResponse
+    {
+        $this->service->store($request->validated());
 
-    //     return $payments->paginate($request->limit)->appends($params);
-    // }
+        return back()->with('success', 'Pajak berhasil ditambahkan');
+    }
 
-    // /**
-    //  * Store a newly created resource in storage.
-    //  */
-    // public function store(StoreTaxRequest $request)
-    // {
-    //     $data = new Tax();
+    public function update(UpdateTaxRequest $request, Tax $tax): RedirectResponse
+    {
+        $this->service->ensureOwnedByEntity($tax);
+        $this->service->update($tax, $request->validated());
 
-    //     # start transcation
-    //     DB::transaction(function () use ($request, $data) {
-    //         $params = $request->validated();
-    //         # not in fillable
-    //         $data->entity_id = $request->entity->id;
-    //         $data->created_by = $request->user()->id;
-    //         $data->updated_by = $request->user()->id;
+        return back()->with('success', 'Pajak berhasil diperbarui');
+    }
 
-    //         $data->fill($params);
-    //         $data->save();
-    //     });
+    public function toggleStatus(Tax $tax): RedirectResponse
+    {
+        $this->service->ensureOwnedByEntity($tax);
+        $this->service->toggleStatus($tax);
 
-    //     $response = new BaseJsonResponse($data);
-    //     return $response->response();
-    // }
-
-    // /**
-    //  * Display the specified resource.
-    //  */
-    // public function show(ShowTaxRequest $request, Tax $tax)
-    // {
-    //     if ($request->entity->id != $tax->entity_id) {
-    //         # TEJA check error message
-    //         $response = new BaseJsonResponse(null, __('entity.invalid_entity'));
-    //         return $response->response(422);
-    //     }
-
-    //     $response = new BaseJsonResponse($tax);
-    //     return $response->response();
-    // }
-
-    // /**
-    //  * Update the specified resource in storage.
-    //  */
-    // public function update(UpdateTaxRequest $request, Tax $tax)
-    // {
-    //     if ($request->entity->id != $tax->entity_id) {
-    //         # TEJA check error message
-    //         $response = new BaseJsonResponse(null, __('entity.invalid_entity'));
-    //         return $response->response(422);
-    //     }
-
-    //     # start transcation
-    //     DB::transaction(function () use ($request, $tax) {
-    //         $params = $request->validated();
-
-    //         $tax->updated_by = $request->user()->id;
-    //         $tax->update($params);
-    //     });
-
-    //     $response = new BaseJsonResponse($tax);
-    //     return $response->response();
-    // }
+        return back()->with('success', 'Status pajak berhasil diperbarui');
+    }
 }

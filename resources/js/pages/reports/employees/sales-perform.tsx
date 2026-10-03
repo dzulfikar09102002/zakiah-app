@@ -1,27 +1,28 @@
 import { Form, Head } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem } from '@/types';
-import employee from '@/routes/report-employee-summary';
-import { Card, CardContent } from '@/components/ui/card';
-import { capitalize, formatEmployeeName, toRupiah } from '@/lib/utils';
+import type { VisibilityState } from '@tanstack/react-table';
 import {
     createColumnHelper,
     getCoreRowModel,
     useReactTable,
-    VisibilityState,
     type ColumnDef,
 } from '@tanstack/react-table';
+import { Search } from 'lucide-react';
+import QueryString from 'qs';
 import { useEffect, useState } from 'react';
 import ColumnVisibilityDropdown from '@/components/column-visibility-dropdown';
 import DataTable from '@/components/data-table';
-import TablePagination from '@/components/table-pagination';
-import { EmployeeSalesPerformData, Pagination } from '@/lib/model';
 import DateRangePicker from '@/components/date-range-picker';
-import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import LocationDropdown from '@/components/location-dropdown';
-import QueryString from 'qs';
+import PrintPdfButton from '@/components/print-pdf-button';
+import { Card, CardContent } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
+import { capitalize, formatEmployeeName, toRupiah } from '@/lib/utils';
+import type { BreadcrumbItem } from '@/types';
+import employee from '@/routes/report-employee-summary';
+import TablePagination from '@/components/table-pagination';
+import type { EmployeeSalesPerformData, Pagination } from '@/lib/model';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const columnHelper = createColumnHelper<EmployeeSalesPerformData>();
 
@@ -223,6 +224,7 @@ export default ({ employeeSalesSummary, locationOptions }: Props) => {
                             <Button type="submit">
                                 <Search /> Cari
                             </Button>
+                            <PrintPdfButton url={employee.pdf().url} />
                         </div>
                     </Form>
                     <DataTable columns={columns} table={table} />
