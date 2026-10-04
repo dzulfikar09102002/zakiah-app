@@ -10,7 +10,7 @@ import NavItemNode from "./nav-item-node"
 export function NavMain({ items }: { items: NavItem[] }) {
     return (
         <SidebarGroup>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2">
                 {items.map((item) => (
                     <NavItemNode key={item.title} item={item} />
                 ))}

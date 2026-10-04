@@ -41,7 +41,7 @@ export default function NavItemNode({ item }: { item: NavItem }) {
                 <SidebarMenuButton
                     asChild
                     isActive={isItemActive(item, url)}
-                    className="w-full justify-start"
+                    className="h-10 w-full justify-start rounded-lg px-3"
                 >
                     <Link href={item.href} className="flex items-center gap-2 w-full">
                         {item.icon && <item.icon className="size-4" />}
@@ -62,7 +62,7 @@ export default function NavItemNode({ item }: { item: NavItem }) {
                 <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                         tooltip={item.title}
-                        className="relative pr-10"
+                        className="relative h-10 rounded-lg px-3 pr-10"
                     >
                         {item.icon && <item.icon className="mr-2 size-4" />}
                         <span>{item.title}</span>
@@ -71,7 +71,7 @@ export default function NavItemNode({ item }: { item: NavItem }) {
                 </CollapsibleTrigger>
 
                 <CollapsibleContent>
-                    <SidebarMenuSub className="pl-4">
+                    <SidebarMenuSub className="mx-0 mt-1 ml-4 gap-1 border-l-0 px-2">
                         {item.items?.map((child) => (
                             <SidebarMenuSubItem key={child.title}>
                                 {child.items?.length ? (
@@ -80,6 +80,7 @@ export default function NavItemNode({ item }: { item: NavItem }) {
                                     <SidebarMenuSubButton
                                         asChild
                                         isActive={isItemActive(child, url)}
+                                        className="h-9 rounded-lg px-3"
                                     >
                                         <Link href={child.href} className="flex items-center gap-2">
                                             {child.icon && <child.icon className="size-4" />}

@@ -12,7 +12,7 @@ export function NavSetting({ items }: { items: NavItem[] }) {
     return (
         <SidebarGroup>
             <SidebarGroupLabel>Pengaturan</SidebarGroupLabel>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2">
                 {items.map((item) => (
                     <NavItemSetting key={item.title} item={item} />
                 ))}
