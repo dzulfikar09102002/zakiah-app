@@ -11,37 +11,39 @@ import {
 } from 'lucide-react';
 import { settings } from '@/routes';
 
+import customerCategories from '@/routes/customer-categories';
+import customers from '@/routes/customers';
+import dailySales from '@/routes/daily-sales';
 import employees from '@/routes/employees';
-import locations from '@/routes/locations';
-import paymentmethods from '@/routes/payment-methods';
-import products from '@/routes/products';
-import roles from '@/routes/roles';
-import sellings from '@/routes/sellings';
 
 import type { NavItem } from '@/types';
 import stockRemaining from '@/routes/stock-remaining';
 import productCategories from '@/routes/product-categories';
 import productUnits from '@/routes/product-units';
 import orderTypes from '@/routes/order-types';
-import customers from '@/routes/customers';
-import customerCategories from '@/routes/customer-categories';
 import loyalties from '@/routes/loyalties';
 import taxes from '@/routes/taxes';
 import reportSales from '@/routes/report-sales';
 import entityRoutes from '@/routes/entity';
+import legalEntities from '@/routes/legal-entities';
+import legalEntityLocations from '@/routes/legal-entity-locations';
+import locations from '@/routes/locations';
+import paymentmethods from '@/routes/payment-methods';
 import productAdjustmentStocks from '@/routes/product-adjustment-stocks';
 import productOpnameServices from '@/routes/product-opname-services';
 import productTransferServices from '@/routes/product-transfer-services';
+import products from '@/routes/products';
 import promos from '@/routes/promos';
-import reportByProducts from '@/routes/report-by-products';
 import reportByLocations from '@/routes/report-by-locations';
-import reportEmployeeSummary from '@/routes/report-employee-summary';
+import reportByProducts from '@/routes/report-by-products';
 import reportEmployeeDetail from '@/routes/report-employee-detail';
-import assetsByCategory from '@/routes/reports/assets-by-category';
+import reportEmployeeSummary from '@/routes/report-employee-summary';
 import reportStockCard from '@/routes/report-stock-card';
 import reportStockMovement from '@/routes/report-stock-movement';
-import dailySales from '@/routes/daily-sales';
+import assetsByCategory from '@/routes/reports/assets-by-category';
+import roles from '@/routes/roles';
 import saleTransactions from '@/routes/sale-transactions';
+import sellings from '@/routes/sellings';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -213,6 +215,20 @@ export const mainNavItems: NavItem[] = [
             {
                 title: 'Lokasi',
                 href: locations.index().url,
+            },
+            {
+                title: 'CV / Badan Usaha',
+                href: '#',
+                items: [
+                    {
+                        title: 'Daftar CV',
+                        href: legalEntities.index().url,
+                    },
+                    {
+                        title: 'CV per Toko',
+                        href: legalEntityLocations.index().url,
+                    },
+                ],
             },
             {
                 title: 'Karyawan',

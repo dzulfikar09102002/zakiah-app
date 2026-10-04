@@ -522,3 +522,48 @@ export interface Promo {
         reward_maximum_amount: number | null;
     } | null;
 }
+
+export type LegalEntityType = 'cv' | 'pt' | 'ud' | 'perorangan';
+
+export interface LegalEntity {
+    id: number;
+    entity_id: number;
+    code: string;
+    initial: string;
+    name: string;
+    legal_type: LegalEntityType;
+    npwp?: string | null;
+    is_pkp: boolean;
+    full_address?: string | null;
+    postal_code?: string | null;
+    city?: string | null;
+    province?: string | null;
+    country?: string | null;
+    phone_number?: string | null;
+    phone_number_country_code?: string | null;
+    email?: string | null;
+    bank_name?: string | null;
+    bank_account_no?: string | null;
+    bank_account_name?: string | null;
+    invoice_prefix?: string | null;
+    status: 'active' | 'archived';
+    deleted_at?: string | null;
+    locations?: Pick<Location, 'id' | 'name'>[];
+}
+
+export interface LegalEntityLocation {
+    id: number;
+    legal_entity_id: number;
+    location_id: number;
+    legal_entity: Pick<
+        LegalEntity,
+        'id' | 'name' | 'initial' | 'legal_type' | 'npwp' | 'is_pkp' | 'status'
+    >;
+}
+
+export type LocationWithLegalEntities = Pick<
+    Location,
+    'id' | 'name' | 'kind' | 'city'
+> & {
+    legal_entity_locations: LegalEntityLocation[];
+};

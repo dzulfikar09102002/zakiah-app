@@ -12,6 +12,8 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeReportDetailController;
 use App\Http\Controllers\EmployeeReportSummaryController;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\LegalEntityController;
+use App\Http\Controllers\LegalEntityLocationController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\OrderTypeController;
@@ -109,6 +111,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('locations.deleted');
     Route::post('locations/{id}/restore', [LocationController::class, 'restore'])
         ->name('locations.restore');
+
+    Route::get('legal-entities/deleted', [LegalEntityController::class, 'deleted'])
+        ->name('legal-entities.deleted');
+    Route::post('legal-entities/{id}/restore', [LegalEntityController::class, 'restore'])
+        ->name('legal-entities.restore');
+    Route::resource('legal-entities', LegalEntityController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    Route::resource('legal-entity-locations', LegalEntityLocationController::class)->only(['index', 'store', 'destroy']);
 
     Route::get('payment-methods/deleted', [PaymentMethodController::class, 'deleted'])
         ->name('payment-methods.deleted');

@@ -8,6 +8,8 @@ use App\Observers\LocationObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ObservedBy([LocationObserver::class])]
@@ -47,6 +49,7 @@ class Location extends Model
         'created_by',
         'updated_by',
     ];
+
     /**
      * Get the attributes that should be cast.
      *
@@ -75,4 +78,17 @@ class Location extends Model
         'checksum',
         'search_name',
     ];
+
+    public function legalEntityLocations(): HasMany
+    {
+        return $this->hasMany(LegalEntityLocation::class);
+    }
+
+    public function legalEntities(): BelongsToMany
+    {
+        return $this->belongsToMany(LegalEntity::class, 'legal_entity_locations')
+            ->withPivot(['id'])
+            ->withTimestamps()
+            ->wherePivotNull('deleted_at');
+    }
 }
