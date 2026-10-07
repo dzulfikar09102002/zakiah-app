@@ -33,6 +33,7 @@ use App\Http\Controllers\SalesReportByProductController;
 use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\SaleTransactionController;
 use App\Http\Controllers\SellingController;
+use App\Http\Controllers\SsoController;
 use App\Http\Controllers\StockCardReportController;
 use App\Http\Controllers\StockMovementReportController;
 use App\Http\Controllers\StockRemainingController;
@@ -41,6 +42,14 @@ use App\Http\Middleware\EntityCheckingMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
+
+// SSO dua arah dengan NewZakicaPOS (tiket sekali pakai).
+Route::get('sso/masuk', [SsoController::class, 'signIn'])
+    ->middleware('throttle:30,1')
+    ->name('sso.sign-in');
+Route::get('sso/newzakica', [SsoController::class, 'toNewZakica'])
+    ->middleware(['auth', 'throttle:30,1'])
+    ->name('sso.newzakica');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');

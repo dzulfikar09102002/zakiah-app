@@ -50,6 +50,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user ? $user->load('entity', 'employee') : $user,
             ],
+            'sso' => [
+                'newzakica' => filled(config('services.newzakica.url')) && $user?->employee !== null,
+            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

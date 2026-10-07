@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\StatusEnum;
 use App\Services\DailySaleService;
 use App\Services\SaleTransactionService;
-use App\Services\StrukService;
+use App\Services\SsoTicketService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -36,18 +36,18 @@ class SaleTransactionController extends Controller
     }
 
     /**
-     * Arahkan ke struk penjualan di NewZakicaPOS (tautan bertanda tangan, langsung cetak).
+     * Buka struk penjualan di NewZakicaPOS lewat SSO (tanpa login ulang, langsung cetak).
      */
-    public function struk(int $id, StrukService $struk): RedirectResponse
+    public function struk(Request $request, int $id, SsoTicketService $sso): RedirectResponse
     {
         $saleTransaction = $this->service->findSaleTransaction($id);
         abort_if($saleTransaction == null, 404);
-        abort_unless($struk->enabled(), 503, 'API struk belum dikonfigurasi (STRUK_API_URL / STRUK_API_SECRET).');
+        abort_if($sso->newZakicaUrl() === null, 503, 'Alamat NewZakicaPOS belum dikonfigurasi (NEWZAKICA_URL).');
 
-        return redirect()->away($struk->url(
-            StrukService::KIND_SALE,
+        return redirect()->away($sso->newZakicaStrukUrl(
+            $request->user(),
+            'penjualan',
             $saleTransaction->id,
-            $saleTransaction->entity_id,
             $saleTransaction->location_id,
         ));
     }
