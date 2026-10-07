@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 
 import InputError from '@/components/input-error';
+import PrintStrukButton from '@/components/print-struk-button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -345,6 +346,9 @@ export default function SaleTransactionShow({ saleTransaction: t }: Props) {
                                 <ArrowLeft /> Kembali
                             </Link>
                         </Button>
+                        <PrintStrukButton
+                            url={saleTransactions.struk(t.id).url}
+                        />
                         {!isVoid && (
                             <Button
                                 variant="destructive"

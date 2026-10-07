@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import SaleTransactionTable, {
     type DailySaleTransaction,
 } from '@/components/daily-sales/sale-transaction-table';
+import PrintStrukButton from '@/components/print-struk-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -211,6 +212,10 @@ export default function DailySaleShow({
                                 <ArrowLeft /> Kembali
                             </Link>
                         </Button>
+                        <PrintStrukButton
+                            url={dailySales.struk(dailySale.id).url}
+                            disabled={!dailySale.taking_id}
+                        />
                     </div>
                 </div>
 

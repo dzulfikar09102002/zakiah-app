@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    // API struk NewZakicaPOS (api/struk/penjualan|rekapan/{id}); secret = StrukApi:Secret di sana.
+    'struk' => [
+        'url' => env('STRUK_API_URL'),
+        'secret' => env('STRUK_API_SECRET'),
+        'ttl' => (int) env('STRUK_API_TTL', 300),
+    ],
+
 ];

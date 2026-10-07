@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Eye, Pencil } from 'lucide-react';
+import { Pencil, SquareArrowOutUpRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -116,7 +116,7 @@ export default ({ pagination }: Props) => {
                                         asChild
                                     >
                                         <Link href={promos.show(promo.id).url}>
-                                            <Eye />
+                                            <SquareArrowOutUpRight />
                                         </Link>
                                     </Button>
                                     <Button

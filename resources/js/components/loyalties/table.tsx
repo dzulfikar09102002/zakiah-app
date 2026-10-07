@@ -1,11 +1,11 @@
 import { Link } from '@inertiajs/react';
 import {
     Archive,
-    Eye,
     MoreHorizontal,
     Pencil,
     Power,
     PowerOff,
+    SquareArrowOutUpRight,
     Trash2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -96,7 +96,7 @@ export default ({ pagination, onAction }: Props) => {
                             <div className="flex justify-center gap-2">
                                 <Button size="icon" variant="outline" asChild>
                                     <Link href={loyalties.show(loyalty.id).url}>
-                                        <Eye />
+                                        <SquareArrowOutUpRight />
                                     </Link>
                                 </Button>
                                 <DropdownMenu>

@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Eye, Plus } from 'lucide-react';
+import { Plus, SquareArrowOutUpRight } from 'lucide-react';
 import DocumentFilters from '@/components/stock/document-filters';
 import {
     DifferenceValue,
@@ -138,7 +138,7 @@ export default function CountDocumentIndex({
                                                         ).url
                                                     }
                                                 >
-                                                    <Eye />
+                                                    <SquareArrowOutUpRight />
                                                 </Link>
                                             </Button>
                                         </div>

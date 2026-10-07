@@ -6,7 +6,7 @@ import {
     type ColumnDef,
     type VisibilityState,
 } from '@tanstack/react-table';
-import { Eye, Search } from 'lucide-react';
+import { Search, SquareArrowOutUpRight } from 'lucide-react';
 import QueryString from 'qs';
 import { useEffect, useState } from 'react';
 
@@ -15,6 +15,7 @@ import DataTable from '@/components/data-table';
 import DateRangePicker from '@/components/date-range-picker';
 import LocationDropdown from '@/components/location-dropdown';
 import MultiSelect from '@/components/multi-select';
+import PrintStrukButton from '@/components/print-struk-button';
 import Select from '@/components/select';
 import TablePagination from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
@@ -135,11 +136,17 @@ const columns = [
         header: '',
         enableHiding: false,
         cell: ({ row }) => (
-            <Button variant="outline" size="sm" asChild>
-                <Link href={saleTransactions.show(row.original.id).url}>
-                    <Eye /> Detail
-                </Link>
-            </Button>
+            <div className="flex justify-end gap-2">
+                <PrintStrukButton
+                    url={saleTransactions.struk(row.original.id).url}
+                    iconOnly
+                />
+                <Button variant="outline" size="icon" asChild>
+                    <Link href={saleTransactions.show(row.original.id).url}>
+                        <SquareArrowOutUpRight />
+                    </Link>
+                </Button>
+            </div>
         ),
     }),
 ] as ColumnDef<SaleTransactionData>[];

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\StatusEnum;
 use App\Services\DailySaleService;
 use App\Services\SaleTransactionService;
+use App\Services\StrukService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -31,6 +33,23 @@ class SaleTransactionController extends Controller
         $saleTransaction = $this->service->getDetail($saleTransaction);
 
         return Inertia::render('revenue/sale-transactions/show', compact('saleTransaction'));
+    }
+
+    /**
+     * Arahkan ke struk penjualan di NewZakicaPOS (tautan bertanda tangan, langsung cetak).
+     */
+    public function struk(int $id, StrukService $struk): RedirectResponse
+    {
+        $saleTransaction = $this->service->findSaleTransaction($id);
+        abort_if($saleTransaction == null, 404);
+        abort_unless($struk->enabled(), 503, 'API struk belum dikonfigurasi (STRUK_API_URL / STRUK_API_SECRET).');
+
+        return redirect()->away($struk->url(
+            StrukService::KIND_SALE,
+            $saleTransaction->id,
+            $saleTransaction->entity_id,
+            $saleTransaction->location_id,
+        ));
     }
 
     public function void(Request $request, int $id)

@@ -10,11 +10,11 @@ import type { LucideIcon } from 'lucide-react';
 import {
     Banknote,
     CreditCard,
-    Eye,
     QrCode,
     RotateCcw,
     Scale,
     Search,
+    SquareArrowOutUpRight,
     Wallet,
 } from 'lucide-react';
 import QueryString from 'qs';
@@ -162,9 +162,9 @@ const columns = [
         id: 'action',
         header: '',
         cell: ({ row }) => (
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="icon" asChild>
                 <Link href={dailySales.show(row.original.recap_id).url}>
-                    <Eye /> Detail
+                    <SquareArrowOutUpRight />
                 </Link>
             </Button>
         ),

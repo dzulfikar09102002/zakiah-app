@@ -5,12 +5,13 @@ import {
     useReactTable,
     type ColumnDef,
 } from '@tanstack/react-table';
-import { Eye, Search } from 'lucide-react';
+import { Search, SquareArrowOutUpRight } from 'lucide-react';
 import { useState } from 'react';
 
 import DataTable from '@/components/data-table';
 import DateRangePicker from '@/components/date-range-picker';
 import LocationDropdown from '@/components/location-dropdown';
+import PrintStrukButton from '@/components/print-struk-button';
 import TablePagination from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -114,11 +115,18 @@ const columns = [
         id: 'action',
         header: '',
         cell: ({ row }) => (
-            <Button variant="outline" size="sm" asChild>
-                <Link href={dailySales.show(row.original.id).url}>
-                    <Eye /> Detail
-                </Link>
-            </Button>
+            <div className="flex justify-end gap-2">
+                <PrintStrukButton
+                    url={dailySales.struk(row.original.id).url}
+                    disabled={!row.original.taking_id}
+                    iconOnly
+                />
+                <Button variant="outline" size="icon" asChild>
+                    <Link href={dailySales.show(row.original.id).url}>
+                        <SquareArrowOutUpRight />
+                    </Link>
+                </Button>
+            </div>
         ),
     }),
 ] as ColumnDef<DailySaleData>[];

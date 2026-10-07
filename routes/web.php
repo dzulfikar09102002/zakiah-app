@@ -244,6 +244,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('daily-sales', DailySaleController::class)
         ->only(['index', 'show']);
+    Route::get('daily-sales/{id}/struk', [DailySaleController::class, 'struk'])
+        ->name('daily-sales.struk');
 
     Route::get('payment-recaps', [PaymentRecapController::class, 'index'])
         ->name('payment-recaps.index');
@@ -255,6 +257,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::patch('sale-transactions/{id}/void', [SaleTransactionController::class, 'void'])
         ->name('sale-transactions.void');
+    Route::get('sale-transactions/{id}/struk', [SaleTransactionController::class, 'struk'])
+        ->name('sale-transactions.struk');
 
     Route::patch('customers/{id}/activate', [CustomerController::class, 'activate'])
         ->name('customers.activate');
