@@ -73,8 +73,7 @@ class ReportPdfService
         $pdf->drawLetterhead(
             $this->logoPath($entity?->name),
             $entity?->name ?? config('app.name'),
-            $this->entityAddress($entity),
-            $this->entityContacts($entity),
+            $this->letterheadLines($entity),
         );
         $pdf->drawTitle($title);
 
@@ -181,7 +180,7 @@ class ReportPdfService
 
         if (! count($sample)) {
             $pdf->endTable();
-            $pdf->drawEmptyRow('Data tidak ditemukan');
+            $pdf->drawEmptyRow('Tidak ada data untuk filter ini.');
 
             return;
         }
@@ -378,26 +377,37 @@ class ReportPdfService
             ->implode(', ');
     }
 
-    private function entityAddress(?object $entity): string
+    /**
+     * Baris keterangan kop: "Alamat : ...  ·  Kode Pos : ..." dan "No. Telp : ...  ·  Email : ...".
+     * Bagian yang kosong tidak ditampilkan.
+     *
+     * @return array<int, string>
+     */
+    private function letterheadLines(?object $entity): array
     {
-        return collect([$entity?->full_address, $entity?->city, $entity?->province, $entity?->postal_code])
-            ->filter()
+        $address = collect([$entity?->full_address, $entity?->city, $entity?->province])
+            ->filter(fn (mixed $value) => filled($value))
             ->implode(', ');
-    }
 
-    private function entityContacts(?object $entity): string
-    {
         $phone = null;
-        if ($entity?->phone_number) {
-            $countryCode = $entity->phone_number_country_code
+        if (filled($entity?->phone_number)) {
+            $countryCode = filled($entity->phone_number_country_code)
                 ? '+'.ltrim((string) $entity->phone_number_country_code, '+').' '
                 : '';
-            $phone = 'Telp. '.$countryCode.$entity->phone_number;
+            $phone = $countryCode.$entity->phone_number;
         }
 
-        return collect([$phone, $entity?->email, $entity?->website])
+        return collect([
+            ['Alamat' => $address, 'Kode Pos' => $entity?->postal_code],
+            ['No. Telp' => $phone, 'Email' => $entity?->email, 'Website' => $entity?->website],
+        ])
+            ->map(fn (array $parts) => collect($parts)
+                ->filter(fn (mixed $value) => filled($value))
+                ->map(fn (mixed $value, string $label) => $label.' : '.$value)
+                ->implode('   ·   '))
             ->filter()
-            ->implode('  |  ');
+            ->values()
+            ->all();
     }
 
     /**

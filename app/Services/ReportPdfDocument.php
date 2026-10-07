@@ -14,20 +14,33 @@ class ReportPdfDocument extends FPDF
 {
     private const MARGIN = 10;
 
+    /*
+     * Palet warna sama dengan cetak laporan NewZakicaPOS (laporan-cetak.css).
+     */
+    private const COLOR_TEXT = [43, 26, 18];        // #2b1a12
+
+    private const COLOR_MUTED = [107, 90, 82];      // #6b5a52
+
+    private const COLOR_HEAD = [246, 236, 230];     // #f6ece6 header & total tabel
+
+    private const COLOR_STRIPE = [252, 248, 246];   // #fcf8f6 baris genap
+
+    private const COLOR_BORDER = [234, 223, 216];   // #eadfd8
+
     private const ROW_HEIGHT = 6;
 
     /*
-     * Pengaturan logo di kop laporan (satuan milimeter).
-     * - LOGO_HEIGHT   : tinggi logo; lebar mengikuti proporsi gambar.
-     * - LOGO_OFFSET_Y : geser logo ke bawah (+) / ke atas (-) dari posisi nama entity.
+     * Pengaturan logo di kop laporan (satuan milimeter), sama dengan laporan-cetak.css.
+     * - LOGO_MAX_WIDTH / LOGO_MAX_HEIGHT : logo diperbesar/diperkecil agar muat di kotak ini
+     *   dengan proporsi tetap (object-fit: contain); logo & teks kop sejajar di tengah.
      * - LOGO_TEXT_GAP : jarak antara logo dan teks nama entity.
      * File logo sendiri: public/assets/images/{nama-entity}.png (lihat EntityBrandingService).
      */
-    private const LOGO_HEIGHT = 12;
+    private const LOGO_MAX_WIDTH = 22;
 
-    private const LOGO_OFFSET_Y = 3;
+    private const LOGO_MAX_HEIGHT = 16;
 
-    private const LOGO_TEXT_GAP = 4;
+    private const LOGO_TEXT_GAP = 3.5;
 
     /** @var array<int, array{label: string, width: float, align: string}> */
     private array $tableColumns = [];
@@ -45,7 +58,7 @@ class ReportPdfDocument extends FPDF
         $this->SetMargins(self::MARGIN, self::MARGIN, self::MARGIN);
         $this->SetAutoPageBreak(true, 16);
         $this->AliasNbPages();
-        $this->SetTextColor(31, 41, 55);
+        $this->SetTextColor(...self::COLOR_TEXT);
     }
 
     public function contentWidth(): float
@@ -59,56 +72,56 @@ class ReportPdfDocument extends FPDF
     }
 
     /**
-     * Kop: logo, nama entity, alamat & kontak, lalu garis ganda.
+     * Kop: logo, nama entity, baris keterangan (alamat, kode pos, telepon; hanya yang terisi),
+     * lalu garis tebal.
+     *
+     * @param  array<int, string>  $lines
      */
-    public function drawLetterhead(?string $logoPath, string $name, string $address, string $contacts): void
+    public function drawLetterhead(?string $logoPath, string $name, array $lines): void
     {
         $top = $this->GetY();
         $textX = self::MARGIN;
-        $logoBottom = $top;
+        $textHeight = 7 + 4 * count($lines);
+        $blockHeight = $textHeight;
 
         if ($logoPath) {
             [$pixelWidth, $pixelHeight] = getimagesize($logoPath) ?: [1, 1];
-            $logoWidth = self::LOGO_HEIGHT * $pixelWidth / max($pixelHeight, 1);
-            $logoTop = $top + self::LOGO_OFFSET_Y;
+            $ratio = $pixelWidth / max($pixelHeight, 1);
+            $logoHeight = min(self::LOGO_MAX_HEIGHT, self::LOGO_MAX_WIDTH / $ratio);
+            $logoWidth = $logoHeight * $ratio;
+            $blockHeight = max($textHeight, $logoHeight);
 
-            $this->Image($logoPath, self::MARGIN, $logoTop, $logoWidth, self::LOGO_HEIGHT);
+            $this->Image($logoPath, self::MARGIN, $top + ($blockHeight - $logoHeight) / 2, $logoWidth, $logoHeight);
             $textX = self::MARGIN + $logoWidth + self::LOGO_TEXT_GAP;
-            $logoBottom = $logoTop + self::LOGO_HEIGHT;
         }
 
-        $this->SetXY($textX, $top);
-        $this->SetFont('Helvetica', 'B', 13);
+        $this->SetXY($textX, $top + ($blockHeight - $textHeight) / 2);
+        $this->SetFont('Helvetica', 'B', 12);
         $this->Cell(0, 7, $this->encode(mb_strtoupper($name)), 0, 2);
 
-        $this->SetFont('Helvetica', '', 8);
-        $this->SetTextColor(75, 85, 99);
+        $this->SetFont('Helvetica', '', 7.5);
+        $this->SetTextColor(...self::COLOR_MUTED);
 
-        if ($address !== '') {
-            $this->Cell(0, 4.5, $this->encode($address), 0, 2);
+        foreach ($lines as $line) {
+            $this->Cell(0, 4, $this->encode($line), 0, 2);
         }
 
-        if ($contacts !== '') {
-            $this->Cell(0, 4.5, $this->encode($contacts), 0, 2);
-        }
+        $this->SetTextColor(...self::COLOR_TEXT);
 
-        $this->SetTextColor(31, 41, 55);
-
-        $lineY = max($this->GetY(), $logoBottom) + 3;
-        $this->SetDrawColor(17, 24, 39);
-        $this->SetLineWidth(0.7);
+        $lineY = $top + $blockHeight + 2;
+        $this->SetDrawColor(...self::COLOR_TEXT);
+        $this->SetLineWidth(0.5);
         $this->Line(self::MARGIN, $lineY, $this->GetPageWidth() - self::MARGIN, $lineY);
         $this->SetLineWidth(0.2);
-        $this->Line(self::MARGIN, $lineY + 1, $this->GetPageWidth() - self::MARGIN, $lineY + 1);
 
-        $this->SetY($lineY + 5);
+        $this->SetY($lineY + 4);
     }
 
     public function drawTitle(string $title): void
     {
-        $this->SetFont('Helvetica', 'B', 13);
+        $this->SetFont('Helvetica', 'B', 11);
         $this->Cell(0, 7, $this->encode(mb_strtoupper($title)), 0, 1, 'C');
-        $this->Ln(2);
+        $this->Ln(1);
     }
 
     /**
@@ -118,10 +131,10 @@ class ReportPdfDocument extends FPDF
     {
         foreach ($filters as $label => $value) {
             $this->SetFont('Helvetica', '', 8);
-            $this->SetTextColor(107, 114, 128);
+            $this->SetTextColor(...self::COLOR_MUTED);
             $this->Cell(24, 4.5, $this->encode($label));
             $this->Cell(4, 4.5, ':');
-            $this->SetTextColor(31, 41, 55);
+            $this->SetTextColor(...self::COLOR_TEXT);
             $this->MultiCell(0, 4.5, $this->encode($value));
         }
 
@@ -141,20 +154,20 @@ class ReportPdfDocument extends FPDF
         $y = $this->GetY();
         $x = self::MARGIN;
 
-        $this->SetDrawColor(229, 231, 235);
-        $this->SetFillColor(249, 250, 251);
+        $this->SetDrawColor(...self::COLOR_BORDER);
+        $this->SetFillColor(...self::COLOR_STRIPE);
 
         foreach ($summary as $label => $value) {
             $this->Rect($x, $y, $width, 13, 'DF');
 
             $this->SetXY($x + 2.5, $y + 2);
             $this->SetFont('Helvetica', '', 6.5);
-            $this->SetTextColor(107, 114, 128);
+            $this->SetTextColor(...self::COLOR_MUTED);
             $this->Cell($width - 5, 3.5, $this->encode(mb_strtoupper($label)));
 
             $this->SetXY($x + 2.5, $y + 6.5);
             $this->SetFont('Helvetica', 'B', 10);
-            $this->SetTextColor(31, 41, 55);
+            $this->SetTextColor(...self::COLOR_TEXT);
             $this->Cell($width - 5, 5, $this->fit($this->encode($value), $width - 5));
 
             $x += $width + $gap;
@@ -187,8 +200,8 @@ class ReportPdfDocument extends FPDF
         $this->ensureSpace(self::ROW_HEIGHT);
 
         $this->SetFont('Helvetica', '', $this->fontSize);
-        $this->SetFillColor(249, 250, 251);
-        $this->SetDrawColor(229, 231, 235);
+        $this->SetFillColor(...self::COLOR_STRIPE);
+        $this->SetDrawColor(...self::COLOR_BORDER);
         $this->SetLineWidth(0.1);
 
         foreach ($this->tableColumns as $index => $column) {
@@ -207,9 +220,9 @@ class ReportPdfDocument extends FPDF
         $this->ensureSpace(self::ROW_HEIGHT + 1);
 
         $this->SetFont('Helvetica', 'B', $this->fontSize);
-        $this->SetFillColor(243, 244, 246);
-        $this->SetDrawColor(31, 41, 55);
-        $this->SetLineWidth(0.3);
+        $this->SetFillColor(...self::COLOR_HEAD);
+        $this->SetDrawColor(...self::COLOR_TEXT);
+        $this->SetLineWidth(0.25);
 
         foreach ($this->tableColumns as $index => $column) {
             $text = $this->encode($cells[$index] ?? '');
@@ -234,20 +247,20 @@ class ReportPdfDocument extends FPDF
     public function drawEmptyRow(string $message): void
     {
         $this->SetFont('Helvetica', '', $this->fontSize);
-        $this->SetTextColor(107, 114, 128);
-        $this->SetDrawColor(229, 231, 235);
+        $this->SetTextColor(...self::COLOR_MUTED);
+        $this->SetDrawColor(...self::COLOR_BORDER);
         $this->SetLineWidth(0.1);
         $this->Cell($this->contentWidth(), 12, $this->encode($message), 'B', 1, 'C');
-        $this->SetTextColor(31, 41, 55);
+        $this->SetTextColor(...self::COLOR_TEXT);
     }
 
     public function drawNote(string $note): void
     {
         $this->Ln(2);
         $this->SetFont('Helvetica', 'I', 7.5);
-        $this->SetTextColor(180, 83, 9);
+        $this->SetTextColor(...self::COLOR_MUTED);
         $this->MultiCell(0, 4, $this->encode($note));
-        $this->SetTextColor(31, 41, 55);
+        $this->SetTextColor(...self::COLOR_TEXT);
     }
 
     public function Header(): void
@@ -260,15 +273,15 @@ class ReportPdfDocument extends FPDF
     public function Footer(): void
     {
         $this->SetY(-12);
-        $this->SetDrawColor(209, 213, 219);
+        $this->SetDrawColor(...self::COLOR_BORDER);
         $this->SetLineWidth(0.1);
         $this->Line(self::MARGIN, $this->GetY(), $this->GetPageWidth() - self::MARGIN, $this->GetY());
 
         $this->SetFont('Helvetica', '', 7);
-        $this->SetTextColor(107, 114, 128);
+        $this->SetTextColor(...self::COLOR_MUTED);
         $this->Cell($this->contentWidth() / 2, 6, $this->encode($this->footerText));
         $this->Cell($this->contentWidth() / 2, 6, 'Halaman '.$this->PageNo().' dari {nb}', 0, 0, 'R');
-        $this->SetTextColor(31, 41, 55);
+        $this->SetTextColor(...self::COLOR_TEXT);
     }
 
     /**
@@ -296,15 +309,17 @@ class ReportPdfDocument extends FPDF
     private function drawTableHeader(): void
     {
         $this->SetFont('Helvetica', 'B', $this->fontSize);
-        $this->SetFillColor(31, 41, 55);
-        $this->SetTextColor(255, 255, 255);
+        $this->SetFillColor(...self::COLOR_HEAD);
+        $this->SetDrawColor(...self::COLOR_TEXT);
+        $this->SetTextColor(...self::COLOR_TEXT);
+        $this->SetLineWidth(0.25);
 
         foreach ($this->tableColumns as $column) {
-            $this->Cell($column['width'], 7, $this->fit($this->encode($column['label']), $column['width'] - 2), 0, 0, $column['align'], true);
+            $this->Cell($column['width'], 7, $this->fit($this->encode($column['label']), $column['width'] - 2), 'TB', 0, $column['align'], true);
         }
 
         $this->Ln();
-        $this->SetTextColor(31, 41, 55);
+        $this->SetLineWidth(0.2);
     }
 
     /**
