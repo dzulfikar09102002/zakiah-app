@@ -29,6 +29,7 @@ class StockMovementReportController extends Controller
             [
                 ReportPdfService::column('product_name', 'Produk'),
                 ReportPdfService::column('product_sku', 'SKU'),
+                ReportPdfService::column('cost_of_goods_sold', 'HPP', 'currency'),
                 ReportPdfService::column('sell_price', 'Harga Jual', 'currency'),
                 ReportPdfService::column('location_name', 'Lokasi'),
                 ReportPdfService::column('product_unit_name', 'Satuan'),

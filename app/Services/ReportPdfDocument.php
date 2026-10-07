@@ -29,6 +29,8 @@ class ReportPdfDocument extends FPDF
 
     private const ROW_HEIGHT = 6;
 
+    private const DETAIL_ROW_HEIGHT = 5;
+
     /*
      * Pengaturan logo di kop laporan (satuan milimeter), sama dengan laporan-cetak.css.
      * - LOGO_MAX_WIDTH / LOGO_MAX_HEIGHT : logo diperbesar/diperkecil agar muat di kotak ini
@@ -207,6 +209,56 @@ class ReportPdfDocument extends FPDF
         foreach ($this->tableColumns as $index => $column) {
             $text = $this->fit($this->encode($cells[$index] ?? ''), $column['width'] - 2);
             $this->Cell($column['width'], self::ROW_HEIGHT, $text, 'B', 0, $column['align'], $striped);
+        }
+
+        $this->Ln();
+    }
+
+    /**
+     * Baris master pada tabel master-detail: tebal dengan latar, agar terpisah dari detailnya.
+     *
+     * @param  array<int, string>  $cells
+     */
+    public function drawMasterRow(array $cells, int $detailCount): void
+    {
+        // Master tidak boleh sendirian di bawah halaman tanpa baris detail pertamanya.
+        $this->ensureSpace(self::ROW_HEIGHT + ($detailCount > 0 ? self::DETAIL_ROW_HEIGHT : 0));
+
+        $this->SetFont('Helvetica', 'B', $this->fontSize);
+        $this->SetFillColor(...self::COLOR_STRIPE);
+        $this->SetDrawColor(...self::COLOR_BORDER);
+        $this->SetLineWidth(0.1);
+
+        foreach ($this->tableColumns as $index => $column) {
+            $text = $this->fit($this->encode($cells[$index] ?? ''), $column['width'] - 2);
+            $this->Cell($column['width'], self::ROW_HEIGHT, $text, 'T', 0, $column['align'], true);
+        }
+
+        $this->Ln();
+    }
+
+    /**
+     * Baris detail di bawah master: label menjorok selebar $span kolom pertama,
+     * nilai sisanya mengikuti kolom master.
+     *
+     * @param  array<int, string>  $cells  Nilai untuk kolom ke-$span dan seterusnya.
+     */
+    public function drawDetailRow(string $label, array $cells, int $span): void
+    {
+        $this->ensureSpace(self::DETAIL_ROW_HEIGHT);
+
+        $this->SetFont('Helvetica', '', $this->fontSize);
+        $labelWidth = array_sum(array_column(array_slice($this->tableColumns, 0, $span), 'width'));
+        $indent = $this->tableColumns[0]['width'] ?? 0;
+
+        $this->SetTextColor(...self::COLOR_MUTED);
+        $this->Cell($indent, self::DETAIL_ROW_HEIGHT, '');
+        $this->Cell($labelWidth - $indent, self::DETAIL_ROW_HEIGHT, $this->fit($this->encode($label), $labelWidth - $indent - 2));
+        $this->SetTextColor(...self::COLOR_TEXT);
+
+        foreach (array_slice($this->tableColumns, $span) as $index => $column) {
+            $text = $this->fit($this->encode($cells[$index] ?? ''), $column['width'] - 2);
+            $this->Cell($column['width'], self::DETAIL_ROW_HEIGHT, $text, 0, 0, $column['align']);
         }
 
         $this->Ln();

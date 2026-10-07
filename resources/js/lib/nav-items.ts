@@ -29,6 +29,7 @@ import legalEntities from '@/routes/legal-entities';
 import legalEntityLocations from '@/routes/legal-entity-locations';
 import locations from '@/routes/locations';
 import paymentmethods from '@/routes/payment-methods';
+import paymentRecaps from '@/routes/payment-recaps';
 import productAdjustmentStocks from '@/routes/product-adjustment-stocks';
 import productOpnameServices from '@/routes/product-opname-services';
 import productTransferServices from '@/routes/product-transfer-services';
@@ -190,6 +191,10 @@ export const mainNavItems: NavItem[] = [
                     {
                         title: 'Rekapan',
                         href: dailySales.index().url,
+                    },
+                    {
+                        title: 'Detail Rekapan',
+                        href: paymentRecaps.index().url,
                     },
                     {
                         title: 'Data Penjualan',

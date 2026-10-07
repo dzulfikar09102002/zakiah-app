@@ -21,7 +21,7 @@ import LocationDropdown from '@/components/location-dropdown';
 import PrintPdfButton from '@/components/print-pdf-button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { capitalize, toRupiah } from '@/lib/utils';
+import { capitalize, formatDate, toRupiah } from '@/lib/utils';
 import reportSales from '@/routes/report-sales';
 import sellings from '@/routes/sellings';
 import type { BreadcrumbItem } from '@/types';
@@ -33,6 +33,7 @@ type SalesData = {
     cashier: string;
     sales: string;
     member?: string;
+    payment_method: string;
     subtotal: number;
     discount: number;
     adjustment: number;
@@ -55,17 +56,7 @@ export const columns = [
 
     columnHelper.accessor('date', {
         header: 'Tanggal',
-        cell: (info) => {
-            const date = new Date(info.getValue());
-
-            return date.toLocaleString('id-ID', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            });
-        },
+        cell: (info) => formatDate(info.getValue(), true),
     }),
 
     columnHelper.accessor('cashier', {
@@ -81,6 +72,11 @@ export const columns = [
     columnHelper.accessor('member', {
         header: 'Member',
         cell: (info) => capitalize(info.getValue() ?? '-'),
+    }),
+
+    columnHelper.accessor('payment_method', {
+        header: 'Metode Pembayaran',
+        cell: (info) => info.getValue() || '-',
     }),
 
     columnHelper.accessor('subtotal', {

@@ -18,6 +18,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\OrderTypeController;
 use App\Http\Controllers\PaymentMethodController;
+use App\Http\Controllers\PaymentRecapController;
 use App\Http\Controllers\ProductAdjustmentStockController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
@@ -243,6 +244,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('daily-sales', DailySaleController::class)
         ->only(['index', 'show']);
+
+    Route::get('payment-recaps', [PaymentRecapController::class, 'index'])
+        ->name('payment-recaps.index');
+    Route::get('payment-recaps/pdf', [PaymentRecapController::class, 'pdf'])
+        ->name('payment-recaps.pdf');
 
     Route::resource('sale-transactions', SaleTransactionController::class)
         ->only(['index', 'show']);

@@ -16,7 +16,12 @@ import LocationDropdown from '@/components/location-dropdown';
 import PrintPdfButton from '@/components/print-pdf-button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { capitalize, formatEmployeeName, toRupiah } from '@/lib/utils';
+import {
+    capitalize,
+    formatDate,
+    formatEmployeeName,
+    toRupiah,
+} from '@/lib/utils';
 import type { BreadcrumbItem } from '@/types';
 import employee from '@/routes/report-employee-detail';
 import TablePagination from '@/components/table-pagination';
@@ -29,15 +34,7 @@ const columnHelper = createColumnHelper<EmployeeSalesDetailData>();
 export const columns = [
     columnHelper.accessor('local_sales_date', {
         header: 'Tanggal',
-        cell: (info) => {
-            const date = new Date(info.getValue());
-
-            return date.toLocaleDateString('id-ID', {
-                day: '2-digit',
-                month: 'long',
-                year: 'numeric',
-            });
-        },
+        cell: (info) => formatDate(info.getValue()),
     }),
 
     columnHelper.accessor('employee_sales_name', {

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Location;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Closure;
 use Generator;
 use Illuminate\Support\Str;
@@ -63,7 +64,7 @@ class ReportPdfService
         $summary = $summary instanceof Closure ? $summary() : $summary;
 
         $printedBy = auth()->user()?->name;
-        $printedAt = Carbon::now()->locale('id')->translatedFormat('d M Y H:i');
+        $printedAt = Carbon::now()->locale('id')->translatedFormat('d F Y H:i');
 
         $pdf = new ReportPdfDocument($orientation);
         $pdf->SetTitle($pdf->encode($title));
@@ -95,17 +96,17 @@ class ReportPdfService
         ]);
     }
 
-    public function periodLabel(): string
+    public function periodLabel(?CarbonInterface $defaultStartAt = null): string
     {
         $startAt = request('start_at')
             ? Carbon::parse(request('start_at'))
-            : Carbon::now()->subDays(7);
+            : ($defaultStartAt ?? Carbon::now()->subDays(7));
 
         $endAt = request('end_at')
             ? Carbon::parse(request('end_at'))
             : Carbon::now();
 
-        return $startAt->locale('id')->translatedFormat('d M Y').' - '.$endAt->locale('id')->translatedFormat('d M Y');
+        return $startAt->locale('id')->translatedFormat('d F Y').' - '.$endAt->locale('id')->translatedFormat('d F Y');
     }
 
     /**
@@ -166,7 +167,7 @@ class ReportPdfService
 
         $sample = [];
         while ($rowsIterator->valid() && count($sample) < self::WIDTH_SAMPLE_ROWS) {
-            $sample[] = $this->formatRow($rowsIterator->current(), $columns, $totals);
+            $sample[] = [$this->formatRow($rowsIterator->current(), $columns, $totals), $rowsIterator->current()];
             $rowsIterator->next();
         }
 
@@ -176,7 +177,7 @@ class ReportPdfService
             default => 6.5,
         };
         $pdf->setTableFontSize($fontSize);
-        $pdf->startTable($this->tableColumns($pdf, $columns, $sample), $fontSize);
+        $pdf->startTable($this->tableColumns($pdf, $columns, array_column($sample, 0)), $fontSize);
 
         if (! count($sample)) {
             $pdf->endTable();
@@ -186,16 +187,16 @@ class ReportPdfService
         }
 
         $number = 0;
-        foreach ($sample as $cells) {
+        foreach ($sample as [$cells, $row]) {
             $number++;
-            $pdf->drawRow([(string) $number, ...$cells], $number % 2 === 0);
+            $this->drawDataRow($pdf, $columns, $number, $cells, $row);
         }
         unset($sample);
 
         while ($rowsIterator->valid() && $number < self::MAX_ROWS) {
             $number++;
-            $cells = $this->formatRow($rowsIterator->current(), $columns, $totals);
-            $pdf->drawRow([(string) $number, ...$cells], $number % 2 === 0);
+            $row = $rowsIterator->current();
+            $this->drawDataRow($pdf, $columns, $number, $this->formatRow($row, $columns, $totals), $row);
             $rowsIterator->next();
         }
 
@@ -215,6 +216,33 @@ class ReportPdfService
 
         if ($truncated) {
             $pdf->drawNote('* Data dibatasi '.number_format(self::MAX_ROWS, 0, ',', '.').' baris pertama (total pun hanya dari baris yang tercetak). Persempit filter (periode/lokasi) untuk mencetak data selengkapnya.');
+        }
+    }
+
+    /**
+     * Baris biasa, atau master-detail bila baris punya kunci '_details'
+     * (list baris dengan 'label' + nilai kolom angka). Label detail memakai lebar
+     * kolom teks di depan; nilainya sejajar kolom angka master. Total hanya dari master.
+     */
+    private function drawDataRow(ReportPdfDocument $pdf, array $columns, int $number, array $cells, mixed $row): void
+    {
+        $details = data_get($row, '_details');
+
+        if (! is_array($details)) {
+            $pdf->drawRow([(string) $number, ...$cells], $number % 2 === 0);
+
+            return;
+        }
+
+        $pdf->drawMasterRow([(string) $number, ...$cells], count($details));
+
+        $firstNumeric = collect($columns)->search(fn (array $column) => in_array($column['format'], ['currency', 'number'], true));
+        $span = $firstNumeric === false ? count($columns) : $firstNumeric;
+        $noTotals = [];
+
+        foreach ($details as $detail) {
+            $detailCells = $this->formatRow($detail, $columns, $noTotals);
+            $pdf->drawDetailRow((string) ($detail['label'] ?? ''), array_slice($detailCells, $span), $span + 1);
         }
     }
 
@@ -353,8 +381,8 @@ class ReportPdfService
         return match ($format) {
             'currency' => 'Rp '.number_format((float) $value, 0, ',', '.'),
             'number' => number_format((float) $value, 0, ',', '.'),
-            'date' => Carbon::parse($value)->locale('id')->translatedFormat('d M Y'),
-            'datetime' => Carbon::parse($value)->locale('id')->translatedFormat('d M Y H:i'),
+            'date' => Carbon::parse($value)->locale('id')->translatedFormat('d F Y'),
+            'datetime' => Carbon::parse($value)->locale('id')->translatedFormat('d F Y H:i'),
             default => (string) $value,
         };
     }

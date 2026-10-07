@@ -1,5 +1,7 @@
 import type { InertiaLinkProps } from '@inertiajs/react';
 import { type ClassValue, clsx } from 'clsx';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -16,6 +18,24 @@ export const capitalize = (text: string): string => {
         .split(' ')
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
+};
+
+/**
+ * Format tanggal laporan: "07 Oktober 2026" (atau "07 Oktober 2026 14:30" bila withTime).
+ */
+export const formatDate = (
+    value: string | Date | null | undefined,
+    withTime = false,
+): string => {
+    if (!value) return '-';
+
+    const date = value instanceof Date ? value : new Date(value);
+
+    if (isNaN(date.getTime())) return '-';
+
+    return format(date, withTime ? 'dd MMMM yyyy HH:mm' : 'dd MMMM yyyy', {
+        locale: id,
+    });
 };
 
 export const toRupiah = (amount: number | string): string => {

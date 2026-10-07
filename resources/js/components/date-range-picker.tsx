@@ -6,6 +6,8 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import { format, subDays } from 'date-fns';
+import { id } from 'date-fns/locale';
+import { formatDate } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { DateRange } from 'react-day-picker';
@@ -73,14 +75,14 @@ export default function RangeDatePicker({
                         {date?.from ? (
                             date.to ? (
                                 <>
-                                    {format(date.from, 'LLL dd, y')} -{' '}
-                                    {format(date.to, 'LLL dd, y')}
+                                    {formatDate(date.from)} -{' '}
+                                    {formatDate(date.to)}
                                 </>
                             ) : (
-                                format(date.from, 'LLL dd, y')
+                                formatDate(date.from)
                             )
                         ) : (
-                            <span>Pick a date</span>
+                            <span>Pilih tanggal</span>
                         )}
                     </Button>
                 </PopoverTrigger>
@@ -91,6 +93,7 @@ export default function RangeDatePicker({
                         selected={date}
                         onSelect={setDate}
                         numberOfMonths={2}
+                        locale={id}
                         defaultMonth={date?.from}
                     />
                 </PopoverContent>
