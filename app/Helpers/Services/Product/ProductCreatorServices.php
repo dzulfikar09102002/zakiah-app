@@ -63,21 +63,11 @@ class ProductCreatorServices
     protected function createStockMovement(Product $product) {
         foreach ($this->stockMovements as $stockMovement)
         {
-            if ($stockMovement['stock'] < 0) {
+            # stock from form is a delta added to existing stock: + is stock in, - is stock out
+            $delta = $stockMovement['stock'];
+            if ($delta == 0) {
                 continue;
             }
-
-            # find product location stock
-            $locationStock = $this->getExistingProductLocationStock($product->id, $stockMovement['location_id'], $this->productUnitId);
-            $currentStock = 0;
-            if ($locationStock != null) { # already exists
-                $currentStock = $locationStock->stock;
-
-                if ($currentStock < 0) {
-                    $currentStock = 0;
-                }
-            }
-
 
             $data = new ProductStockMovement();
 
@@ -90,8 +80,8 @@ class ProductCreatorServices
             $data->resource_id = $product->id;
             $data->resource_type = $product::class;
     
-            $data->original_stock_out = $currentStock;
-            $data->original_stock_in = $stockMovement['stock'];
+            $data->original_stock_in = $delta > 0 ? $delta : 0;
+            $data->original_stock_out = $delta < 0 ? abs($delta) : 0;
             $data->original_buying_price = $stockMovement['buying_price'];
             $data->conversion_stock = 1; # should find conversion, not for now
     

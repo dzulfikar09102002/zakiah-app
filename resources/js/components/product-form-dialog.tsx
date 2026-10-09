@@ -50,7 +50,7 @@ function buildStockMovements(
             location_id: id,
             buying_price: product?.last_buying_price ?? 0,
             stock: existing?.stock ?? 0,
-            stock_new: existing?.stock ?? 0,
+            stock_new: 0,
         };
     });
 }
@@ -500,7 +500,7 @@ export function ProductFormDialog({
                                             Stok Saat Ini
                                         </span>
                                         <span className="col-span-4 text-xs text-muted-foreground">
-                                            Stok Baru
+                                            Tambah Stok (minus = kurangi)
                                         </span>
                                     </div>
                                 )}
@@ -541,7 +541,6 @@ export function ProductFormDialog({
                                                         row.stock_new || ''
                                                     }
                                                     placeholder="0"
-                                                    min={0}
                                                 />
                                             </div>
                                         </div>
