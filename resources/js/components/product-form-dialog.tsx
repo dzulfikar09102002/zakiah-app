@@ -541,7 +541,19 @@ export function ProductFormDialog({
                                                         row.stock_new || ''
                                                     }
                                                     placeholder="0"
+                                                    min={-row.stock}
                                                 />
+                                                {errors[
+                                                    `stock_movements.${index}.stock`
+                                                ] && (
+                                                    <p className="mt-1 text-xs text-destructive">
+                                                        {
+                                                            errors[
+                                                                `stock_movements.${index}.stock`
+                                                            ]
+                                                        }
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
                                     ))}

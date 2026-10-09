@@ -61,12 +61,22 @@ class ProductCreatorServices
     }
 
     protected function createStockMovement(Product $product) {
-        foreach ($this->stockMovements as $stockMovement)
+        foreach ($this->stockMovements as $index => $stockMovement)
         {
             # stock from form is a delta added to existing stock: + is stock in, - is stock out
             $delta = $stockMovement['stock'];
             if ($delta == 0) {
                 continue;
+            }
+
+            # stock can't go below zero
+            if ($delta < 0) {
+                $currentStock = $this->getExistingProductLocationStock($product->id, $stockMovement['location_id'], $this->productUnitId)?->stock ?? 0;
+                if ($currentStock + $delta < 0) {
+                    throw ValidationException::withMessages([
+                        "stock_movements.{$index}.stock" => "Pengurangan stok melebihi stok saat ini ({$currentStock})",
+                    ]);
+                }
             }
 
             $data = new ProductStockMovement();
