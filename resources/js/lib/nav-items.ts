@@ -40,6 +40,7 @@ import reportEmployeeDetail from '@/routes/report-employee-detail';
 import reportEmployeeSummary from '@/routes/report-employee-summary';
 import reportStockCard from '@/routes/report-stock-card';
 import reportStockMovement from '@/routes/report-stock-movement';
+import reportTopCustomers from '@/routes/report-top-customers';
 import assetsByCategory from '@/routes/reports/assets-by-category';
 import roles from '@/routes/roles';
 import saleTransactions from '@/routes/sale-transactions';
@@ -108,6 +109,16 @@ export const mainNavItems: NavItem[] = [
                     {
                         title: 'Detail',
                         href: reportEmployeeDetail.index().url,
+                    },
+                ],
+            },
+            {
+                title: 'Pelanggan',
+                href: '#',
+                items: [
+                    {
+                        title: 'Top Pelanggan',
+                        href: reportTopCustomers.index().url,
                     },
                 ],
             },

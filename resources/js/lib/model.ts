@@ -156,10 +156,22 @@ export interface Top5Location {
     location_name: string;
     net_sales_after_tax: number;
 }
+export interface TopCustomer {
+    rank: number;
+    customer_id: number;
+    customer_name: string;
+    phone_number: string;
+    category: string;
+    transaction_count: number;
+    total_spend: number;
+    average_spend: number;
+    last_sales_at: string | null;
+}
 export interface Top5Data {
     products: Top5Product[];
     categories: Top5Category[];
     locations: Top5Location[];
+    customers: TopCustomer[];
 }
 
 export type ProfitPotential = {

@@ -36,6 +36,7 @@ use App\Http\Controllers\StockCardReportController;
 use App\Http\Controllers\StockMovementReportController;
 use App\Http\Controllers\StockRemainingController;
 use App\Http\Controllers\TaxController;
+use App\Http\Controllers\TopCustomerReportController;
 use App\Http\Middleware\EntityCheckingMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -274,6 +275,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('report-stock-card/pdf', [StockCardReportController::class, 'pdf'])->name('report-stock-card.pdf');
     Route::get('report-employee-summary/pdf', [EmployeeReportSummaryController::class, 'pdf'])->name('report-employee-summary.pdf');
     Route::get('report-employee-detail/pdf', [EmployeeReportDetailController::class, 'pdf'])->name('report-employee-detail.pdf');
+    Route::get('report-top-customers/pdf', [TopCustomerReportController::class, 'pdf'])->name('report-top-customers.pdf');
 
     Route::resource('report-by-products', SalesReportByProductController::class)->only(['index']);
     Route::resource('report-sales', SalesReportController::class)->only(['index']);
@@ -282,6 +284,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('report-stock-card', StockCardReportController::class)->only(['index']);
     Route::resource('report-employee-summary', EmployeeReportSummaryController::class)->only(['index']);
     Route::resource('report-employee-detail', EmployeeReportDetailController::class)->only(['index']);
+    Route::resource('report-top-customers', TopCustomerReportController::class)->only(['index']);
 });
 
 require __DIR__.'/settings.php';

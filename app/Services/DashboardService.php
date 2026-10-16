@@ -404,6 +404,20 @@ class DashboardService
             ->limit(5)
             ->get();
     }
+    public function getTopCustomers()
+    {
+        return app(TopCustomerReportService::class)->topCustomers(
+            5,
+            request('start_at')
+                ? Carbon::parse(request('start_at'))->startOfDay()
+                : today()->startOfDay(),
+            request('end_at')
+                ? Carbon::parse(request('end_at'))->endOfDay()
+                : today()->endOfDay(),
+            in_array((string) request('select_all_location', '1'), ['1', 'true'], true),
+        );
+    }
+
     public function getSalesByDate()
     {
         $query = SaleTransaction::query();

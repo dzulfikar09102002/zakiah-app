@@ -1,4 +1,3 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Table,
     TableBody,
@@ -7,8 +6,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { Top5Data } from '@/lib/model';
 import { Card, CardContent } from '../ui/card';
-import { Top5Data } from '@/lib/model';
 
 type Props = {
     top5: Top5Data;
@@ -32,6 +32,9 @@ export default ({ top5 }: Props) => {
                             <TabsTrigger value="product">Produk</TabsTrigger>
                             <TabsTrigger value="category">Kategori</TabsTrigger>
                             <TabsTrigger value="location">Lokasi</TabsTrigger>
+                            <TabsTrigger value="customer">
+                                Pelanggan
+                            </TabsTrigger>
                         </TabsList>
                         <TabsContent value="product">
                             <Table>
@@ -162,6 +165,60 @@ export default ({ top5 }: Props) => {
                                         <TableRow>
                                             <TableCell
                                                 colSpan={3}
+                                                className="text-center text-muted-foreground"
+                                            >
+                                                Data tidak ditemukan
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </TabsContent>
+                        <TabsContent value="customer">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>No.</TableHead>
+                                        <TableHead>Pelanggan</TableHead>
+                                        <TableHead className="text-center">
+                                            Transaksi
+                                        </TableHead>
+                                        <TableHead>Total Belanja</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+
+                                <TableBody>
+                                    {top5.customers.length > 0 ? (
+                                        top5.customers.map((item) => (
+                                            <TableRow key={item.customer_id}>
+                                                <TableCell>
+                                                    {item.rank}
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    <div>
+                                                        {item.customer_name}
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {item.phone_number}
+                                                    </div>
+                                                </TableCell>
+
+                                                <TableCell className="text-center">
+                                                    {item.transaction_count}
+                                                </TableCell>
+
+                                                <TableCell>
+                                                    {formatCurrency(
+                                                        item.total_spend,
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={4}
                                                 className="text-center text-muted-foreground"
                                             >
                                                 Data tidak ditemukan

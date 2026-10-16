@@ -549,7 +549,7 @@ function DashboardContent({ locationOptions }: Props) {
             {top5Loading ? (
                 <Skeleton className="h-[300px] w-full rounded-xl" />
             ) : (
-                <TopFive top5={top5!} />
+                top5 && <TopFive top5={top5} />
             )}
         </div>
     );

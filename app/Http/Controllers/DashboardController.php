@@ -57,7 +57,9 @@ class DashboardController extends Controller
                 $this->service->getTopProductsAndCategories(),
                 [
                     'locations' =>
-                        $this->service->getTopLocations()
+                        $this->service->getTopLocations(),
+                    'customers' =>
+                        $this->service->getTopCustomers(),
                 ]
             )
         );
