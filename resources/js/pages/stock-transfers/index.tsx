@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowRight, Eye, Plus } from 'lucide-react';
+import { ArrowRight, Plus, SquareArrowOutUpRight } from 'lucide-react';
 import DocumentFilters from '@/components/stock/document-filters';
 import {
     StockStatusBadge,
@@ -148,7 +148,7 @@ export default ({ pagination, locationOptions }: Props) => {
                                                         ).url
                                                     }
                                                 >
-                                                    <Eye />
+                                                    <SquareArrowOutUpRight />
                                                 </Link>
                                             </Button>
                                         </div>

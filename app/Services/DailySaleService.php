@@ -25,7 +25,7 @@ class DailySaleService
             ]);
     }
 
-    public function getDailySales(?int $locationId): LengthAwarePaginator
+    public function getDailySales(): LengthAwarePaginator
     {
         $startAt = request('start_at')
             ? Carbon::parse(request('start_at'))->startOfDay()
@@ -35,12 +35,30 @@ class DailySaleService
             ? Carbon::parse(request('end_at'))->endOfDay()
             : Carbon::now()->endOfDay();
 
-        return DailySale::where('entity_id', auth()->user()?->entity?->id)
-            ->where('location_id', $locationId)
-            ->whereBetween('local_sales_at', [$startAt, $endAt])
-            ->select(['id', 'taking_id', 'local_sales_at', 'sales_amount', 'refund_amount', 'employee_id', 'employee_first_name', 'employee_last_name'])
+        $query = DailySale::with(['location:id,name'])
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->whereBetween('local_sales_at', [$startAt, $endAt]);
+
+        // Filter lokasi seperti laporan penjualan: semua lokasi (bisa dikecualikan) atau lokasi terpilih.
+        $selectAll = request('select_all_location', '1') == '1';
+        $locs = array_map('intval', (array) request()->input('locs', []));
+        $excludeLocs = array_map('intval', (array) request()->input('exclude_locs', []));
+
+        if ($selectAll && count($excludeLocs) > 0) {
+            $query->whereNotIn('location_id', $excludeLocs);
+        } elseif (! $selectAll && count($locs) > 0) {
+            $query->whereIn('location_id', $locs);
+        }
+
+        return $query
+            ->select(['id', 'taking_id', 'location_id', 'local_sales_at', 'sales_amount', 'refund_amount', 'employee_id', 'employee_first_name', 'employee_last_name'])
+            ->orderByDesc('local_sales_at')
             ->orderByDesc('id')
             ->paginate(request('per_page', 10))
+            ->through(fn (DailySale $d) => [
+                ...$d->only(['id', 'taking_id', 'local_sales_at', 'sales_amount', 'refund_amount', 'employee_id', 'employee_first_name', 'employee_last_name']),
+                'location' => $d->location?->name,
+            ])
             ->withQueryString();
     }
 

@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    // NewZakicaPOS: tujuan SSO dan struk (lewat SSO), lihat SsoTicketService.
+    'newzakica' => [
+        'url' => env('NEWZAKICA_URL'),
+    ],
+
 ];

@@ -18,6 +18,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\LoyaltyController;
 use App\Http\Controllers\OrderTypeController;
 use App\Http\Controllers\PaymentMethodController;
+use App\Http\Controllers\PaymentRecapController;
 use App\Http\Controllers\ProductAdjustmentStockController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\SalesReportByProductController;
 use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\SaleTransactionController;
 use App\Http\Controllers\SellingController;
+use App\Http\Controllers\SsoController;
 use App\Http\Controllers\StockCardReportController;
 use App\Http\Controllers\StockMovementReportController;
 use App\Http\Controllers\StockRemainingController;
@@ -41,6 +43,14 @@ use App\Http\Middleware\EntityCheckingMiddleware;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard')->name('home');
+
+// SSO dua arah dengan NewZakicaPOS (tiket sekali pakai).
+Route::get('sso/masuk', [SsoController::class, 'signIn'])
+    ->middleware('throttle:30,1')
+    ->name('sso.sign-in');
+Route::get('sso/newzakica', [SsoController::class, 'toNewZakica'])
+    ->middleware(['auth', 'throttle:30,1'])
+    ->name('sso.newzakica');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');
@@ -244,12 +254,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('daily-sales', DailySaleController::class)
         ->only(['index', 'show']);
+    Route::get('daily-sales/{id}/struk', [DailySaleController::class, 'struk'])
+        ->name('daily-sales.struk');
+
+    Route::get('payment-recaps', [PaymentRecapController::class, 'index'])
+        ->name('payment-recaps.index');
+    Route::get('payment-recaps/pdf', [PaymentRecapController::class, 'pdf'])
+        ->name('payment-recaps.pdf');
 
     Route::resource('sale-transactions', SaleTransactionController::class)
         ->only(['index', 'show']);
 
     Route::patch('sale-transactions/{id}/void', [SaleTransactionController::class, 'void'])
         ->name('sale-transactions.void');
+    Route::get('sale-transactions/{id}/struk', [SaleTransactionController::class, 'struk'])
+        ->name('sale-transactions.struk');
 
     Route::patch('customers/{id}/activate', [CustomerController::class, 'activate'])
         ->name('customers.activate');

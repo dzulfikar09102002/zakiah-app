@@ -11,6 +11,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupButton,
+    InputGroupInput,
+} from '@/components/ui/input-group';
+import { cn } from '@/lib/utils';
+import { Minus, Plus } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -31,7 +39,7 @@ export interface StockMovementRow {
     location_id: number;
     buying_price: number;
     stock: number;
-    stock_new: number;
+    stock_new: string;
 }
 
 function buildStockMovements(
@@ -50,7 +58,7 @@ function buildStockMovements(
             location_id: id,
             buying_price: product?.last_buying_price ?? 0,
             stock: existing?.stock ?? 0,
-            stock_new: existing?.stock ?? 0,
+            stock_new: '',
         };
     });
 }
@@ -110,6 +118,21 @@ export function ProductFormDialog({
 
     const formRef = useRef<HTMLFormElement>(null);
 
+    const setStockDelta = (index: number, value: string) =>
+        setStockMovements((rows) =>
+            rows.map((row, i) =>
+                i === index ? { ...row, stock_new: value } : row,
+            ),
+        );
+
+    const stepStockDelta = (index: number, step: number) => {
+        const row = stockMovements[index];
+        const next = (Number(row.stock_new) || 0) + step;
+        // stok akhir tidak boleh minus
+        if (row.stock + next < 0) return;
+        setStockDelta(index, next === 0 ? '' : String(next));
+    };
+
     useEffect(() => {
         if (!open) return;
 
@@ -154,7 +177,7 @@ export function ProductFormDialog({
             stock_movements: stockMovements.map((row, i) => ({
                 location_id: row.location_id,
                 buying_price: last_buying_price,
-                stock: Number(get(`stock_new_${i}`)),
+                stock: Number(stockMovements[i].stock_new) || 0,
             })),
             product_unit_conversions: [],
             product_sell_prices: [],
@@ -492,7 +515,7 @@ export function ProductFormDialog({
                                 </h4>
 
                                 {stockMovements.length > 0 && (
-                                    <div className="grid grid-cols-12 gap-3 px-1">
+                                    <div className="hidden grid-cols-12 gap-3 px-1 sm:grid">
                                         <span className="col-span-5 text-xs text-muted-foreground">
                                             Lokasi
                                         </span>
@@ -500,52 +523,153 @@ export function ProductFormDialog({
                                             Stok Saat Ini
                                         </span>
                                         <span className="col-span-4 text-xs text-muted-foreground">
-                                            Stok Baru
+                                            Tambah Stok (minus = kurangi)
                                         </span>
                                     </div>
                                 )}
 
                                 <div className="grid gap-2">
-                                    {stockMovements.map((row, index) => (
-                                        <div
-                                            key={row.location_id}
-                                            className="grid grid-cols-12 items-center gap-3"
-                                        >
-                                            <div className="col-span-5">
-                                                <Input
-                                                    value={
-                                                        locations.find(
-                                                            (l) =>
-                                                                (l.value as unknown as number) ==
-                                                                row.location_id,
-                                                        )?.label ??
-                                                        `Lokasi #${row.location_id}`
-                                                    }
-                                                    readOnly
-                                                    className="cursor-not-allowed bg-muted text-muted-foreground"
-                                                />
+                                    {stockMovements.map((row, index) => {
+                                        const locationLabel =
+                                            locations.find(
+                                                (l) =>
+                                                    (l.value as unknown as number) ==
+                                                    row.location_id,
+                                            )?.label ??
+                                            `Lokasi #${row.location_id}`;
+                                        const delta =
+                                            Number(row.stock_new) || 0;
+                                        const finalStock = row.stock + delta;
+                                        const error =
+                                            errors[
+                                                `stock_movements.${index}.stock`
+                                            ];
+
+                                        return (
+                                            <div
+                                                key={row.location_id}
+                                                className="grid gap-3 rounded-lg border p-3 sm:grid-cols-12 sm:items-start sm:rounded-none sm:border-0 sm:p-0"
+                                            >
+                                                {/* Mobile: nama lokasi + stok saat ini */}
+                                                <div className="flex items-center justify-between gap-2 sm:hidden">
+                                                    <span className="truncate text-sm font-medium">
+                                                        {locationLabel}
+                                                    </span>
+                                                    <span className="shrink-0 text-xs text-muted-foreground">
+                                                        Stok saat ini:{' '}
+                                                        <span className="font-medium text-foreground">
+                                                            {row.stock}
+                                                        </span>
+                                                    </span>
+                                                </div>
+
+                                                {/* Desktop: kolom lokasi & stok saat ini */}
+                                                <div className="hidden sm:col-span-5 sm:block">
+                                                    <Input
+                                                        value={locationLabel}
+                                                        readOnly
+                                                        className="cursor-not-allowed bg-muted text-muted-foreground"
+                                                    />
+                                                </div>
+                                                <div className="hidden sm:col-span-3 sm:block">
+                                                    <Input
+                                                        type="number"
+                                                        value={row.stock}
+                                                        readOnly
+                                                        className="cursor-not-allowed bg-muted text-muted-foreground"
+                                                    />
+                                                </div>
+
+                                                <div className="grid gap-1 sm:col-span-4">
+                                                    <InputGroup>
+                                                        <InputGroupAddon align="inline-start">
+                                                            <InputGroupButton
+                                                                size="icon-sm"
+                                                                aria-label="Kurangi stok"
+                                                                onClick={() =>
+                                                                    stepStockDelta(
+                                                                        index,
+                                                                        -1,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    finalStock <=
+                                                                    0
+                                                                }
+                                                            >
+                                                                <Minus />
+                                                            </InputGroupButton>
+                                                        </InputGroupAddon>
+                                                        <InputGroupInput
+                                                            type="number"
+                                                            inputMode="numeric"
+                                                            name={`stock_new_${index}`}
+                                                            value={
+                                                                row.stock_new
+                                                            }
+                                                            onChange={(e) =>
+                                                                setStockDelta(
+                                                                    index,
+                                                                    e.target
+                                                                        .value,
+                                                                )
+                                                            }
+                                                            placeholder="0"
+                                                            min={-row.stock}
+                                                            aria-invalid={
+                                                                Boolean(
+                                                                    error,
+                                                                ) ||
+                                                                finalStock < 0
+                                                            }
+                                                            className="[appearance:textfield] text-center tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                                        />
+                                                        <InputGroupAddon align="inline-end">
+                                                            <InputGroupButton
+                                                                size="icon-sm"
+                                                                aria-label="Tambah stok"
+                                                                onClick={() =>
+                                                                    stepStockDelta(
+                                                                        index,
+                                                                        1,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Plus />
+                                                            </InputGroupButton>
+                                                        </InputGroupAddon>
+                                                    </InputGroup>
+
+                                                    {delta !== 0 && (
+                                                        <p
+                                                            className={cn(
+                                                                'text-xs tabular-nums',
+                                                                finalStock < 0
+                                                                    ? 'text-destructive'
+                                                                    : 'text-muted-foreground',
+                                                            )}
+                                                        >
+                                                            Stok akhir:{' '}
+                                                            {row.stock}{' '}
+                                                            {delta > 0
+                                                                ? '+'
+                                                                : '−'}{' '}
+                                                            {Math.abs(delta)} ={' '}
+                                                            <span className="font-medium">
+                                                                {finalStock}
+                                                            </span>
+                                                        </p>
+                                                    )}
+
+                                                    {error && (
+                                                        <p className="text-xs text-destructive">
+                                                            {error}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="col-span-3">
-                                                <Input
-                                                    type="number"
-                                                    value={row.stock}
-                                                    readOnly
-                                                    className="cursor-not-allowed bg-muted text-muted-foreground"
-                                                />
-                                            </div>
-                                            <div className="col-span-4">
-                                                <Input
-                                                    type="number"
-                                                    name={`stock_new_${index}`}
-                                                    defaultValue={
-                                                        row.stock_new || ''
-                                                    }
-                                                    placeholder="0"
-                                                    min={0}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
 
                                     {stockMovements.length === 0 && (
                                         <p className="py-2 text-sm text-muted-foreground">

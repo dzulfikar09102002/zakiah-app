@@ -6,7 +6,7 @@ import {
     type ColumnDef,
     type VisibilityState,
 } from '@tanstack/react-table';
-import { Eye, Search } from 'lucide-react';
+import { Search, SquareArrowOutUpRight } from 'lucide-react';
 import QueryString from 'qs';
 import { useEffect, useState } from 'react';
 
@@ -15,6 +15,7 @@ import DataTable from '@/components/data-table';
 import DateRangePicker from '@/components/date-range-picker';
 import LocationDropdown from '@/components/location-dropdown';
 import MultiSelect from '@/components/multi-select';
+import PrintStrukButton from '@/components/print-struk-button';
 import Select from '@/components/select';
 import TablePagination from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +24,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import type { Option, Pagination } from '@/lib/model';
-import { capitalize, toRupiah } from '@/lib/utils';
+import { capitalize, formatDate, toRupiah } from '@/lib/utils';
 import saleTransactions from '@/routes/sale-transactions';
 import type { BreadcrumbItem } from '@/types';
 
@@ -84,14 +85,7 @@ const columns = [
     }),
     columnHelper.accessor('date', {
         header: 'Tanggal',
-        cell: (info) =>
-            new Date(info.getValue()).toLocaleString('id-ID', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            }),
+        cell: (info) => formatDate(info.getValue(), true),
     }),
     columnHelper.accessor('location', {
         header: 'Lokasi',
@@ -135,11 +129,17 @@ const columns = [
         header: '',
         enableHiding: false,
         cell: ({ row }) => (
-            <Button variant="outline" size="sm" asChild>
-                <Link href={saleTransactions.show(row.original.id).url}>
-                    <Eye /> Detail
-                </Link>
-            </Button>
+            <div className="flex justify-end gap-2">
+                <PrintStrukButton
+                    url={saleTransactions.struk(row.original.id).url}
+                    iconOnly
+                />
+                <Button variant="outline" size="icon" asChild>
+                    <Link href={saleTransactions.show(row.original.id).url}>
+                        <SquareArrowOutUpRight />
+                    </Link>
+                </Button>
+            </div>
         ),
     }),
 ] as ColumnDef<SaleTransactionData>[];

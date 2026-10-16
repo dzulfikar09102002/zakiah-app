@@ -6,7 +6,6 @@ import {
     useReactTable,
     type ColumnDef,
 } from '@tanstack/react-table';
-import { format } from 'date-fns';
 import { Search } from 'lucide-react';
 import QueryString from 'qs';
 import { useEffect, useState } from 'react';
@@ -21,7 +20,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination } from '@/lib/model';
-import { toRupiah } from '@/lib/utils';
+import { formatDate, toRupiah } from '@/lib/utils';
 import reportStockMovement from '@/routes/report-stock-movement';
 import type { BreadcrumbItem } from '@/types';
 
@@ -31,6 +30,7 @@ type StockMovementData = {
     product_unit_name: string;
     location_name: string;
     date: string;
+    cost_of_goods_sold: number;
     sell_price: number;
     stock_in: number;
     stock_out: number;
@@ -45,6 +45,11 @@ export const columns = [
 
     columnHelper.accessor('product_sku', {
         header: 'SKU Produk',
+    }),
+
+    columnHelper.accessor('cost_of_goods_sold', {
+        header: 'HPP',
+        cell: (info) => toRupiah(info.getValue()),
     }),
 
     columnHelper.accessor('sell_price', {
@@ -62,7 +67,7 @@ export const columns = [
 
     columnHelper.accessor('date', {
         header: 'Tanggal',
-        cell: (info) => format(new Date(info.getValue()), 'dd MMM yyyy'),
+        cell: (info) => formatDate(info.getValue()),
     }),
 
     columnHelper.accessor('stock_in', {

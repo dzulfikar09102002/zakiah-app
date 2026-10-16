@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 
 import InputError from '@/components/input-error';
+import PrintStrukButton from '@/components/print-struk-button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
-import { capitalize, cn, toRupiah } from '@/lib/utils';
+import { capitalize, cn, formatDate, toRupiah } from '@/lib/utils';
 import saleTransactions from '@/routes/sale-transactions';
 import type { BreadcrumbItem } from '@/types';
 
@@ -98,16 +99,7 @@ type Props = {
     saleTransaction: SaleTransaction;
 };
 
-const formatDateTime = (value?: string | null) =>
-    value
-        ? new Date(value).toLocaleString('id-ID', {
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-          })
-        : '-';
+const formatDateTime = (value?: string | null) => formatDate(value, true);
 
 const personName = (
     first?: string | null,
@@ -345,6 +337,9 @@ export default function SaleTransactionShow({ saleTransaction: t }: Props) {
                                 <ArrowLeft /> Kembali
                             </Link>
                         </Button>
+                        <PrintStrukButton
+                            url={saleTransactions.struk(t.id).url}
+                        />
                         {!isVoid && (
                             <Button
                                 variant="destructive"

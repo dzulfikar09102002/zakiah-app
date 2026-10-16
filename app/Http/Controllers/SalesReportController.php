@@ -32,6 +32,7 @@ class SalesReportController extends Controller
                 ReportPdfService::column('cashier', 'Kasir'),
                 ReportPdfService::column('sales', 'Sales'),
                 ReportPdfService::column('member', 'Member'),
+                ReportPdfService::column('payment_method', 'Metode Pembayaran'),
                 ReportPdfService::column('subtotal', 'Subtotal', 'currency', true),
                 ReportPdfService::column('discount', 'Diskon', 'currency', true),
                 ReportPdfService::column('adjustment', 'Penyesuaian', 'currency', true),

@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination, Product } from '@/lib/model';
-import { toRupiah } from '@/lib/utils';
+import { formatDate, toRupiah } from '@/lib/utils';
 import products from '@/routes/products';
 import type { BreadcrumbItem, SharedData } from '@/types';
 import { ProductFormDialog } from '../../components/product-form-dialog';
@@ -138,18 +138,7 @@ export default ({
         }),
         columnHelper.accessor('updated_at', {
             header: 'Update',
-            cell: (info) => {
-                const val = info.getValue();
-                return val
-                    ? new Intl.DateTimeFormat('id-ID', {
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                      }).format(new Date(val))
-                    : '-';
-            },
+            cell: (info) => formatDate(info.getValue(), true),
         }),
         columnHelper.display({
             id: 'actions',

@@ -13,6 +13,9 @@ export type SharedData = {
     name: string;
     branding: Branding;
     auth: Auth;
+    sso: {
+        newzakica: boolean;
+    };
     sidebarOpen: boolean;
     [key: string]: unknown;
 };

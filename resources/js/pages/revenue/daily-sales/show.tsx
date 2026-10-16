@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import SaleTransactionTable, {
     type DailySaleTransaction,
 } from '@/components/daily-sales/sale-transaction-table';
+import PrintStrukButton from '@/components/print-struk-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +26,7 @@ import {
 } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import type { Option, Pagination } from '@/lib/model';
-import { capitalize, cn, toRupiah } from '@/lib/utils';
+import { capitalize, cn, formatDate, toRupiah } from '@/lib/utils';
 import dailySales from '@/routes/daily-sales';
 import type { BreadcrumbItem } from '@/types';
 
@@ -99,16 +100,7 @@ type Props = {
     shiftOptions: Option[];
 };
 
-const formatDateTime = (value?: string | null) =>
-    value
-        ? new Date(value).toLocaleString('id-ID', {
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-          })
-        : '-';
+const formatDateTime = (value?: string | null) => formatDate(value, true);
 
 const employeeName = (first?: string | null, last?: string | null) => {
     const name = [first, last].filter(Boolean).join(' ').replace(/_/g, ' ');
@@ -211,6 +203,10 @@ export default function DailySaleShow({
                                 <ArrowLeft /> Kembali
                             </Link>
                         </Button>
+                        <PrintStrukButton
+                            url={dailySales.struk(dailySale.id).url}
+                            disabled={!dailySale.taking_id}
+                        />
                     </div>
                 </div>
 

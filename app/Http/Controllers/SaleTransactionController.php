@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\StatusEnum;
 use App\Services\DailySaleService;
 use App\Services\SaleTransactionService;
+use App\Services\SsoTicketService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -31,6 +33,23 @@ class SaleTransactionController extends Controller
         $saleTransaction = $this->service->getDetail($saleTransaction);
 
         return Inertia::render('revenue/sale-transactions/show', compact('saleTransaction'));
+    }
+
+    /**
+     * Buka struk penjualan di NewZakicaPOS lewat SSO (tanpa login ulang, langsung cetak).
+     */
+    public function struk(Request $request, int $id, SsoTicketService $sso): RedirectResponse
+    {
+        $saleTransaction = $this->service->findSaleTransaction($id);
+        abort_if($saleTransaction == null, 404);
+        abort_if($sso->newZakicaUrl() === null, 503, 'Alamat NewZakicaPOS belum dikonfigurasi (NEWZAKICA_URL).');
+
+        return redirect()->away($sso->newZakicaStrukUrl(
+            $request->user(),
+            'penjualan',
+            $saleTransaction->id,
+            $saleTransaction->location_id,
+        ));
     }
 
     public function void(Request $request, int $id)

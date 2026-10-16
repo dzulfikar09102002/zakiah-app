@@ -65,7 +65,7 @@ class StockRemainingController extends Controller
             [
                 'Lokasi' => $pdf->locationName($location->id),
                 'Kategori' => $category['label'] ?? 'Semua kategori',
-                'Per Tanggal' => now()->locale('id')->translatedFormat('d M Y H:i'),
+                'Per Tanggal' => now()->locale('id')->translatedFormat('d F Y H:i'),
             ],
         );
     }

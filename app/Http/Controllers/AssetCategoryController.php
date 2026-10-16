@@ -51,7 +51,7 @@ class AssetCategoryController extends Controller
             $this->service->getCategoryAssetsForPdf(),
             [
                 'Lokasi' => $pdf->locationsLabel(),
-                'Per Tanggal' => now()->locale('id')->translatedFormat('d M Y H:i'),
+                'Per Tanggal' => now()->locale('id')->translatedFormat('d F Y H:i'),
             ],
             function (): array {
                 $summary = $this->service->getAssetSummary();

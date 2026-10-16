@@ -6,6 +6,7 @@ use App\Models\Location;
 use App\Models\SaleTransaction;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 
@@ -40,7 +41,11 @@ class SaleReportService
         return $this->saleReportQuery()
             ->limit(ReportPdfService::MAX_ROWS + 1)
             ->cursor()
-            ->map(fn (SaleTransaction $t) => $this->transformRow($t));
+            // cursor() tidak bisa eager load: relasi pembayaran dimuat per 1.000 baris.
+            ->chunk(1000)
+            ->flatMap(fn (LazyCollection $chunk) => (new Collection($chunk->values()->all()))
+                ->load('saleTransactionPayments:id,sale_transaction_id,payment_method_name')
+                ->map(fn (SaleTransaction $t) => $this->transformRow($t)));
     }
 
     private function saleReportQuery(): Builder
@@ -134,6 +139,11 @@ class SaleReportService
                 )
             ),
             'member' => $t->customer_first_name.' - '.$t->customer_last_name,
+            'payment_method' => $t->saleTransactionPayments
+                ->pluck('payment_method_name')
+                ->filter()
+                ->unique()
+                ->implode(', '),
             'subtotal' => $t->subtotal,
             'discount' => $t->promo_amount_before_tax + $t->discount_amount_before_tax,
             'adjustment' => $t->surcharge_amount_before_tax,
