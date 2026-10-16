@@ -21,7 +21,7 @@ export const capitalize = (text: string): string => {
 };
 
 /**
- * Format tanggal laporan: "07 Oktober 2026" (atau "07 Oktober 2026 14:30" bila withTime).
+ * Format tanggal: "07 Oktober 2026" (atau "07 Oktober 2026 14:30" bila withTime).
  */
 export const formatDate = (
     value: string | Date | null | undefined,
@@ -29,7 +29,8 @@ export const formatDate = (
 ): string => {
     if (!value) return '-';
 
-    const date = value instanceof Date ? value : new Date(value);
+    const date =
+        value instanceof Date ? value : new Date(value.replace(' ', 'T'));
 
     if (isNaN(date.getTime())) return '-';
 

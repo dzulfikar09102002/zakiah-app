@@ -6,6 +6,7 @@ import {
     type ColumnDef,
 } from '@tanstack/react-table';
 import { Search, SquareArrowOutUpRight } from 'lucide-react';
+import QueryString from 'qs';
 import { useState } from 'react';
 
 import DataTable from '@/components/data-table';
@@ -18,13 +19,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination } from '@/lib/model';
-import { capitalize, toRupiah } from '@/lib/utils';
+import { capitalize, formatDate, toRupiah } from '@/lib/utils';
 import dailySales from '@/routes/daily-sales';
 import type { BreadcrumbItem } from '@/types';
 
 type DailySaleData = {
     id: number;
     taking_id: number | null;
+    location: string | null;
     local_sales_at: string;
     sales_amount: number;
     refund_amount: number;
@@ -41,7 +43,6 @@ type LocationOption = {
 type Props = {
     pagination: Pagination<DailySaleData>;
     locationOptions: LocationOption[];
-    locationId: number;
 };
 
 const title = 'Rekapan Penjualan';
@@ -53,20 +54,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const formatDate = (value: string) =>
-    new Date(value).toLocaleDateString('id-ID', {
-        weekday: 'long',
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-    });
-
 const columnHelper = createColumnHelper<DailySaleData>();
 
 const columns = [
     columnHelper.accessor('local_sales_at', {
         header: 'Tanggal',
-        cell: (info) => formatDate(info.getValue()),
+        cell: (info) => formatDate(info.getValue(), true),
+    }),
+    columnHelper.accessor('location', {
+        header: 'Lokasi',
+        cell: (info) => capitalize(info.getValue() ?? '-'),
     }),
     columnHelper.display({
         id: 'employee',
@@ -131,12 +128,27 @@ const columns = [
     }),
 ] as ColumnDef<DailySaleData>[];
 
-export default function DailySaleIndex({
-    pagination,
-    locationOptions,
-    locationId,
-}: Props) {
-    const [loc, setLoc] = useState<number>(locationId);
+const toNumberArray = (value: unknown): number[] => {
+    if (!value) return [];
+
+    return (Array.isArray(value) ? value : String(value).split(','))
+        .map(Number)
+        .filter((id) => !isNaN(id));
+};
+
+export default function DailySaleIndex({ pagination, locationOptions }: Props) {
+    const params = QueryString.parse(window.location.search, {
+        ignoreQueryPrefix: true,
+    });
+    const initialSelectAll = params.select_all_location !== '0';
+    const initialLocs = toNumberArray(params.locs);
+    const initialExcludeLocs = toNumberArray(params.exclude_locs);
+
+    const [selectAllLocation, setSelectAllLocation] =
+        useState<boolean>(initialSelectAll);
+    const [locs, setLocs] = useState<number[]>(initialLocs);
+    const [excludeLocs, setExcludeLocs] =
+        useState<number[]>(initialExcludeLocs);
 
     const table = useReactTable({
         data: pagination.data,
@@ -153,11 +165,36 @@ export default function DailySaleIndex({
                         <DateRangePicker />
 
                         <LocationDropdown
+                            multiSelect
                             options={locationOptions}
-                            defaultId={locationId}
-                            handleIdChange={setLoc}
+                            defaultSelectAll={initialSelectAll}
+                            defaultIds={initialLocs}
+                            defaultExcludeIds={initialExcludeLocs}
+                            handleSelectAllChange={setSelectAllLocation}
+                            handleIdsChange={setLocs}
+                            handleExcludeIdsChange={setExcludeLocs}
                         />
-                        <input type="hidden" name="loc" value={loc} />
+                        <input
+                            type="hidden"
+                            name="select_all_location"
+                            value={selectAllLocation ? '1' : '0'}
+                        />
+                        {locs.map((id) => (
+                            <input
+                                key={id}
+                                type="hidden"
+                                name="locs[]"
+                                value={id}
+                            />
+                        ))}
+                        {excludeLocs.map((id) => (
+                            <input
+                                key={id}
+                                type="hidden"
+                                name="exclude_locs[]"
+                                value={id}
+                            />
+                        ))}
 
                         <Button type="submit">
                             <Search /> Cari

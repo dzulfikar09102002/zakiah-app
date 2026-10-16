@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import type { EmployeeName, StockDocumentStatus } from '@/lib/model';
-import { capitalize } from '@/lib/utils';
+import { capitalize, formatDate } from '@/lib/utils';
 
 const statusMap: Record<
     StockDocumentStatus,
@@ -43,15 +43,7 @@ export const employeeName = (employee?: EmployeeName | null) =>
 
 /** Waktu lokal dokumen dari DB ("yyyy-MM-dd HH:mm:ss"). */
 export const formatDocumentDate = (value?: string | null) =>
-    value
-        ? new Date(value.replace(' ', 'T')).toLocaleString('id-ID', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-          })
-        : '-';
+    formatDate(value, true);
 
 /** Tampilkan selisih stok dengan tanda + dan warna. */
 export function DifferenceValue({ value }: { value: number }) {

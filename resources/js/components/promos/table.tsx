@@ -11,7 +11,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import type { Pagination, Promo } from '@/lib/model';
-import { capitalize, toRupiah } from '@/lib/utils';
+import { capitalize, formatDate, toRupiah } from '@/lib/utils';
 import promos from '@/routes/promos';
 
 /** Tanggal promo dari DB berformat "yyyy-MM-dd HH:mm:ss". */
@@ -19,13 +19,7 @@ export const parsePromoDate = (value: string) =>
     new Date(value.replace(' ', 'T'));
 
 export const formatPromoDate = (value: string | null) =>
-    value
-        ? parsePromoDate(value).toLocaleDateString('id-ID', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric',
-          })
-        : '-';
+    formatDate(value, true);
 
 /** Status mengikuti cara kasir menentukan promo berlaku (start_at/end_at). */
 export const promoPeriod = (promo: Promo) => {

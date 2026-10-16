@@ -24,7 +24,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import type { Option, Pagination } from '@/lib/model';
-import { capitalize, toRupiah } from '@/lib/utils';
+import { capitalize, formatDate, toRupiah } from '@/lib/utils';
 import saleTransactions from '@/routes/sale-transactions';
 import type { BreadcrumbItem } from '@/types';
 
@@ -85,14 +85,7 @@ const columns = [
     }),
     columnHelper.accessor('date', {
         header: 'Tanggal',
-        cell: (info) =>
-            new Date(info.getValue()).toLocaleString('id-ID', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            }),
+        cell: (info) => formatDate(info.getValue(), true),
     }),
     columnHelper.accessor('location', {
         header: 'Lokasi',

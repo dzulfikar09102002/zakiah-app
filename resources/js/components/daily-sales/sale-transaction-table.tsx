@@ -29,7 +29,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import type { Option, Pagination } from '@/lib/model';
-import { capitalize, cn, toRupiah } from '@/lib/utils';
+import { capitalize, cn, formatDate, toRupiah } from '@/lib/utils';
 import saleTransactions from '@/routes/sale-transactions';
 
 export type SaleTransactionItem = {
@@ -119,14 +119,7 @@ const columns = [
     }),
     columnHelper.accessor('date', {
         header: 'Waktu',
-        cell: (info) =>
-            new Date(info.getValue()).toLocaleString('id-ID', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-            }),
+        cell: (info) => formatDate(info.getValue(), true),
     }),
     columnHelper.accessor('order_type', {
         header: 'Jenis Pesanan',
