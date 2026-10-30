@@ -14,6 +14,16 @@
     <meta name="apple-mobile-web-app-title" content="Zakiah">
     <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png?v=2">
 
+    {{-- Splash statis iOS saat app PWA dibuka (sama dengan frame pertama partials/splash).
+         [lebar, tinggi, pixel ratio] layar iPhone dalam px CSS, portrait. --}}
+    @foreach ([[440, 956, 3], [430, 932, 3], [428, 926, 3], [414, 896, 3], [414, 896, 2], [414, 736, 3], [402, 874, 3], [393, 852, 3], [390, 844, 3], [375, 812, 3], [375, 667, 2], [320, 568, 2]] as [$w, $h, $dpr])
+        @foreach (['light', 'dark'] as $scheme)
+            <link rel="apple-touch-startup-image"
+                media="(device-width: {{ $w }}px) and (device-height: {{ $h }}px) and (-webkit-device-pixel-ratio: {{ $dpr }}) and (orientation: portrait) and (prefers-color-scheme: {{ $scheme }})"
+                href="/pwa/splash/iphone-{{ $w * $dpr }}x{{ $h * $dpr }}-{{ $scheme }}.png">
+        @endforeach
+    @endforeach
+
     {{-- Inline script to detect system dark mode preference and apply it immediately --}}
     <script>
         (function () {
@@ -34,6 +44,12 @@
 
                 if ((standalone || phone) && !sessionStorage.getItem('splash-shown')) {
                     document.documentElement.classList.add('show-splash');
+
+                    // iOS PWA sudah menampilkan gambar splash statis dengan logo di posisi
+                    // yang sama, jadi logo langsung tampil (tanpa animasi muncul) agar menyambung.
+                    if (standalone && /iphone|ipad|ipod/i.test(navigator.userAgent)) {
+                        document.documentElement.classList.add('sp-static-start');
+                    }
                 }
             } catch (e) {}
         })();

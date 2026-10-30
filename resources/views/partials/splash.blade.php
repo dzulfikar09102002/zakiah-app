@@ -130,6 +130,11 @@
     @keyframes sp-bubble { 0% { transform: translateY(0) scale(.6); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-70vh) scale(1.1); opacity: 0; } }
     @keyframes sp-dot { 0%, 100% { transform: translateY(0); opacity: .5; } 50% { transform: translateY(-5px); opacity: 1; } }
 
+    /* Lanjutan dari splash statis iOS: logo sudah terlihat sejak awal. */
+    .sp-static-start .sp-logo,
+    .sp-static-start .sp-divider { animation: none; opacity: 1; transform: none; }
+    .sp-static-start .sp-divider { opacity: .35; }
+
     @media (prefers-reduced-motion: reduce) {
         .show-splash #app-splash { --sp-rise: .01s; }
         .sp-wave, .sp-bubble, .sp-loader span { animation: none; }
