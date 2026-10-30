@@ -8,7 +8,7 @@
  * - Ikon, logo, font: stale-while-revalidate.
  * - Request lain (Inertia XHR, endpoint JSON, POST): tidak disentuh.
  */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const PRECACHE = `zakiah-precache-${VERSION}`;
 const ASSETS = `zakiah-assets-${VERSION}`;
 const STATIC = `zakiah-static-${VERSION}`;

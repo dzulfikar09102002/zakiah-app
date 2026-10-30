@@ -56,6 +56,10 @@ createInertiaApp({
                 </App>
             </StrictMode>,
         );
+
+        // Tutup splash screen (resources/views/partials/splash.blade.php)
+        // setelah halaman pertama selesai dirender.
+        requestAnimationFrame(() => window.__hideSplash?.());
     },
     progress: {
         color: '#4B5563',

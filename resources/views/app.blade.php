@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Zakiah">
-    <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png?v=2">
 
     {{-- Inline script to detect system dark mode preference and apply it immediately --}}
     <script>
@@ -26,6 +26,16 @@
                     document.documentElement.classList.add('dark');
                 }
             }
+
+            // Splash (partials/splash): saat app PWA dibuka atau pertama kali di HP, sekali per sesi.
+            try {
+                const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+                const phone = window.matchMedia('(max-width: 767px)').matches;
+
+                if ((standalone || phone) && !sessionStorage.getItem('splash-shown')) {
+                    document.documentElement.classList.add('show-splash');
+                }
+            } catch (e) {}
         })();
     </script>
 
@@ -58,6 +68,7 @@
     @inertiaHead
 </head>
 <body class="font-sans antialiased">
+    @include('partials.splash')
     @inertia
 </body>
 
