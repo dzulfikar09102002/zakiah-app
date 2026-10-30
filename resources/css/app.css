@@ -132,7 +132,6 @@
 }
 
 @layer base {
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=Lato:wght@400;700&display=swap');
 
     * {
         @apply border-border;

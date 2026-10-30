@@ -153,15 +153,29 @@ export default function AuthSimpleLayout({
                         <CardHeader className="relative px-8 pt-8 pb-3 space-y-8">
                             {/* Logo */}
                             <div className="auth-fade-up-2 flex flex-col items-center gap-3">
-                                <Link href={home()} className="group flex flex-col items-center gap-2">
+                                <Link href={home()} className="group flex items-center gap-3">
                                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 transition-transform hover:scale-105 hover:bg-primary/20">
                                         <AppLogoIcon className="size-7 text-primary" />
+                                    </div>
+                                    <span className="h-7 w-px bg-border" aria-hidden />
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 transition-transform hover:scale-105 hover:bg-primary/20">
+                                        {/* Logo Secaca: versi gelap untuk tema terang, versi terang untuk tema gelap */}
+                                        <img
+                                            src="/assets/images/secaca.png"
+                                            alt="Logo Secaca"
+                                            className="w-8 object-contain dark:hidden"
+                                        />
+                                        <img
+                                            src="/assets/images/secaca-light.png"
+                                            alt="Logo Secaca"
+                                            className="hidden w-8 object-contain dark:block"
+                                        />
                                     </div>
                                     <span className="sr-only">Home</span>
                                 </Link>
 
                                 <div className="space-y-1 text-center">
-                                    <CardTitle className="text-2xl md:text-[1.6rem] font-serif font-semibold leading-tight tracking-tight text-foreground">
+                                    <CardTitle className="mb-1 text-[clamp(1.15rem,2.2vw,1.4rem)] font-semibold leading-[1.2] text-foreground">
                                         {title}
                                     </CardTitle>
                                     <CardDescription className="text-[13px] leading-relaxed text-muted-foreground font-lato">

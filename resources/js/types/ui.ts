@@ -4,6 +4,8 @@ import type { BreadcrumbItem } from './navigation';
 export type AppLayoutProps = {
     children: ReactNode;
     breadcrumbs?: BreadcrumbItem[];
+    /** Di HP: sembunyikan top bar & padding, halaman menggambar header sendiri (beranda). */
+    mobileHome?: boolean;
 };
 
 export type AuthLayoutProps = {

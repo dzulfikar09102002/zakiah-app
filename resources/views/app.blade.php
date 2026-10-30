@@ -3,7 +3,16 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    {{-- PWA: manifest, warna status bar, dan dukungan "Add to Home Screen" di iOS --}}
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#cc7455">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Zakiah">
+    <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png">
 
     {{-- Inline script to detect system dark mode preference and apply it immediately --}}
     <script>
@@ -39,8 +48,10 @@
     {{-- Favicon = logo entity (sama dengan kop PDF); diperbarui di app.tsx saat navigasi. --}}
     <link id="app-favicon" rel="icon" type="image/png" href="{{ $branding['logo'] ?? '/favicon.ico' }}">
 
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
+    {{-- Font disamakan dengan NewZakicaPOS (Views/Shared/_LayoutAuth.cshtml) --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,600;1,400;1,600&display=swap" rel="stylesheet">
 
     @viteReactRefresh
     @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])

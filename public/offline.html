@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="id">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
+        <meta name="theme-color" content="#cc7455" />
+        <title>Tidak ada koneksi | Zakiah Backoffice</title>
+        <link rel="icon" type="image/png" href="/pwa/icon-192.png" />
+        <style>
+            :root {
+                color-scheme: light dark;
+                --bg: #fff1ea;
+                --card: #fffaf7;
+                --fg: #5c2a17;
+                --muted: #9a6b5a;
+                --primary: #cc7455;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bg: #0e0705;
+                    --card: #1d1411;
+                    --fg: #f6ece7;
+                    --muted: #b49e95;
+                }
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                min-height: 100dvh;
+                display: grid;
+                place-items: center;
+                padding: 24px;
+                background: var(--bg);
+                color: var(--fg);
+                font-family:
+                    'Instrument Sans',
+                    ui-sans-serif,
+                    system-ui,
+                    -apple-system,
+                    sans-serif;
+                text-align: center;
+            }
+
+            .card {
+                width: 100%;
+                max-width: 360px;
+                padding: 32px 24px;
+                border-radius: 28px;
+                background: var(--card);
+                box-shadow: 0 20px 50px -20px rgb(155 70 44 / 0.35);
+            }
+
+            img {
+                width: 72px;
+                height: 72px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                margin: 20px 0 8px;
+                font-size: 20px;
+            }
+
+            p {
+                margin: 0 0 24px;
+                color: var(--muted);
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
+            button {
+                width: 100%;
+                height: 48px;
+                border: 0;
+                border-radius: 14px;
+                background: var(--primary);
+                color: #fff;
+                font: inherit;
+                font-weight: 600;
+                font-size: 15px;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <main class="card">
+            <img src="/pwa/icon-192.png" alt="" />
+            <h1>Kamu sedang offline</h1>
+            <p>
+                Periksa koneksi internet, lalu coba lagi. Data penjualan dan
+                stok perlu koneksi agar selalu terbaru.
+            </p>
+            <button type="button" onclick="location.reload()">
+                Coba lagi
+            </button>
+        </main>
+        <script>
+            window.addEventListener('online', () => location.reload());
+        </script>
+    </body>
+</html>

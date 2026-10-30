@@ -17,6 +17,8 @@ import { ProfitPotential, Top5Data } from '@/lib/model';
 import { DateRange } from 'node_modules/react-day-picker/dist/esm/types/shared';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import MobileHome from '@/components/mobile-home/mobile-home';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const currentYear = new Date().getFullYear();
 
@@ -563,8 +565,33 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard({ locationOptions }: Props) {
+    const isMobile = useIsMobile();
+    // Dibaca sekali: filter desktop menulis ulang query string via replaceState.
+    const [showAnalytics] = useState(
+        () =>
+            new URLSearchParams(window.location.search).get('view') ===
+            'analytics',
+    );
+
+    // Di HP, beranda tampil ala aplikasi m-banking; analitik lengkap tetap
+    // bisa dibuka lewat ?view=analytics.
+    if (isMobile && !showAnalytics) {
+        return (
+            <AppLayout breadcrumbs={breadcrumbs} mobileHome>
+                <Head title="Beranda" />
+                <MobileHome />
+            </AppLayout>
+        );
+    }
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout
+            breadcrumbs={
+                showAnalytics
+                    ? [...breadcrumbs, { title: 'Analitik', href: '#' }]
+                    : breadcrumbs
+            }
+        >
             <Head title="Dashboard" />
             <DashboardContent locationOptions={locationOptions} />
         </AppLayout>

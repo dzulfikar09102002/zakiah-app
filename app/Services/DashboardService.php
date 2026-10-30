@@ -20,6 +20,7 @@ class DashboardService
             'value' => $location->id,
         ]);
     }
+
     public function getProfitPotential()
     {
         $query = ProductLocationStock::query()
@@ -58,7 +59,7 @@ class DashboardService
                 'product_location_stocks.location_id',
                 $excludeLocs
             );
-        } elseif (!$selectAll && count($locs) > 0) {
+        } elseif (! $selectAll && count($locs) > 0) {
             $query->whereIn(
                 'product_location_stocks.location_id',
                 $locs
@@ -84,6 +85,7 @@ class DashboardService
             ')
             ->first();
     }
+
     public function getSalesRefundSummary()
     {
         $query = SaleRefund::query();
@@ -125,7 +127,7 @@ class DashboardService
                 'location_id',
                 $excludeLocs
             );
-        } elseif (!$selectAll && count($locs) > 0) {
+        } elseif (! $selectAll && count($locs) > 0) {
             $query->whereIn(
                 'location_id',
                 $locs
@@ -139,6 +141,7 @@ class DashboardService
             ')
             ->first();
     }
+
     public function getSalesSummary()
     {
         $query = SaleTransaction::query();
@@ -192,7 +195,7 @@ class DashboardService
                 'location_id',
                 $excludeLocs
             );
-        } elseif (!$selectAll && count($locs) > 0) {
+        } elseif (! $selectAll && count($locs) > 0) {
             $query->whereIn(
                 'location_id',
                 $locs
@@ -208,8 +211,13 @@ class DashboardService
                 SUM(net_profit)
                 as net_profit
             ')
+            ->selectRaw('
+                COUNT(*)
+                as transaction_count
+            ')
             ->first();
     }
+
     public function getTopProductsAndCategories()
     {
         $query = SaleTransactionDetail::query();
@@ -238,7 +246,7 @@ class DashboardService
                 : today()->startOfDay()
         );
 
-        $query->where(  
+        $query->where(
             'local_sales_at',
             '<=',
             request('end_at')
@@ -263,7 +271,7 @@ class DashboardService
                 'location_id',
                 $excludeLocs
             );
-        } elseif (!$selectAll && count($locs) > 0) {
+        } elseif (! $selectAll && count($locs) > 0) {
             $query->whereIn(
                 'location_id',
                 $locs
@@ -381,7 +389,7 @@ class DashboardService
                 'location_id',
                 $excludeLocs
             );
-        } elseif (!$selectAll && count($locs) > 0) {
+        } elseif (! $selectAll && count($locs) > 0) {
             $query->whereIn(
                 'location_id',
                 $locs
@@ -404,6 +412,7 @@ class DashboardService
             ->limit(5)
             ->get();
     }
+
     public function getTopCustomers()
     {
         return app(TopCustomerReportService::class)->topCustomers(
@@ -471,7 +480,7 @@ class DashboardService
                 'location_id',
                 $excludeLocs
             );
-        } elseif (!$selectAll && count($locs) > 0) {
+        } elseif (! $selectAll && count($locs) > 0) {
             $query->whereIn(
                 'location_id',
                 $locs
@@ -489,6 +498,7 @@ class DashboardService
             ->limit(30)
             ->get();
     }
+
     public function getMonthlySales()
     {
         $query = SaleTransaction::query();
@@ -516,22 +526,22 @@ class DashboardService
 
         if ($selectAll && count($excludeLocs) > 0) {
             $query->whereNotIn('location_id', $excludeLocs);
-        } elseif (!$selectAll && count($locs) > 0) {
+        } elseif (! $selectAll && count($locs) > 0) {
             $query->whereIn('location_id', $locs);
         }
 
         $data = $query
-            ->selectRaw("MONTH(local_sales_at) as month")
-            ->selectRaw("SUM(net_sales_after_tax) as sales")
-            ->selectRaw("SUM(net_profit) as profit")
-            ->groupByRaw("MONTH(local_sales_at)")
-            ->orderByRaw("MONTH(local_sales_at)")
+            ->selectRaw('MONTH(local_sales_at) as month')
+            ->selectRaw('SUM(net_sales_after_tax) as sales')
+            ->selectRaw('SUM(net_profit) as profit')
+            ->groupByRaw('MONTH(local_sales_at)')
+            ->orderByRaw('MONTH(local_sales_at)')
             ->get();
 
         $map = [];
 
         foreach ($data as $row) {
-            $map[(int)$row->month] = $row;
+            $map[(int) $row->month] = $row;
         }
 
         $months = [
@@ -555,6 +565,7 @@ class DashboardService
             'net_profit' => $profit,
         ];
     }
+
     public function getYearlySales()
     {
         $query = SaleTransaction::query();
@@ -575,12 +586,12 @@ class DashboardService
 
         if ($selectAll && count($excludeLocs) > 0) {
             $query->whereNotIn('location_id', $excludeLocs);
-        } elseif (!$selectAll && count($locs) > 0) {
+        } elseif (! $selectAll && count($locs) > 0) {
             $query->whereIn('location_id', $locs);
         }
 
         $startYear = request('start_year', now()->year - 1);
-        $endYear   = request('end_year', now()->year);
+        $endYear = request('end_year', now()->year);
 
         $query->whereBetween(
             DB::raw('YEAR(local_sales_at)'),
