@@ -46,18 +46,21 @@ function buildStockMovements(
     product: Product | undefined,
     locations: Option[],
 ): StockMovementRow[] {
-    const existingMap = new Map(
-        product?.product_location_stocks?.map((sm) => [sm.location_id, sm]) ??
-            [],
-    );
+    // Satu lokasi bisa punya lebih dari satu baris stok, jadi dijumlahkan agar sama dengan total di daftar produk.
+    const stockByLocation = new Map<number, number>();
+    product?.product_location_stocks?.forEach((sm) => {
+        stockByLocation.set(
+            sm.location_id,
+            (stockByLocation.get(sm.location_id) ?? 0) + sm.stock,
+        );
+    });
 
     return locations.map((loc) => {
         const id = loc.value as unknown as number;
-        const existing = existingMap.get(id);
         return {
             location_id: id,
             buying_price: product?.last_buying_price ?? 0,
-            stock: existing?.stock ?? 0,
+            stock: stockByLocation.get(id) ?? 0,
             stock_new: '',
         };
     });

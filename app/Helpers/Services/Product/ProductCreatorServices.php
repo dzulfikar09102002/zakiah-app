@@ -12,8 +12,11 @@ use Illuminate\Validation\ValidationException;
 class ProductCreatorServices
 {
     protected ProductRequest $request;
+
     protected ?int $productUnitId;
+
     protected Collection $locationIds;
+
     protected array $stockMovements;
 
     /**
@@ -33,7 +36,7 @@ class ProductCreatorServices
         //
         $this->validateLocation();
 
-        $product = new Product();
+        $product = new Product;
         $product->code = $this->request->getCode();
         $product->entity_id = $this->request->getEntity()->id;
         $product->created_by = $this->request->getCreatedBy()->id;
@@ -54,24 +57,26 @@ class ProductCreatorServices
     {
         if (count($this->locationIds) == 0) {
             throw ValidationException::withMessages([
-                # change error message
+                // change error message
                 'location' => 'This value is incorrect',
             ]);
         }
     }
 
-    protected function createStockMovement(Product $product) {
-        foreach ($this->stockMovements as $index => $stockMovement)
-        {
-            # stock from form is a delta added to existing stock: + is stock in, - is stock out
+    protected function createStockMovement(Product $product)
+    {
+        foreach ($this->stockMovements as $index => $stockMovement) {
+            // stock from form is a delta added to existing stock: + is stock in, - is stock out
             $delta = $stockMovement['stock'];
             if ($delta == 0) {
                 continue;
             }
 
-            # stock can't go below zero
+            // stock can't go below zero
             if ($delta < 0) {
-                $currentStock = $this->getExistingProductLocationStock($product->id, $stockMovement['location_id'], $this->productUnitId)?->stock ?? 0;
+                $currentStock = (int) ProductLocationStock::where('product_id', $product->id)
+                    ->where('location_id', $stockMovement['location_id'])
+                    ->sum('stock');
                 if ($currentStock + $delta < 0) {
                     throw ValidationException::withMessages([
                         "stock_movements.{$index}.stock" => "Pengurangan stok melebihi stok saat ini ({$currentStock})",
@@ -79,42 +84,42 @@ class ProductCreatorServices
                 }
             }
 
-            $data = new ProductStockMovement();
+            $data = new ProductStockMovement;
 
             $data->product_id = $product->id;
             $data->location_id = $stockMovement['location_id'];
             $data->product_unit_id = $this->productUnitId;
-    
+
             $data->original_product_unit_id = $this->productUnitId;
-    
+
             $data->resource_id = $product->id;
             $data->resource_type = $product::class;
-    
+
             $data->original_stock_in = $delta > 0 ? $delta : 0;
             $data->original_stock_out = $delta < 0 ? abs($delta) : 0;
             $data->original_buying_price = $stockMovement['buying_price'];
-            $data->conversion_stock = 1; # should find conversion, not for now
-    
+            $data->conversion_stock = 1; // should find conversion, not for now
+
             $data->stock_in = $data->original_stock_in * $data->conversion_stock;
             $data->stock_out = $data->original_stock_out * $data->conversion_stock;
             $data->buying_price = $data->original_buying_price * $data->conversion_stock;
-    
+
             $data->save();
         }
     }
 
-    protected function createProductLocationsStock(Product $product) {
+    protected function createProductLocationsStock(Product $product)
+    {
         $locationIds = $this->getLocationForProductLocationsStock();
 
         $idx = 0;
         $datas = array_fill(0, count($locationIds), []);
-        foreach ($locationIds as $locationId)
-        {
+        foreach ($locationIds as $locationId) {
             $locationStock = $this->getExistingProductLocationStock($product->id, $locationId, $this->productUnitId);
-            if ($locationStock != null) { # already exists
+            if ($locationStock != null) { // already exists
                 continue;
             }
-            
+
             $datas[$idx] = [
                 'location_id' => $locationId,
                 'product_unit_id' => $this->productUnitId,
@@ -128,13 +133,13 @@ class ProductCreatorServices
         }
     }
 
-    protected function createProductLocations(Product $product) {
+    protected function createProductLocations(Product $product)
+    {
         $locationIds = $this->getLocationForProductLocations();
 
         $idx = 0;
         $datas = array_fill(0, count($locationIds), []);
-        foreach ($locationIds as $locationId)
-        {
+        foreach ($locationIds as $locationId) {
             $datas[$idx] = [
                 'location_id' => $locationId,
                 'pos_favourite' => false,
@@ -148,14 +153,14 @@ class ProductCreatorServices
         }
     }
 
-    protected function createProductSellPrices(Product $product) {
+    protected function createProductSellPrices(Product $product)
+    {
         $locationIds = $this->getLocationForProductSellPrices();
 
         $taxId = $this->request->getTax()?->id;
         $idx = 0;
         $datas = array_fill(0, count($locationIds), []);
-        foreach ($locationIds as $locationId)
-        {
+        foreach ($locationIds as $locationId) {
             $datas[$idx] = [
                 'location_id' => $locationId,
                 'order_type_id' => null,

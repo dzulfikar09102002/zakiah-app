@@ -30,17 +30,18 @@ class ProductService
         }
 
         return $query
-        ->orderByDesc('updated_at')
+            ->orderByDesc('updated_at')
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }
+
     public function getSuppliersName()
     {
-        return Supplier::
-        where('entity_id', auth()->user()?->entity?->id)
-        ->pluck('name')
+        return Supplier::where('entity_id', auth()->user()?->entity?->id)
+            ->pluck('name')
             ->toArray();
     }
+
     public function getCategoryOptions()
     {
         return ProductCategory::where('entity_id', auth()->user()?->entity?->id)
@@ -85,10 +86,9 @@ class ProductService
             ->when($locationId, function ($query) use ($locationId) {
                 $query->addSelect([
                     'stock' => ProductLocationStock::query()
-                        ->select('stock')
+                        ->selectRaw('SUM(stock)')
                         ->whereColumn('product_location_stocks.product_id', 'products.id')
-                        ->where('product_location_stocks.location_id', $locationId)
-                        ->limit(1),
+                        ->where('product_location_stocks.location_id', $locationId),
                 ]);
             })
             ->orderBy('name')
@@ -118,10 +118,12 @@ class ProductService
         $entityId = auth()->user()?->entity?->id;
 
         return ProductLocationStock::query()
-            ->select('product_location_stocks.location_id', 'product_location_stocks.stock', 'products.sku')
+            ->select('product_location_stocks.location_id', 'products.sku')
+            ->selectRaw('SUM(product_location_stocks.stock) as stock')
             ->join('products', 'products.id', '=', 'product_location_stocks.product_id')
             ->where('products.entity_id', $entityId)
             ->whereIn('products.sku', $skus)
+            ->groupBy('product_location_stocks.location_id', 'products.sku')
             ->get()
             ->groupBy('sku')
             ->map(fn ($rows) => $rows->pluck('stock', 'location_id')->toArray())

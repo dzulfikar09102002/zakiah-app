@@ -33,10 +33,18 @@ class StockRemainingService
                 'products.barcode',
                 'products.name',
                 'product_categories.name as category',
-                'product_location_stocks.stock',
+                DB::raw('SUM(product_location_stocks.stock) as stock'),
                 'products.cost_of_goods_sold',
                 'products.sell_price',
             ])
+            ->groupBy(
+                'products.sku',
+                'products.barcode',
+                'products.name',
+                'product_categories.name',
+                'products.cost_of_goods_sold',
+                'products.sell_price',
+            )
             ->limit(ReportPdfService::MAX_ROWS + 1)
             ->toBase()
             ->cursor()
@@ -58,6 +66,7 @@ class StockRemainingService
         $search = request('search', '');
 
         return ProductLocationStock::query()
+            ->selectRaw('MIN(product_location_stocks.id) as id, product_location_stocks.product_id, product_location_stocks.location_id, SUM(product_location_stocks.stock) as stock')
             ->with([
                 'product',
                 'product.productCategory:id,name',
@@ -73,8 +82,9 @@ class StockRemainingService
                 $q->where('entity_id', $entityId);
             })
             ->where('product_location_stocks.location_id', $locationId)
-            ->where('product_location_stocks.stock', '>', 1)
-            ->orderByDesc('product_location_stocks.stock');
+            ->groupBy('product_location_stocks.product_id', 'product_location_stocks.location_id')
+            ->havingRaw('SUM(product_location_stocks.stock) > 0')
+            ->orderByDesc('stock');
     }
 
     public function getLocations()
@@ -123,10 +133,17 @@ class StockRemainingService
                 'products.sell_price',
                 'pls.stock',
             ])
-            ->leftJoin('product_location_stocks as pls', function ($join) use ($locationId) {
-                $join->on('products.id', '=', 'pls.product_id')
-                    ->where('pls.location_id', '=', $locationId);
-            })
+            ->leftJoinSub(
+                ProductLocationStock::query()
+                    ->select('product_id')
+                    ->selectRaw('SUM(stock) as stock')
+                    ->where('location_id', $locationId)
+                    ->groupBy('product_id'),
+                'pls',
+                'products.id',
+                '=',
+                'pls.product_id'
+            )
             ->with(['productCategory:id,name'])
             ->where('products.entity_id', $entityId)
             ->when($product_category_id !== 'all', function ($q) use ($product_category_id) {

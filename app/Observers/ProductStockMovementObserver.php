@@ -3,7 +3,6 @@
 namespace App\Observers;
 
 use App\Helpers\Services\Product\ProductCogsCalculator;
-use App\Models\Product;
 use App\Models\ProductLocationStock;
 use App\Models\ProductStockMovement;
 
@@ -23,8 +22,8 @@ class ProductStockMovementObserver
 
         $originalBuyingPrice = $productStockMovement->original_buying_price;
 
-        # new
-        if ($productLocationStock->stock == null) {
+        // new
+        if (! $productLocationStock->exists) {
             $productLocationStock->stock = 0;
             $productLocationStock->lowest_buy_price = $originalBuyingPrice;
             $productLocationStock->highest_buy_price = $originalBuyingPrice;
@@ -46,7 +45,7 @@ class ProductStockMovementObserver
         if ($productLocationStock->highest_buy_price < $originalBuyingPrice) {
             $productLocationStock->highest_buy_price = $originalBuyingPrice;
         }
-        
+
         $productLocationStock->last_buy_price = $originalBuyingPrice;
         $productLocationStock->last_in_stock = $productStockMovement->stock_in;
         $productLocationStock->last_out_stock = $productStockMovement->stock_out;
