@@ -1,23 +1,21 @@
 import productAdjustmentStocks from '@/routes/product-adjustment-stocks';
 import productOpnameServices from '@/routes/product-opname-services';
+import productOpnameSessions from '@/routes/product-opname-sessions';
 import type { CountDocumentConfig } from './count-document';
 
 export const opnameConfig: CountDocumentConfig = {
     title: 'Stok Opname',
     noun: 'stok opname',
     description:
-        'Catat hasil hitung fisik stok. Stok baru disesuaikan setelah opname disetujui.',
+        'Dokumen hasil opname. Pembuatan SO sekarang lewat sesi SO; halaman ini untuk detail dan persetujuan dokumen lama.',
     detailsKey: 'product_opname_service_details',
-    editable: true,
+    editable: false,
     autoApproveDefault: false,
     routes: {
-        index: () => productOpnameServices.index(),
-        create: () => productOpnameServices.create(),
-        store: () => productOpnameServices.store(),
+        index: () => productOpnameSessions.index(),
+        create: () => productOpnameSessions.create(),
+        store: () => productOpnameSessions.store(),
         show: (id) => productOpnameServices.show(id),
-        edit: (id) => productOpnameServices.edit(id),
-        update: (id) => productOpnameServices.update(id),
-        destroy: (id) => productOpnameServices.destroy(id),
         approve: (id) => productOpnameServices.approve(id),
         reject: (id) => productOpnameServices.reject(id),
     },

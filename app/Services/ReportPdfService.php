@@ -411,7 +411,7 @@ class ReportPdfService
      *
      * @return array<int, string>
      */
-    private function letterheadLines(?object $entity): array
+    public function letterheadLines(?object $entity): array
     {
         $address = collect([$entity?->full_address, $entity?->city, $entity?->province])
             ->filter(fn (mixed $value) => filled($value))
@@ -442,7 +442,7 @@ class ReportPdfService
      * Logo sama dengan favicon (EntityBrandingService). FPDF tidak mendukung PNG ber-alpha,
      * jadi logo diratakan ke latar putih (GD) dan hasilnya di-cache.
      */
-    private function logoPath(?string $entityName): ?string
+    public function logoPath(?string $entityName): ?string
     {
         $source = app(EntityBrandingService::class)->logoFile($entityName);
 

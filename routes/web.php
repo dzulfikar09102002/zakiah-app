@@ -8,6 +8,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerPointMovementController;
 use App\Http\Controllers\DailySaleController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentValidationController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeReportDetailController;
 use App\Http\Controllers\EmployeeReportSummaryController;
@@ -24,6 +25,7 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductImportServiceController;
 use App\Http\Controllers\ProductOpnameServiceController;
+use App\Http\Controllers\ProductOpnameSessionController;
 use App\Http\Controllers\ProductTransferServiceController;
 use App\Http\Controllers\ProductUnitController;
 use App\Http\Controllers\PromoController;
@@ -51,6 +53,11 @@ Route::get('sso/masuk', [SsoController::class, 'signIn'])
 Route::get('sso/newzakica', [SsoController::class, 'toNewZakica'])
     ->middleware(['auth', 'throttle:30,1'])
     ->name('sso.newzakica');
+
+// Halaman publik tujuan QR tanda tangan elektronik laporan SO.
+Route::get('validasi-dokumen', DocumentValidationController::class)
+    ->middleware('throttle:30,1')
+    ->name('validasi-dokumen');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');
@@ -230,7 +237,33 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('product-transfer-services/{product_transfer_service}/cancel', [ProductTransferServiceController::class, 'cancel'])
         ->name('product-transfer-services.cancel');
 
-    Route::resource('product-opname-services', ProductOpnameServiceController::class);
+    Route::resource('product-opname-sessions', ProductOpnameSessionController::class)
+        ->parameters(['product-opname-sessions' => 'id']);
+
+    Route::controller(ProductOpnameSessionController::class)
+        ->prefix('product-opname-sessions/{id}')
+        ->name('product-opname-sessions.')
+        ->group(function () {
+            Route::get('share', 'share')->name('share');
+            Route::post('start', 'start')->name('start');
+            Route::post('close-scan', 'closeScan')->name('close-scan');
+            Route::post('reopen-scan', 'reopenScan')->name('reopen-scan');
+            Route::post('finish', 'finish')->name('finish');
+            Route::post('cancel', 'cancel')->name('cancel');
+            Route::post('scans', 'storeScan')->name('store-scan');
+            Route::post('scans/{scanId}/cancel', 'cancelScan')->name('cancel-scan')->whereNumber('scanId');
+            Route::get('products/{productId}/scans', 'productScans')->name('product-scans')->whereNumber('productId');
+            Route::get('live', 'live')->name('live');
+            Route::post('decide', 'decide')->name('decide');
+            Route::post('revision-sessions', 'storeRevisionSession')->name('store-revision-session');
+            Route::post('revisions', 'storeRevision')->name('store-revision');
+            Route::get('report', 'report')->name('report');
+        });
+
+    // Pembuatan SO pindah ke sesi; detail dan persetujuan tetap untuk dokumen lama.
+    Route::resource('product-opname-services', ProductOpnameServiceController::class)
+        ->only(['index', 'show'])
+        ->where(['product_opname_service' => '[0-9]+']);
 
     Route::post('product-opname-services/{id}/approve', [ProductOpnameServiceController::class, 'approve'])
         ->name('product-opname-services.approve');

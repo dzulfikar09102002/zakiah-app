@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StockDocumentNoteRequest;
-use App\Http\Requests\StoreStockCountRequest;
 use App\Services\ProductOpnameService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -15,28 +14,13 @@ class ProductOpnameServiceController extends Controller
         protected ProductOpnameService $service
     ) {}
 
-    public function index(): Response
+    /**
+     * Daftar dan pembuatan SO sudah pindah ke sesi SO. Detail, setujui, dan tolak dipertahankan
+     * untuk dokumen lama yang masih menunggu persetujuan.
+     */
+    public function index(): RedirectResponse
     {
-        $pagination = $this->service->getDocuments();
-        $locationOptions = $this->service->getLocationOptions();
-
-        return Inertia::render('stock-opnames/index', compact('pagination', 'locationOptions'));
-    }
-
-    public function create(): Response
-    {
-        return Inertia::render('stock-opnames/form', [
-            'document' => null,
-            'locationOptions' => $this->service->getLocationOptions(),
-        ]);
-    }
-
-    public function store(StoreStockCountRequest $request): RedirectResponse
-    {
-        $document = $this->service->store($request->validated());
-
-        return to_route('product-opname-services.show', $document->id)
-            ->with('success', 'Stok opname berhasil diajukan');
+        return to_route('product-opname-sessions.index');
     }
 
     public function show(int $productOpnameService): Response
@@ -44,29 +28,6 @@ class ProductOpnameServiceController extends Controller
         return Inertia::render('stock-opnames/show', [
             'document' => $this->service->find($productOpnameService),
         ]);
-    }
-
-    public function edit(int $productOpnameService): Response
-    {
-        return Inertia::render('stock-opnames/form', [
-            'document' => $this->service->find($productOpnameService),
-            'locationOptions' => $this->service->getLocationOptions(),
-        ]);
-    }
-
-    public function update(StoreStockCountRequest $request, int $productOpnameService): RedirectResponse
-    {
-        $this->service->update($this->service->find($productOpnameService), $request->validated());
-
-        return to_route('product-opname-services.show', $productOpnameService)
-            ->with('success', 'Stok opname berhasil diperbarui');
-    }
-
-    public function destroy(int $productOpnameService): RedirectResponse
-    {
-        $this->service->destroy($this->service->find($productOpnameService));
-
-        return to_route('product-opname-services.index')->with('success', 'Stok opname berhasil dihapus');
     }
 
     public function approve(StockDocumentNoteRequest $request, int $id): RedirectResponse

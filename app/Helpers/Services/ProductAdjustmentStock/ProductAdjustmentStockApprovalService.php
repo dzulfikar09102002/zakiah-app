@@ -2,9 +2,9 @@
 
 namespace App\Helpers\Services\ProductAdjustmentStock;
 
-use App\Models\ProductLocationStock;
 use App\Models\ProductAdjustmentStock;
 use App\Models\ProductAdjustmentStockDetail;
+use App\Models\ProductLocationStock;
 use App\Models\ProductStockMovement;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -24,16 +24,14 @@ class ProductAdjustmentStockApprovalService
 
     public function adjustStock()
     {
-        if ($this->productAdjustmentStock->status != 'approved')
-        {
+        if ($this->productAdjustmentStock->status != 'approved') {
             return;
         }
 
-        # start transcation
+        // start transcation
         DB::beginTransaction();
         try {
-            foreach($this->productAdjustmentStock->productAdjustmentStockDetails()->get() as $detail)
-            {
+            foreach ($this->productAdjustmentStock->productAdjustmentStockDetails()->get() as $detail) {
                 $this->createStockMovement($detail);
             }
 
@@ -45,7 +43,7 @@ class ProductAdjustmentStockApprovalService
         }
     }
 
-    private function createStockMovement(ProductAdjustmentStockDetail $detail)
+    public function createStockMovement(ProductAdjustmentStockDetail $detail)
     {
         if ($detail->difference_stock == 0) {
             return;
@@ -57,7 +55,7 @@ class ProductAdjustmentStockApprovalService
             'product_unit_id' => $detail->product_unit_id,
         ])->first();
 
-        $data = new ProductStockMovement();
+        $data = new ProductStockMovement;
 
         $data->product_id = $detail->product_id;
         $data->location_id = $detail->location_id;
@@ -76,7 +74,7 @@ class ProductAdjustmentStockApprovalService
             $data->original_stock_in = $detail->difference_stock;
         }
         $data->original_buying_price = $productLocationStock?->last_buy_price ?? 0;
-        $data->conversion_stock = 1; # should find conversion, not for now
+        $data->conversion_stock = 1; // should find conversion, not for now
 
         $data->stock_in = $data->original_stock_in * $data->conversion_stock;
         $data->stock_out = $data->original_stock_out * $data->conversion_stock;

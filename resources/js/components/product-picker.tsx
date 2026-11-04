@@ -127,9 +127,13 @@ export default function ProductPicker({
                 </Button>
             </PopoverTrigger>
 
-            <PopoverContent className="w-[--radix-popover-trigger-width] min-w-80 p-0">
+            <PopoverContent
+                align="start"
+                className="w-(--radix-popover-trigger-width) p-0"
+            >
                 <Command shouldFilter={false}>
                     <CommandInput
+                        className="text-base md:text-sm"
                         placeholder="Cari nama, SKU, atau barcode..."
                         value={keyword}
                         onValueChange={setKeyword}
@@ -169,7 +173,7 @@ export default function ProductPicker({
                                                 )}
                                             />
                                             <div className="min-w-0 flex-1">
-                                                <p className="truncate font-medium">
+                                                <p className="font-medium break-words">
                                                     {product.name}
                                                 </p>
                                                 <p className="truncate text-xs text-muted-foreground">

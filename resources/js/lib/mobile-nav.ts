@@ -51,7 +51,7 @@ import paymentmethods from '@/routes/payment-methods';
 import paymentRecaps from '@/routes/payment-recaps';
 import productAdjustmentStocks from '@/routes/product-adjustment-stocks';
 import productCategories from '@/routes/product-categories';
-import productOpnameServices from '@/routes/product-opname-services';
+import productOpnameSessions from '@/routes/product-opname-sessions';
 import productTransferServices from '@/routes/product-transfer-services';
 import productUnits from '@/routes/product-units';
 import products from '@/routes/products';
@@ -119,7 +119,7 @@ const iconByHref: Record<string, LucideIcon> = {
     [products.index().url]: ShoppingBag,
     [productCategories.index().url]: Tags,
     [productUnits.index().url]: Ruler,
-    [productOpnameServices.index().url]: ClipboardCheck,
+    [productOpnameSessions.index().url]: ClipboardCheck,
     [productTransferServices.index().url]: ArrowLeftRight,
     [productAdjustmentStocks.index().url]: Scale,
     [customers.index().url]: Contact,

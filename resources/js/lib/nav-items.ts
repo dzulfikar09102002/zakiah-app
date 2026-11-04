@@ -31,7 +31,7 @@ import locations from '@/routes/locations';
 import paymentmethods from '@/routes/payment-methods';
 import paymentRecaps from '@/routes/payment-recaps';
 import productAdjustmentStocks from '@/routes/product-adjustment-stocks';
-import productOpnameServices from '@/routes/product-opname-services';
+import productOpnameSessions from '@/routes/product-opname-sessions';
 import productTransferServices from '@/routes/product-transfer-services';
 import products from '@/routes/products';
 import promos from '@/routes/promos';
@@ -151,7 +151,7 @@ export const mainNavItems: NavItem[] = [
         items: [
             {
                 title: 'Stok Opname',
-                href: productOpnameServices.index().url,
+                href: productOpnameSessions.index().url,
             },
             {
                 title: 'Pindah Stok',

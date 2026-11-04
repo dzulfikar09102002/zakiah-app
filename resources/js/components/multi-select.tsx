@@ -51,9 +51,9 @@ export default ({ options, placeholder, name, defaultValues }: Props) => {
                     </Button>
                 </PopoverTrigger>
 
-                <PopoverContent className="p-0">
+                <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
                     <Command>
-                        <CommandInput />
+                        <CommandInput className="text-base md:text-sm" />
 
                         <CommandList>
                             <CommandEmpty>Item tidak ditemukan</CommandEmpty>

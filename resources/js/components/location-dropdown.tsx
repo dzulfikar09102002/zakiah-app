@@ -165,9 +165,13 @@ const LocationDropdown: FC<LocationDropdownProps> = (props) => {
                 </Button>
             </PopoverTrigger>
 
-            <PopoverContent className="p-0">
+            <PopoverContent
+                align="start"
+                className="w-(--radix-popover-trigger-width) p-0"
+            >
                 <Command shouldFilter={false}>
                     <CommandInput
+                        className="text-base md:text-sm"
                         placeholder="Cari lokasi..."
                         onValueChange={setKeyword}
                     />
