@@ -42,13 +42,17 @@ class LocationController extends Controller
 
     public function update(UpdatelocationRequest $request, location $location)
     {
+        $this->ensureOwnedByEntity($location);
+
         $this->service->update($request->validated(), $location);
 
         return to_route('locations.index')->with('success', 'Lokasi berhasil diperbarui');
     }
 
-    public function destroy(Location $location)
+    public function destroy(location $location)
     {
+        $this->ensureOwnedByEntity($location);
+
         $this->service->delete($location);
 
         return to_route('locations.index')->with('success', 'Lokasi berhasil dihapus');

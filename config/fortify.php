@@ -144,7 +144,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Registrasi publik dimatikan: akun dibuat lewat menu Karyawan.
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([

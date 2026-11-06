@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services;
+
 use App\Enums\StatusEnum;
 use App\Models\ProductUnit;
 use Illuminate\Support\Str;
@@ -14,12 +15,10 @@ class ProductUnitService
         return ProductUnit::query()
             ->where('entity_id', auth()->user()?->entity?->id)
 
-            ->when($search, fn ($query) =>
-                $query->whereLike('name', "%{$search}%")
+            ->when($search, fn ($query) => $query->whereLike('name', "%{$search}%")
             )
 
-            ->when(request('statuses'), fn ($query, $statuses) =>
-                $query->whereIn('status', (array) $statuses)
+            ->when(request('statuses'), fn ($query, $statuses) => $query->whereIn('status', (array) $statuses)
             )
 
             ->paginate(request('per_page', 10))
@@ -34,12 +33,10 @@ class ProductUnitService
             ->where('entity_id', auth()->user()?->entity?->id)
             ->onlyTrashed()
 
-            ->when($search, fn ($query) =>
-                $query->whereLike('name', "%{$search}%")
+            ->when($search, fn ($query) => $query->whereLike('name', "%{$search}%")
             )
 
-            ->when(request('statuses'), fn ($query, $statuses) =>
-                $query->whereIn('status', (array) $statuses)
+            ->when(request('statuses'), fn ($query, $statuses) => $query->whereIn('status', (array) $statuses)
             )
 
             ->paginate(request('per_page', 10))
@@ -73,9 +70,12 @@ class ProductUnitService
     {
         return $unit->delete();
     }
+
     public function restore(int $id)
     {
-        $category = ProductUnit::withTrashed()->findOrFail($id);
+        $category = ProductUnit::withTrashed()
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->findOrFail($id);
 
         return $category->restore();
     }

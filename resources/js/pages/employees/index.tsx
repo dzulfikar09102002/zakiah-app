@@ -1,98 +1,147 @@
-import { Form, Head, Link, usePage } from '@inertiajs/react';
-import { ArchiveRestore, Pencil, Plus, Search, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-
+import { Form, Head, Link } from '@inertiajs/react';
+import type { ColumnDef, ExpandedState } from '@tanstack/react-table';
+import { getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import {
+    ArchiveRestore,
+    ChevronRight,
+    KeyRound,
+    Pencil,
+    Plus,
+    Search,
+    X,
+} from 'lucide-react';
+import { useState } from 'react';
+import DataTable from '@/components/data-table';
+import type { AlertState } from '@/components/employees/alert';
+import Alert from '@/components/employees/alert';
+import type { ModalState } from '@/components/employees/modal';
+import Modal from '@/components/employees/modal';
+import type {
+    AccessRoleOption,
+    EmployeeRow,
+    LocationOption,
+    RoleOption,
+} from '@/components/employees/types';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
-
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
-
-import type { Pagination, Employee, Role, Location } from '@/lib/model';
+import type { Pagination } from '@/lib/model';
+import { cn } from '@/lib/utils';
 import employees from '@/routes/employees';
+import userAccounts from '@/routes/user-accounts';
 import type { BreadcrumbItem } from '@/types';
-
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-import DataTable from '@/components/data-table';
-import ColumnVisibilityDropdown from '@/components/column-visibility-dropdown';
-
-import {
-    getCoreRowModel,
-    useReactTable,
-    type ColumnDef,
-    type VisibilityState,
-} from '@tanstack/react-table';
-import Alert, { AlertState } from '@/components/employees/alert';
-import Modal, { ModalState } from '@/components/employees/modal';
 
 const title = 'Karyawan';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title,
-        href: employees.index().url,
-    },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title, href: employees.index().url }];
 
 type Props = {
-    pagination: Pagination<Employee>;
-    onlyTrashed?: boolean;
-    roles: Role[];
-    locations: Location[];
-    existingEmails: string[];
+    pagination: Pagination<EmployeeRow>;
+    roleOptions: RoleOption[];
+    accessRoleOptions: AccessRoleOption[] | null;
+    locations: LocationOption[];
+    onlyTrashed: boolean;
 };
 
-export default ({ pagination, roles, locations, existingEmails }: Props) => {
+/** Baris detail: toko dan role tempat karyawan bertugas. */
+function AssignmentDetail({ employee }: { employee: EmployeeRow }) {
+    return (
+        <div className="space-y-2">
+            {employee.shares_account && (
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                    Data lama: akun login karyawan ini juga dipakai karyawan
+                    lain.
+                </p>
+            )}
+            {employee.access_role_label && (
+                <p className="text-sm text-muted-foreground">
+                    Hak Akses: {employee.access_role_label}
+                </p>
+            )}
+            {employee.assignments.length ? (
+                <table className="w-full max-w-xl text-sm">
+                    <thead>
+                        <tr className="text-left text-muted-foreground">
+                            <th className="py-1 pr-4 font-medium">Toko</th>
+                            <th className="py-1 font-medium">Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {employee.assignments.map((assignment) => (
+                            <tr
+                                key={assignment.location_id}
+                                className="border-t align-top"
+                            >
+                                <td className="py-1.5 pr-4">
+                                    {assignment.location}
+                                </td>
+                                <td className="py-1.5">
+                                    {assignment.roles
+                                        .map((role) => role.label)
+                                        .join(', ')}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            ) : (
+                <p className="text-sm text-muted-foreground">
+                    Belum ditugaskan di toko mana pun.
+                </p>
+            )}
+        </div>
+    );
+}
+
+export default function EmployeeIndex({
+    pagination,
+    roleOptions,
+    accessRoleOptions,
+    locations,
+    onlyTrashed,
+}: Props) {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined,
     });
-
     const [alert, setAlert] = useState<AlertState>({
         delete: true,
         isOpen: false,
         dataId: undefined,
         proccessing: false,
     });
+    const [expanded, setExpanded] = useState<ExpandedState>({});
 
     const search = useQuery().search || '';
 
-    const onModalSuccess = () =>
-        setModal({ ...modal, isOpen: false, dataId: undefined });
+    const closeModal = () => setModal({ isOpen: false, dataId: undefined });
 
-    const onModalClose = () =>
-        setModal({ ...modal, dataId: undefined, isOpen: false });
-
-    const onAlertClose = () =>
-        setAlert({
-            isOpen: false,
-            proccessing: false,
-            dataId: undefined,
-            delete: true,
-        });
-
-    const onAlertProcessing = () => setAlert({ ...alert, proccessing: true });
-
-    const onEdit = (id: unknown) =>
-        setModal({
-            ...modal,
-            dataId: id,
-            isOpen: true,
-        });
-
-    const onDeleteOrRestore = (id: unknown, action: boolean) =>
-        setAlert({
-            ...alert,
-            dataId: id,
-            delete: action,
-            isOpen: true,
-        });
-
-    const columns: ColumnDef<Employee>[] = [
+    const columns: ColumnDef<EmployeeRow>[] = [
+        {
+            id: 'expand',
+            header: () => <span className="sr-only">Detail</span>,
+            cell: ({ row }) => (
+                <Button
+                    size="icon"
+                    variant="ghost"
+                    className="size-11 md:size-8"
+                    aria-expanded={row.getIsExpanded()}
+                    aria-label={`${row.getIsExpanded() ? 'Tutup' : 'Lihat'} toko dan role ${row.original.name}`}
+                    onClick={row.getToggleExpandedHandler()}
+                >
+                    <ChevronRight
+                        className={cn(
+                            'transition-transform',
+                            row.getIsExpanded() && 'rotate-90',
+                        )}
+                    />
+                </Button>
+            ),
+        },
         {
             header: 'No',
             cell: ({ row }) =>
@@ -101,75 +150,70 @@ export default ({ pagination, roles, locations, existingEmails }: Props) => {
                 1,
         },
         {
-            accessorFn: (row) => `${row.first_name} ${row.last_name}`,
+            id: 'name',
             header: 'Nama',
+            cell: ({ row }) => (
+                <span className="font-medium">{row.original.name}</span>
+            ),
         },
         {
-            accessorFn: (row) => row.role?.name ?? '-',
-            header: 'Role',
+            id: 'account',
+            header: 'Akun',
+            cell: ({ row }) => (
+                <span className="break-all">{row.original.email ?? '-'}</span>
+            ),
         },
         {
             id: 'action',
             header: () => <div className="text-center">Aksi</div>,
-            cell: ({ row }) => {
-                const employee = row.original;
-
-                return (
-                    <div className="flex justify-center gap-2">
-                        {!employee.deleted_at && (
-                            <Button
-                                size="icon"
-                                variant="outline"
-                                onClick={() => onEdit(employee.id)}
-                            >
-                                <Pencil />
-                            </Button>
-                        )}
-
+            cell: ({ row }) => (
+                <div className="flex justify-center gap-2">
+                    {!onlyTrashed && (
                         <Button
                             size="icon"
-                            variant={isDeletedRoute ? 'outline' : 'destructive'}
+                            variant="outline"
+                            className="size-11 md:size-9"
+                            aria-label={`Edit ${row.original.name}`}
                             onClick={() =>
-                                onDeleteOrRestore(employee.id, !isDeletedRoute)
+                                setModal({
+                                    isOpen: true,
+                                    dataId: row.original.id,
+                                })
                             }
                         >
-                            {isDeletedRoute ? <ArchiveRestore /> : <X />}
+                            <Pencil />
                         </Button>
-                    </div>
-                );
-            },
+                    )}
+                    <Button
+                        size="icon"
+                        variant={onlyTrashed ? 'outline' : 'destructive'}
+                        className="size-11 md:size-9"
+                        aria-label={`${onlyTrashed ? 'Pulihkan' : 'Hapus'} ${row.original.name}`}
+                        onClick={() =>
+                            setAlert({
+                                ...alert,
+                                isOpen: true,
+                                dataId: row.original.id,
+                                delete: !onlyTrashed,
+                            })
+                        }
+                    >
+                        {onlyTrashed ? <ArchiveRestore /> : <X />}
+                    </Button>
+                </div>
+            ),
         },
     ];
-
-    const defaultColumn = {
-        role: true,
-    };
-
-    const cachedColumnKey = 'employeeColumnVisibility';
-
-    const cachedColumn = JSON.parse(
-        localStorage.getItem(cachedColumnKey) || JSON.stringify(defaultColumn),
-    );
-
-    const [columnVisibility, setColumnVisibility] =
-        useState<VisibilityState>(cachedColumn);
 
     const table = useReactTable({
         data: pagination.data,
         columns,
         getCoreRowModel: getCoreRowModel(),
-        onColumnVisibilityChange: setColumnVisibility,
-        state: {
-            columnVisibility,
-        },
+        getRowCanExpand: () => true,
+        getRowId: (row) => String(row.id),
+        onExpandedChange: setExpanded,
+        state: { expanded },
     });
-
-    useEffect(() => {
-        localStorage.setItem(cachedColumnKey, JSON.stringify(columnVisibility));
-    }, [columnVisibility]);
-
-    const { url } = usePage();
-    const isDeletedRoute = url.includes('deleted');
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -177,30 +221,43 @@ export default ({ pagination, roles, locations, existingEmails }: Props) => {
 
             <Modal
                 modalState={modal}
-                onModalClose={onModalClose}
-                onModalSuccess={onModalSuccess}
-                roles={roles}
-                locations={locations}
-                existingEmails={existingEmails}
                 tableData={pagination.data}
+                roleOptions={roleOptions}
+                accessRoleOptions={accessRoleOptions}
+                locations={locations}
+                onModalSuccess={closeModal}
+                onModalClose={closeModal}
             />
 
             <Alert
                 alertState={alert}
-                onAlertClose={onAlertClose}
-                onAlertProccessing={onAlertProcessing}
+                onAlertClose={() =>
+                    setAlert({
+                        isOpen: false,
+                        proccessing: false,
+                        dataId: undefined,
+                        delete: true,
+                    })
+                }
+                onAlertProccessing={() =>
+                    setAlert({ ...alert, proccessing: true })
+                }
             />
 
-            <div className="mb-4 flex justify-between">
+            <div className="mb-4 flex flex-col gap-2 md:flex-row md:justify-between">
                 <Button
-                    className="size-9 lg:size-auto"
-                    onClick={() => setModal({ ...modal, isOpen: true })}
+                    className="h-11 md:h-9"
+                    onClick={() =>
+                        setModal({ isOpen: true, dataId: undefined })
+                    }
                 >
-                    <Plus />
-                    <span className="hidden lg:inline">Karyawan Baru</span>
+                    <Plus /> Karyawan Baru
                 </Button>
-
-                <ColumnVisibilityDropdown table={table} />
+                <Button variant="outline" className="h-11 md:h-9" asChild>
+                    <Link href={userAccounts.index().url}>
+                        <KeyRound /> Akun Login
+                    </Link>
+                </Button>
             </div>
 
             <Card className="border-0 bg-background p-0 lg:border lg:bg-card lg:py-6">
@@ -208,14 +265,14 @@ export default ({ pagination, roles, locations, existingEmails }: Props) => {
                     <Form method="GET">
                         <div className="grid gap-2 lg:flex">
                             <input type="hidden" name="page" value={1} />
-
                             <Input
                                 defaultValue={search}
                                 name="search"
-                                placeholder="Cari..."
+                                placeholder="Cari nama karyawan"
+                                aria-label="Cari nama karyawan"
+                                className="h-11 text-base md:h-9 md:text-sm"
                             />
-
-                            <Button variant={'secondary'}>
+                            <Button variant="secondary" className="h-11 md:h-9">
                                 <Search /> Cari
                             </Button>
                         </div>
@@ -224,7 +281,7 @@ export default ({ pagination, roles, locations, existingEmails }: Props) => {
 
                 <CardContent className="border-t p-0 lg:border-0 lg:px-6">
                     <Tabs
-                        value={isDeletedRoute ? 'deleted' : 'available'}
+                        value={onlyTrashed ? 'deleted' : 'available'}
                         className="mb-4"
                     >
                         <TabsList>
@@ -233,7 +290,6 @@ export default ({ pagination, roles, locations, existingEmails }: Props) => {
                                     Tersedia
                                 </Link>
                             </TabsTrigger>
-
                             <TabsTrigger value="deleted" asChild>
                                 <Link href={employees.deleted().url}>
                                     Terhapus
@@ -242,11 +298,16 @@ export default ({ pagination, roles, locations, existingEmails }: Props) => {
                         </TabsList>
                     </Tabs>
 
-                    <DataTable columns={columns} table={table} />
-
+                    <DataTable
+                        columns={columns}
+                        table={table}
+                        renderDetail={(employee) => (
+                            <AssignmentDetail employee={employee} />
+                        )}
+                    />
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>
         </AppLayout>
     );
-};
+}

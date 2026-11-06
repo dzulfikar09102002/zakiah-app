@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccessRoleController;
 use App\Http\Controllers\AssetCategoryController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\ComingSoonController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\LegalEntityController;
 use App\Http\Controllers\LegalEntityLocationController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\LoyaltyController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderTypeController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\PaymentRecapController;
@@ -41,6 +43,8 @@ use App\Http\Controllers\StockMovementReportController;
 use App\Http\Controllers\StockRemainingController;
 use App\Http\Controllers\TaxController;
 use App\Http\Controllers\TopCustomerReportController;
+use App\Http\Controllers\UserAccountController;
+use App\Http\Middleware\EnsureMenuAccess;
 use App\Http\Middleware\EntityCheckingMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -59,7 +63,7 @@ Route::get('validasi-dokumen', DocumentValidationController::class)
     ->middleware('throttle:30,1')
     ->name('validasi-dokumen');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', EnsureMenuAccess::class])->group(function () {
     Route::get('coming-soon', [ComingSoonController::class, 'index'])->name('comingsoon.index');
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard.index');
@@ -101,11 +105,44 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('roles', RoleController::class);
 
-    Route::resource('employees', EmployeeController::class)->except('show');
+    Route::resource('employees', EmployeeController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('employees/deleted', [EmployeeController::class, 'deleted'])
         ->name('employees.deleted');
     Route::post('employees/{id}/restore', [EmployeeController::class, 'restore'])
         ->name('employees.restore');
+
+    // Hak Akses backoffice dan kelola menu (nama route = pemetaan di menu_action_routes).
+    Route::controller(AccessRoleController::class)
+        ->prefix('access-roles')
+        ->name('access-roles.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('{id}', 'update')->whereNumber('id')->name('update');
+            Route::put('{id}/permissions', 'permissions')->whereNumber('id')->name('permissions');
+            Route::delete('{id}', 'destroy')->whereNumber('id')->name('destroy');
+            Route::post('{id}/restore', 'restore')->whereNumber('id')->name('restore');
+        });
+
+    Route::controller(MenuController::class)->group(function () {
+        foreach (['headers' => 'Header', 'submenus' => 'Submenu', 'groups' => 'Group'] as $path => $suffix) {
+            Route::get("menu-{$path}", $path)->name("menu-{$path}.index");
+            Route::post("menu-{$path}", "store{$suffix}")->name("menu-{$path}.store");
+            Route::put("menu-{$path}/{id}", "update{$suffix}")->whereNumber('id')->name("menu-{$path}.update");
+            Route::delete("menu-{$path}/{id}", "destroy{$suffix}")->whereNumber('id')->name("menu-{$path}.destroy");
+        }
+    });
+
+    Route::controller(UserAccountController::class)
+        ->prefix('user-accounts')
+        ->name('user-accounts.')
+        ->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('{id}', 'update')->whereNumber('id')->name('update');
+            Route::delete('{id}', 'destroy')->whereNumber('id')->name('destroy');
+            Route::post('{id}/restore', 'restore')->whereNumber('id')->name('restore');
+        });
 
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products.index');
@@ -281,9 +318,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('product-adjustment-stocks.reject');
 
     Route::resource('promos', PromoController::class)->except(['destroy']);
-
-    Route::get('employees-dropdown', [EmployeeController::class, 'dropdown'])
-        ->name('employees.dropdown');
 
     Route::resource('daily-sales', DailySaleController::class)
         ->only(['index', 'show']);

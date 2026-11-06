@@ -38,6 +38,8 @@ class ProductCategoryController extends Controller
 
     public function update(UpdateProductCategoryRequest $request, ProductCategory $productCategory)
     {
+        $this->ensureOwnedByEntity($productCategory);
+
         $this->service->update($productCategory, $request->validated()['name']);
 
         return to_route('product-categories.index')->with('success', 'Kategori berhasil diperbarui');
@@ -45,6 +47,8 @@ class ProductCategoryController extends Controller
 
     public function destroy(ProductCategory $productCategory)
     {
+        $this->ensureOwnedByEntity($productCategory);
+
         $this->service->delete($productCategory);
 
         return to_route('product-categories.index')->with('success', 'Kategori berhasil dihapus');

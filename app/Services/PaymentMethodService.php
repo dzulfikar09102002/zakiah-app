@@ -4,7 +4,8 @@ namespace App\Services;
 
 use App\Models\PaymentMethod;
 
-class PaymentMethodService{
+class PaymentMethodService
+{
     public function getPaymentMethod()
     {
         $search = request('search', '');
@@ -14,6 +15,7 @@ class PaymentMethodService{
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }
+
     public function getDeletedMethod()
     {
         $search = request('search', '');
@@ -23,9 +25,11 @@ class PaymentMethodService{
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }
+
     public function store(array $input)
     {
         $user = auth()->user();
+
         return PaymentMethod::create([
             'name' => $input['name'],
             'kind' => $input['kind'],
@@ -40,11 +44,11 @@ class PaymentMethodService{
     public function update(PaymentMethod $paymentMethod, array $input)
     {
         return $paymentMethod->update([
-            'name'         => $input['name'],
-            'kind'         => $input['kind'],
-            'fixed_fee'    => $input['fixed_fee'],
+            'name' => $input['name'],
+            'kind' => $input['kind'],
+            'fixed_fee' => $input['fixed_fee'],
             'variable_fee' => $input['variable_fee'],
-            'updated_by'   => auth()->user()->id,
+            'updated_by' => auth()->user()->id,
         ]);
     }
 
@@ -53,8 +57,12 @@ class PaymentMethodService{
         return $paymentMethod->delete();
     }
 
-    public function restore(int $id){
-        $paymentmethod = PaymentMethod::withTrashed()->findOrFail($id);
+    public function restore(int $id)
+    {
+        $paymentmethod = PaymentMethod::withTrashed()
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->findOrFail($id);
+
         return $paymentmethod->restore();
     }
 }

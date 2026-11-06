@@ -33,7 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->respond(function (Response $response, Throwable $exception, Request $request) {
             $status = $response->getStatusCode();
 
-            if (! in_array($status, [401, 403, 404, 419, 429, 500, 503], true) || $request->expectsJson()) {
+            if (! in_array($status, [400, 401, 403, 404, 405, 408, 413, 419, 429, 500, 502, 503, 504], true) || $request->expectsJson()) {
                 return $response;
             }
 
@@ -47,9 +47,17 @@ return Application::configure(basePath: dirname(__DIR__))
                 ? $exception->getMessage()
                 : null;
 
-            return Inertia::render('errors/index', [
-                'status' => $status,
-                'message' => $message,
-            ])->toResponse($request)->setStatusCode($status);
+            try {
+                return Inertia::render('errors/index', [
+                    'status' => $status,
+                    'message' => $message,
+                ])->toResponse($request)->setStatusCode($status);
+            } catch (Throwable) {
+                // Inertia atau aset Vite ikut rusak: pakai halaman statis tanpa JavaScript.
+                return response()->view('errors.fallback', [
+                    'status' => $status,
+                    'message' => $message,
+                ], $status);
+            }
         });
     })->create();

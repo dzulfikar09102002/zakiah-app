@@ -87,7 +87,7 @@ class ProductOpnameSessionController extends Controller
                 'is_pic' => $isPic,
                 'can_manage_schedule' => $this->sessions->canManageSchedule($session),
                 'can_cancel' => $this->sessions->canCancel($session),
-                'can_correct' => $isPic && ProductOpnameSessionScan::supportsCorrections(),
+                'can_correct' => ProductOpnameSessionScan::supportsCorrections() && $this->sessions->canCorrect($session),
             ],
             'review' => $canSeeReview ? [
                 'pagination' => $this->reviews->paginate($session, $filter, $search),
@@ -219,17 +219,21 @@ class ProductOpnameSessionController extends Controller
 
     public function productScans(int $id, int $productId): JsonResponse
     {
-        $session = $this->picSession($id);
-        $this->ensureCorrectionsAvailable();
+        $session = $this->correctableSession($id);
 
         return response()->json($this->scans->productScans($session, $productId));
     }
 
     public function cancelScan(CancelProductOpnameScanRequest $request, int $id, int $scanId): JsonResponse
     {
-        $this->ensureCorrectionsAvailable();
+        $session = $this->correctableSession($id);
 
-        $this->scans->cancelScan($this->picSession($id), $scanId, $request->validated('reason'));
+        $this->scans->cancelScan(
+            $session,
+            $scanId,
+            $request->validated('reason'),
+            $this->sessions->isPic($session),
+        );
 
         return response()->json(['ok' => true]);
     }
@@ -281,6 +285,27 @@ class ProductOpnameSessionController extends Controller
     private function ensureCorrectionsAvailable(): void
     {
         abort_unless(ProductOpnameSessionScan::supportsCorrections(), 409, 'Fitur koreksi scan belum aktif.');
+    }
+
+    /**
+     * Anggota sesi boleh koreksi selama scan dibuka; setelah ditutup hanya PJ.
+     */
+    private function correctableSession(int $id): ProductOpnameSession
+    {
+        $this->ensureCorrectionsAvailable();
+
+        $session = $this->sessions->find($id);
+        $this->ensureMember($session);
+
+        abort_unless(
+            $this->sessions->canCorrect($session),
+            403,
+            $this->sessions->isPic($session)
+                ? 'Scan hanya bisa dibatalkan sebelum sesi selesai.'
+                : 'Scan sudah ditutup, hanya PJ SO yang bisa membatalkan scan.',
+        );
+
+        return $session;
     }
 
     private function picSession(int $id): ProductOpnameSession

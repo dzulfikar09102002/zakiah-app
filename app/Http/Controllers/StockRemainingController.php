@@ -33,6 +33,8 @@ class StockRemainingController extends Controller
 
     public function report(Location $location)
     {
+        $this->ensureOwnedByEntity($location);
+
         $pagination = $this->service->getRemainingStock($location->id);
         $categoryOptions = $this->service->getCategoryOptions();
         $locations = $this->service->getLocations();
@@ -72,13 +74,11 @@ class StockRemainingController extends Controller
 
     public function export(Request $request, $locationId)
     {
-        $location = Location::findOrFail($locationId);
-        $data = $this->service->getAllStockForExport($locationId);
-        $entityName = match ($location->entity_id) {
-            1 => 'Secaca',
-            3 => 'Zakiah',
-            default => 'Unknown'
-        };
+        $location = Location::query()->findOrFail($locationId);
+        $this->ensureOwnedByEntity($location);
+
+        $data = $this->service->getAllStockForExport($location->id);
+        $entityName = str_replace(' ', '-', (string) (auth()->user()?->entity?->name ?? 'Entity'));
         $fileName = 'Stok-Sisa-'.$entityName.' '.str_replace(' ', '-', $location->name).'.xlsx';
 
         return Excel::download(

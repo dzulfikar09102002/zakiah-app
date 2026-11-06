@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Services;
 
 use App\Enums\StatusEnum;
 use App\Models\CustomerCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
+
 class CustomerCategoryService
 {
     public function getCustomerCategories()
@@ -13,7 +15,7 @@ class CustomerCategoryService
 
         return CustomerCategory::query()
             ->where('entity_id', $entityId)->with('customerCategoryRule')
-            
+
             ->when(request('search'), function (Builder $query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })
@@ -29,18 +31,18 @@ class CustomerCategoryService
     public function store(array $data)
     {
         $user = auth()->user();
-        return DB::transaction(function () use ($data, $user) 
-        {
+
+        return DB::transaction(function () use ($data, $user) {
             $category = CustomerCategory::create([
-                'name'       => $data['name'],
-                'entity_id'  => $user->entity->id,
+                'name' => $data['name'],
+                'entity_id' => $user->entity->id,
                 'status' => StatusEnum::Active,
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ]);
 
             $minimalSpend = $data['customer_category_rule']['minimal_spend'] ?? 0;
-        
+
             $category->customerCategoryRule()->create([
                 'minimal_spend' => $minimalSpend,
             ]);
@@ -48,6 +50,7 @@ class CustomerCategoryService
             return $category;
         });
     }
+
     public function update(CustomerCategory $category, array $data)
     {
         $category->update([
@@ -78,7 +81,7 @@ class CustomerCategoryService
 
         return CustomerCategory::query()->onlyTrashed()
             ->where('entity_id', $entityId)->with('customerCategoryRule')
-            
+
             ->when(request('search'), function (Builder $query, $search) {
                 $query->where('name', 'like', "%{$search}%");
             })
@@ -93,7 +96,10 @@ class CustomerCategoryService
 
     public function restore(int $id)
     {
-        $customerCategory = CustomerCategory::withTrashed()->findOrFail($id);
+        $customerCategory = CustomerCategory::withTrashed()
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->findOrFail($id);
+
         return $customerCategory->restore();
     }
 }

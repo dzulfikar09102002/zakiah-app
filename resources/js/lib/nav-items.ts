@@ -46,6 +46,7 @@ import assetsByCategory from '@/routes/reports/assets-by-category';
 import roles from '@/routes/roles';
 import saleTransactions from '@/routes/sale-transactions';
 import sellings from '@/routes/sellings';
+import userAccounts from '@/routes/user-accounts';
 
 export const mainNavItems: NavItem[] = [
     {
@@ -249,6 +250,10 @@ export const mainNavItems: NavItem[] = [
             {
                 title: 'Karyawan',
                 href: employees.index().url,
+            },
+            {
+                title: 'Akun Login',
+                href: userAccounts.index().url,
             },
             {
                 title: 'Role',

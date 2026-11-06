@@ -27,7 +27,8 @@ type Props = {
 };
 
 /**
- * Rincian setiap scan satu produk untuk PJ, dan koreksi scan yang salah. Scan lama tetap
+ * Rincian setiap scan satu produk dan koreksi scan yang salah. Selama scan dibuka semua
+ * anggota sesi bisa memakainya; setelah scan ditutup hanya PJ. Scan lama tetap
  * tersimpan; koreksi dicatat sebagai baris baru beserta alasannya.
  */
 export default function ScanDetailDialog({

@@ -28,6 +28,7 @@ import { AnimatedValue } from '@/components/ui/count-up';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePullToRefresh } from '@/hooks/use-pull-to-refresh';
 import { quickActions } from '@/lib/mobile-nav';
+import { useCanVisit } from '@/lib/navigation';
 import { usePwaInstall } from '@/lib/pwa';
 import { cn } from '@/lib/utils';
 import type { SharedData } from '@/types';
@@ -198,6 +199,7 @@ function InstallCard() {
 export default function MobileHome() {
     const { auth, branding } = usePage<SharedData>().props;
     const { setOpenSheet } = useMobileNav();
+    const canVisit = useCanVisit();
     const dashboard = useHomeDashboard();
     const { filters, summary, previous, refund } = dashboard;
 
@@ -410,9 +412,11 @@ export default function MobileHome() {
                 {/* Grid layanan */}
                 <HomeCard className="px-2 py-4">
                     <div className="grid grid-cols-4 gap-y-4">
-                        {quickActions.map((action) => (
-                            <MenuTile key={action.href} {...action} />
-                        ))}
+                        {quickActions
+                            .filter((action) => canVisit(action.href))
+                            .map((action) => (
+                                <MenuTile key={action.href} {...action} />
+                            ))}
                         <MenuTile
                             title="Lainnya"
                             icon={LayoutGrid}

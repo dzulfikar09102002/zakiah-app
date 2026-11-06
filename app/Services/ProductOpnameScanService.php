@@ -65,7 +65,7 @@ class ProductOpnameScanService
     }
 
     /**
-     * Rincian setiap scan satu produk untuk PJ, terbaru di atas.
+     * Rincian setiap scan satu produk, terbaru di atas.
      *
      * @return Collection<int, array<string, mixed>>
      */
@@ -97,17 +97,24 @@ class ProductOpnameScanService
     }
 
     /**
-     * Koreksi PJ: scan lama tidak diubah, ditambah satu baris qty -1 yang menunjuk scan itu.
+     * Koreksi scan: scan lama tidak diubah, ditambah satu baris qty -1 yang menunjuk scan itu.
+     * Anggota sesi boleh selama scan dibuka; setelah scan ditutup hanya PJ.
      */
-    public function cancelScan(ProductOpnameSession $session, int $scanId, string $reason): void
+    public function cancelScan(ProductOpnameSession $session, int $scanId, string $reason, bool $isPic): void
     {
         $employeeId = $this->employeeId();
 
-        DB::transaction(function () use ($session, $scanId, $reason, $employeeId) {
+        DB::transaction(function () use ($session, $scanId, $reason, $employeeId, $isPic) {
             $locked = ProductOpnameSession::query()->lockForUpdate()->findOrFail($session->id);
+            $status = $locked->currentStatus();
 
-            if (! in_array($locked->currentStatus(), [OpnameSessionStatus::Started, OpnameSessionStatus::Review], true)) {
+            if (! in_array($status, [OpnameSessionStatus::Started, OpnameSessionStatus::Review], true)) {
                 $this->fail('Scan hanya bisa dibatalkan sebelum sesi selesai.');
+            }
+
+            // Dicek ulang di dalam kunci: PJ bisa saja menutup scan tepat sebelum ini.
+            if (! $isPic && $status !== OpnameSessionStatus::Started) {
+                $this->fail('Scan sudah ditutup, hanya PJ SO yang bisa membatalkan scan.');
             }
 
             $scan = ProductOpnameSessionScan::query()

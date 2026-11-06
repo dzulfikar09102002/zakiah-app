@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { store } from '@/routes/login';
+import { resetOpenSections } from '@/lib/sidebar-sections';
 import { request } from '@/routes/password';
 import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AuthSimpleLayout from '@/layouts/auth/auth-simple-layout';
 
 type Props = {
@@ -19,6 +20,9 @@ type Props = {
 
 export default function Login({ status, canResetPassword }: Props) {
     const [showPassword, setShowPassword] = useState(false);
+
+    // Setelah login, semua menu sidebar mulai dalam keadaan tertutup.
+    useEffect(() => resetOpenSections(), []);
 
     return (
         <AuthSimpleLayout

@@ -58,7 +58,9 @@ class ProductCategoryService
 
     public function restore(int $id)
     {
-        $category = ProductCategory::withTrashed()->findOrFail($id);
+        $category = ProductCategory::withTrashed()
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->findOrFail($id);
 
         return $category->restore();
     }

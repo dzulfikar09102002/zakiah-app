@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Services\EntityBrandingService;
+use App\Services\MenuAccessService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -53,6 +54,12 @@ class HandleInertiaRequests extends Middleware
             'sso' => [
                 'newzakica' => filled(config('services.newzakica.url')) && $user?->employee !== null,
             ],
+            // Sidebar dari tabel menu; null bila tabelnya belum ada (pakai menu statis).
+            'navigation' => fn () => $user ? app(MenuAccessService::class)->navigation() : null,
+            'access' => fn () => $user ? [
+                'enforced' => app(MenuAccessService::class)->enforced(),
+                'permissions' => app(MenuAccessService::class)->permissions(),
+            ] : null,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

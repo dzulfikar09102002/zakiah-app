@@ -302,6 +302,23 @@ class ProductOpnameSessionService
         return in_array((int) $session->pic_employee_id, $this->currentEmployeeIds(), true);
     }
 
+    /**
+     * Selama scan dibuka, semua anggota sesi boleh melihat rincian dan membatalkan scan.
+     * Setelah scan ditutup, hanya PJ yang boleh.
+     */
+    public function canCorrect(ProductOpnameSession $session): bool
+    {
+        if ($session->sessionType() === OpnameSessionType::Revision) {
+            return false;
+        }
+
+        return match ($session->currentStatus()) {
+            OpnameSessionStatus::Started => $this->isMember($session),
+            OpnameSessionStatus::Review => $this->isPic($session),
+            default => false,
+        };
+    }
+
     public function canManageSchedule(ProductOpnameSession $session): bool
     {
         $employeeIds = $this->currentEmployeeIds();

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\RoleService;
-use App\Models\Role;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Models\Role;
+use App\Services\RoleService;
 use Inertia\Inertia;
 
 class RoleController extends Controller
@@ -17,17 +17,21 @@ class RoleController extends Controller
     public function index()
     {
         $pagination = $this->service->getRoles();
+
         return Inertia::render('roles/index', compact('pagination'));
     }
 
     public function store(StoreRoleRequest $request)
     {
         $this->service->store($request->validated());
+
         return to_route('roles.index')->with('success', 'Role berhasil ditambahkan');
     }
 
     public function update(UpdateRoleRequest $request, Role $role)
     {
+        $this->ensureOwnedByEntity($role);
+
         $this->service->update(
             $role,
             $request->validated()
@@ -38,6 +42,8 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
+        $this->ensureOwnedByEntity($role);
+
         $this->service->delete($role);
 
         return redirect()->back()->with('success', 'Role berhasil dihapus');

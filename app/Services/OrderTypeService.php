@@ -6,19 +6,23 @@ use App\Enums\StatusEnum;
 use App\Helpers\UniqueCodeGenerator;
 use App\Models\OrderType;
 use App\Models\PaymentMethod;
-class OrderTypeService{
+
+class OrderTypeService
+{
     public function getOrderTypes()
     {
         $search = request('search', '');
+
         return OrderType::with('paymentMethod')->where('entity_id', auth()->user()?->entity?->id)
-        ->whereLike('name', "%$search%")
-        ->paginate(request('per_page', 10))
-        ->withQueryString();
+            ->whereLike('name', "%$search%")
+            ->paginate(request('per_page', 10))
+            ->withQueryString();
     }
+
     public function getDeletedOrderTypes()
     {
         $search = request('search', '');
-        
+
         return OrderType::onlyTrashed()
             ->with('paymentMethod')
             ->where('entity_id', auth()->user()?->entity?->id)
@@ -26,6 +30,7 @@ class OrderTypeService{
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }
+
     public function getPaymentMethods()
     {
         return PaymentMethod::where('entity_id', auth()->user()?->entity?->id)->get();
@@ -61,6 +66,7 @@ class OrderTypeService{
             'updated_by' => auth()->user()->id,
         ]);
     }
+
     public function delete(OrderType $orderType)
     {
         return $orderType->delete();
@@ -68,7 +74,10 @@ class OrderTypeService{
 
     public function restore(int $id)
     {
-        $orderType = OrderType::withTrashed()->findOrFail($id);
+        $orderType = OrderType::withTrashed()
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->findOrFail($id);
+
         return $orderType->restore();
     }
 }

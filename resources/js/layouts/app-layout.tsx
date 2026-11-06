@@ -24,7 +24,7 @@ export default ({
             {children}
         </main>
 
-        <footer className="hidden border-t py-4 text-center text-sm md:block">
+        <footer className="hidden border-t py-4 text-center text-sm text-muted-foreground md:block">
             Copyright &copy; {new Date().getFullYear()} Zakiah Group. All rights
             reserved
         </footer>

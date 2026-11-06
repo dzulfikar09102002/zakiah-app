@@ -6,6 +6,7 @@ import {
     type MobileMenuSection,
     type MobileSheetKey,
 } from '@/lib/mobile-nav';
+import { useCanVisit } from '@/lib/navigation';
 import { AccountPanel } from './account-panel';
 import { BottomSheet } from './bottom-sheet';
 import { MenuTile } from './menu-tile';
@@ -42,10 +43,18 @@ export function MobileMenuSheet() {
     const { openSheet, setOpenSheet } = useMobileNav();
     const { currentUrl } = useCurrentUrl();
 
-    const sections: MobileMenuSection[] =
+    const canVisit = useCanVisit();
+
+    const sections: MobileMenuSection[] = (
         openSheet === 'menu'
             ? allMenuSections
-            : (mobileTabs.find((tab) => tab.key === openSheet)?.sections ?? []);
+            : (mobileTabs.find((tab) => tab.key === openSheet)?.sections ?? [])
+    )
+        .map((section) => ({
+            ...section,
+            items: section.items.filter((item) => canVisit(item.href)),
+        }))
+        .filter((section) => section.items.length > 0);
     const meta = openSheet ? sheetMeta[openSheet] : undefined;
 
     return (

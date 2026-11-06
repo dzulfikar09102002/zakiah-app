@@ -4,12 +4,14 @@ use App\Models\ProductOpnameSession;
 use App\Models\User;
 use App\Services\DocumentSignatureService;
 use App\Services\ProductOpnameReviewService;
+use App\Services\ProductOpnameScanService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Once;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia;
 
 /**
@@ -836,7 +838,7 @@ it('mengizinkan PJ membatalkan scan dengan alasan, tanpa mengubah baris lama', f
     $scanId = (int) DB::table('product_opname_session_scans')->min('id');
     $url = route('product-opname-sessions.cancel-scan', ['id' => $session->id, 'scanId' => $scanId]);
 
-    $this->actingAs($this->member)->postJson($url, ['reason' => 'salah scan'])->assertForbidden();
+    $this->actingAs($this->outsider)->postJson($url, ['reason' => 'salah scan'])->assertForbidden();
     $this->actingAs($this->pic)->postJson($url, [])->assertUnprocessable();
     $this->actingAs($this->pic)->postJson($url, ['reason' => 'x'])->assertUnprocessable();
 
@@ -875,9 +877,57 @@ it('mengizinkan PJ membatalkan scan dengan alasan, tanpa mengubah baris lama', f
         ->assertJsonPath('1.reason', 'ter-scan dua kali')
         ->assertJsonPath('0.cancelled', false);
 
+    // Selama scan dibuka anggota sesi juga boleh melihat rincian, karyawan lain tidak.
+    $this->actingAs($this->member)
+        ->getJson(route('product-opname-sessions.product-scans', ['id' => $session->id, 'productId' => 10]))
+        ->assertOk()
+        ->assertJsonCount(2);
+
+    $this->actingAs($this->outsider)
+        ->getJson(route('product-opname-sessions.product-scans', ['id' => $session->id, 'productId' => 10]))
+        ->assertForbidden();
+});
+
+it('mengizinkan anggota sesi membatalkan scan selama scan dibuka, dan hanya PJ setelah ditutup', function () {
+    $session = ($this->startSession)();
+
+    ($this->scan)($session, '111')->assertOk();
+    ($this->scan)($session, '111')->assertOk();
+
+    [$first, $second] = DB::table('product_opname_session_scans')->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
+    $url = fn (int $scanId) => route('product-opname-sessions.cancel-scan', ['id' => $session->id, 'scanId' => $scanId]);
+
+    $this->actingAs($this->member)
+        ->get(route('product-opname-sessions.show', $session->id))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('viewer.can_correct', true));
+
+    $this->actingAs($this->member)->postJson($url($first), ['reason' => 'ter-scan dua kali'])->assertOk();
+
+    $correction = DB::table('product_opname_session_scans')->where('cancelled_scan_id', $first)->first();
+    expect((int) $correction->ins_by)->toBe($this->memberEmployee);
+
+    $this->actingAs($this->pic)->post(route('product-opname-sessions.close-scan', $session->id))->assertRedirect();
+
+    $this->actingAs($this->member)
+        ->get(route('product-opname-sessions.show', $session->id))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('viewer.can_correct', false));
+
+    $this->actingAs($this->member)->postJson($url($second), ['reason' => 'salah barang'])->assertForbidden();
     $this->actingAs($this->member)
         ->getJson(route('product-opname-sessions.product-scans', ['id' => $session->id, 'productId' => 10]))
         ->assertForbidden();
+
+    // Kalau PJ menutup scan tepat sebelum pembatalan anggota diproses, service tetap menolak.
+    expect(fn () => app(ProductOpnameScanService::class)->cancelScan($session->fresh(), $second, 'salah barang', false))
+        ->toThrow(ValidationException::class);
+
+    $this->actingAs($this->pic)
+        ->get(route('product-opname-sessions.show', $session->id))
+        ->assertInertia(fn (AssertableInertia $page) => $page->where('viewer.can_correct', true));
+
+    $this->actingAs($this->pic)->postJson($url($second), ['reason' => 'salah barang'])->assertOk();
+
+    expect((int) DB::table('product_opname_session_scans')->where('product_id', 10)->sum('qty'))->toBe(0);
 });
 
 it('mengubah angka review setelah koreksi, dan menolak koreksi produk yang sudah diputuskan', function () {

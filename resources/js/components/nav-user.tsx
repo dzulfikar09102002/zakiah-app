@@ -16,6 +16,7 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { SharedData } from '@/types';
 
+/** Akun di bawah sidebar: profil, tema, POS, dan keluar. */
 export function NavUser() {
     const { auth } = usePage<SharedData>().props;
     const { state } = useSidebar();
@@ -28,23 +29,25 @@ export function NavUser() {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton
                             size="lg"
-                            className="group text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent"
+                            tooltip={auth.user.name}
+                            className="group data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                             data-test="sidebar-menu-button"
                         >
-                            <UserInfo user={auth.user} />
-                            <ChevronsUpDown className="ml-auto size-4" />
+                            <UserInfo user={auth.user} showEmail />
+                            <ChevronsUpDown className="ml-auto size-4 text-sidebar-muted" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
-                        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                        className="w-(--radix-dropdown-menu-trigger-width) min-w-60 rounded-lg"
                         align="end"
                         side={
                             isMobile
                                 ? 'bottom'
                                 : state === 'collapsed'
-                                  ? 'left'
-                                  : 'bottom'
+                                  ? 'right'
+                                  : 'top'
                         }
+                        sideOffset={8}
                     >
                         <UserMenuContent user={auth.user} />
                     </DropdownMenuContent>

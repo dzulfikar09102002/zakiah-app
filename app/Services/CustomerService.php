@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Customer;
@@ -8,9 +9,9 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+
 class CustomerService
 {
-    
     public function getCustomers()
     {
         $entityId = auth()->user()?->entity?->id;
@@ -32,7 +33,7 @@ class CustomerService
             ->when(request('phone_number'), function (Builder $query, $phone) {
                 $query->where('phone_number', $phone);
             })
-             ->orderByDesc('id') 
+            ->orderByDesc('id')
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }
@@ -40,12 +41,14 @@ class CustomerService
     public function getCustomerCategories()
     {
         $entityId = auth()->user()?->entity?->id;
+
         return CustomerCategory::where('entity_id', $entityId)->get();
     }
 
     public function getLocations()
     {
         $entityId = auth()->user()?->entity?->id;
+
         return Location::where('entity_id', $entityId)->get();
     }
 
@@ -56,29 +59,30 @@ class CustomerService
             $authUser = auth()->user();
 
             $phone = $data['phone_number'];
-            $defaultPassword = $phone . '12345678';
+            $defaultPassword = $phone.'12345678';
 
             $user = User::create([
-                'name'     => $phone,
+                'name' => $phone,
                 'password' => Hash::make($defaultPassword),
                 'phone_number_country_code' => $data['phone_number_country_code'],
-                'phone_number'              => $data['phone_number'],
+                'phone_number' => $data['phone_number'],
             ]);
 
             return Customer::create([
-                'entity_id'                 => $authUser->entity->id,
-                'user_id'                   => $user->id,
-                'first_name'                => $data['first_name'],
-                'last_name'                 => $data['last_name'],
+                'entity_id' => $authUser->entity->id,
+                'user_id' => $user->id,
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
                 'phone_number_country_code' => $data['phone_number_country_code'],
-                'customer_category_id'      => $data['customer_category_id'],
-                'phone_number'              => $data['phone_number'],
-                'location_id'               => $data['location_id'],
-                'created_by'                => $authUser->id,
-                'updated_by'                => $authUser->id,
+                'customer_category_id' => $data['customer_category_id'],
+                'phone_number' => $data['phone_number'],
+                'location_id' => $data['location_id'],
+                'created_by' => $authUser->id,
+                'updated_by' => $authUser->id,
             ]);
         });
     }
+
     public function update(Customer $customer, array $data)
     {
         return DB::transaction(function () use ($customer, $data) {
@@ -86,19 +90,19 @@ class CustomerService
             $authUser = auth()->user();
             $phone = $data['phone_number'];
             $customer->user->update([
-                'name'     => $phone,
+                'name' => $phone,
                 'phone_number_country_code' => $data['phone_number_country_code'],
-                'phone_number'              => $data['phone_number'],
+                'phone_number' => $data['phone_number'],
             ]);
 
             $customer->update([
-                'first_name'                => $data['first_name'],
-                'last_name'                 => $data['last_name'],
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
                 'phone_number_country_code' => $data['phone_number_country_code'],
-                'customer_category_id'      => $data['customer_category_id'],
-                'phone_number'              => $data['phone_number'],
-                'location_id'               => $data['location_id'],
-                'updated_by'                => $authUser->id,
+                'customer_category_id' => $data['customer_category_id'],
+                'phone_number' => $data['phone_number'],
+                'location_id' => $data['location_id'],
+                'updated_by' => $authUser->id,
             ]);
 
             return $customer->fresh(['customerCategory', 'location']);
@@ -112,7 +116,10 @@ class CustomerService
 
     public function restore(int $id)
     {
-        $customer = Customer::withTrashed()->findOrFail($id);
+        $customer = Customer::withTrashed()
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->findOrFail($id);
+
         return $customer->restore();
     }
 
@@ -137,7 +144,7 @@ class CustomerService
             ->when(request('phone_number'), function (Builder $query, $phone) {
                 $query->where('phone_number', $phone);
             })
-             ->orderByDesc('id') 
+            ->orderByDesc('id')
             ->paginate(request('per_page', 10))
             ->withQueryString();
     }

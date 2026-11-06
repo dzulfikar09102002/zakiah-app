@@ -41,6 +41,7 @@ class LocationService
                 'value' => $location->id,
             ]);
     }
+
     public function getDeletedLocations()
     {
         $search = request('search', '');
@@ -136,7 +137,9 @@ class LocationService
 
     public function restore(int $id)
     {
-        $location = Location::withTrashed()->findOrFail($id);
+        $location = Location::withTrashed()
+            ->where('entity_id', auth()->user()?->entity?->id)
+            ->findOrFail($id);
 
         return $location->restore();
     }
