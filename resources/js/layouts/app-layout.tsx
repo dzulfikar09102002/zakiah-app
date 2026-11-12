@@ -18,13 +18,14 @@ export default ({
         <main
             className={cn(
                 mobileHome ? 'p-0' : 'p-4',
-                'flex-1 pb-[calc(env(safe-area-inset-bottom)+6rem)] md:p-4 md:pb-12',
+                'flex-1 pb-[calc(env(safe-area-inset-bottom)+6rem)] md:p-5 md:pb-12 lg:p-6 lg:pb-12',
+                'motion-safe:animate-in motion-safe:duration-300 motion-safe:fade-in',
             )}
         >
             {children}
         </main>
 
-        <footer className="hidden border-t py-4 text-center text-sm text-muted-foreground md:block">
+        <footer className="hidden border-t border-border/70 py-4 text-center text-xs text-muted-foreground md:block">
             Copyright &copy; {new Date().getFullYear()} Zakiah Group. All rights
             reserved
         </footer>

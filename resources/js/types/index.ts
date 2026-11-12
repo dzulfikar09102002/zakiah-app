@@ -7,7 +7,11 @@ import type { Auth } from './auth';
 export type Branding = {
     name: string;
     logo: string | null;
+    /** Tema warna: tema entity (secaca/zakiah) atau duo untuk tamu. */
+    theme?: BrandTheme;
 };
+
+export type BrandTheme = 'zakiah' | 'secaca' | 'duo';
 
 export type SharedData = {
     name: string;

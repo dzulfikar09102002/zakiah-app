@@ -254,7 +254,7 @@ export default function MobileHome() {
             </div>
 
             {/* Header berwarna */}
-            <header className="relative overflow-hidden bg-gradient-to-br from-[#d98260] via-primary to-[#9b462c] px-4 pt-[calc(env(safe-area-inset-top)+14px)] pb-28 text-white">
+            <header className="relative overflow-hidden bg-gradient-to-br from-[color-mix(in_oklab,var(--primary)_78%,white)] via-primary to-[color-mix(in_oklab,var(--primary)_68%,black)] px-4 pt-[calc(env(safe-area-inset-top)+14px)] pb-28 text-white dark:from-[color-mix(in_oklab,var(--primary)_62%,black)] dark:via-[color-mix(in_oklab,var(--primary)_50%,black)] dark:to-[color-mix(in_oklab,var(--primary)_36%,black)]">
                 <div className="pointer-events-none absolute -top-16 -right-10 size-56 rounded-full bg-white/10" />
                 <div className="pointer-events-none absolute top-20 -right-24 size-56 rounded-full bg-white/5" />
                 <div className="pointer-events-none absolute -bottom-20 -left-16 size-48 rounded-full bg-black/5" />

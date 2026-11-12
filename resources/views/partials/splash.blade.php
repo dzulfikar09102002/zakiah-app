@@ -1,7 +1,8 @@
 {{--
     Splash screen saat aplikasi dibuka (PWA / HP), sekali per sesi.
-    Cairan terakota naik dari bawah memenuhi layar; logo Zakiah & Secaca
-    berubah putih saat terendam. Ditutup oleh window.__hideSplash()
+    Cairan warna tema entity (html[data-brand]: navy Zakiah, teal Secaca, perpaduan untuk tamu)
+    naik dari bawah memenuhi layar; logo Zakiah (navy) & Secaca (teal) berubah putih saat terendam.
+    Frame pertama harus sama dengan gambar splash statis iOS di public/pwa/splash. Ditutup oleh window.__hideSplash()
     (dipanggil dari resources/js/app.tsx setelah React selesai render).
     Ditampilkan hanya bila <html> punya class "show-splash" (lihat app.blade.php).
 --}}
@@ -9,10 +10,12 @@
     #app-splash { display: none; }
 
     .show-splash #app-splash {
-        --sp-bg: #fff1ea;
-        --sp-ink: #cc7455;
-        --sp-liquid-top: #d98260;
-        --sp-liquid-bottom: #9b462c;
+        --sp-bg: #faf7f1;
+        --sp-ink: #2f3e56;
+        --sp-ink-secaca: #1f7f8c;
+        --sp-gold: #c9a066;
+        --sp-liquid-top: #2b7d8f;
+        --sp-liquid-bottom: #243146;
         --sp-rise: 1.7s;
         position: fixed;
         inset: 0;
@@ -23,7 +26,9 @@
         transition: opacity .45s ease, transform .55s cubic-bezier(.4, 0, .2, 1);
     }
 
-    .dark.show-splash #app-splash { --sp-bg: #0e0705; --sp-ink: #e0997c; }
+    [data-brand="zakiah"].show-splash #app-splash { --sp-liquid-top: #415473; --sp-liquid-bottom: #1f2a3c; }
+    [data-brand="secaca"].show-splash #app-splash { --sp-liquid-top: #2a95a3; --sp-liquid-bottom: #155a63; }
+    .dark.show-splash #app-splash { --sp-bg: #12161f; --sp-ink: #d6b07a; --sp-ink-secaca: #6fc3cf; --sp-gold: #d6b07a; }
 
     .show-splash body { overflow: hidden; }
 
@@ -52,20 +57,20 @@
     }
 
     .sp-logo--zakiah { --sp-src: url('/assets/images/zakiah-mark.png'); width: 86px; height: 62px; animation-delay: .1s; }
-    .sp-logo--secaca { --sp-src: url('/assets/images/secaca.png'); width: 92px; height: 62px; animation-delay: .25s; }
+    .sp-logo--secaca { --sp-src: url('/assets/images/secaca.png'); width: 92px; height: 62px; animation-delay: .25s; color: var(--sp-ink-secaca); }
 
     .sp-divider {
         width: 1.5px;
         height: 48px;
         border-radius: 2px;
-        background: currentColor;
-        opacity: .35;
+        background: var(--sp-gold);
+        opacity: .8;
         transform: scaleY(0);
         animation: sp-grow .5s ease-out .2s forwards;
     }
 
     .sp-caption {
-        font-family: 'Lato', 'Instrument Sans', system-ui, sans-serif;
+        font-family: 'Poppins', system-ui, sans-serif;
         font-size: 11px;
         font-weight: 700;
         letter-spacing: .38em;
@@ -94,6 +99,8 @@
 
     /* Lapisan logo putih, sejajar dengan lapisan dasar, hanya terlihat di dalam cairan. */
     .sp-fill .sp-stage { top: auto; height: 100vh; height: 100dvh; color: #fff; }
+    .sp-fill .sp-logo { color: #fff; }
+    .sp-fill .sp-divider { background: #fff; opacity: .5; }
 
     .sp-waves { position: absolute; left: 0; right: 0; bottom: 100%; height: 34px; overflow: hidden; margin-bottom: -1px; }
 
@@ -133,7 +140,7 @@
     /* Lanjutan dari splash statis iOS: logo sudah terlihat sejak awal. */
     .sp-static-start .sp-logo,
     .sp-static-start .sp-divider { animation: none; opacity: 1; transform: none; }
-    .sp-static-start .sp-divider { opacity: .35; }
+    .sp-static-start .sp-divider { opacity: .8; }
 
     @media (prefers-reduced-motion: reduce) {
         .show-splash #app-splash { --sp-rise: .01s; }
@@ -155,10 +162,10 @@
         <div class="sp-waves">
             <svg class="sp-wave sp-wave--back" viewBox="0 0 1200 34" preserveAspectRatio="none">
                 {{-- Periode gelombang harus membagi 600 (geser -50% dari 1200) agar loop mulus. --}}
-                <path fill="#d98260" d="M0 17 Q 50 2 100 17 T 200 17 T 300 17 T 400 17 T 500 17 T 600 17 T 700 17 T 800 17 T 900 17 T 1000 17 T 1100 17 T 1200 17 V 34 H 0 Z" />
+                <path style="fill: var(--sp-liquid-top)" d="M0 17 Q 50 2 100 17 T 200 17 T 300 17 T 400 17 T 500 17 T 600 17 T 700 17 T 800 17 T 900 17 T 1000 17 T 1100 17 T 1200 17 V 34 H 0 Z" />
             </svg>
             <svg class="sp-wave" viewBox="0 0 1200 34" preserveAspectRatio="none">
-                <path fill="#d98260" d="M0 20 Q 75 4 150 20 T 300 20 T 450 20 T 600 20 T 750 20 T 900 20 T 1050 20 T 1200 20 V 34 H 0 Z" />
+                <path style="fill: var(--sp-liquid-top)" d="M0 20 Q 75 4 150 20 T 300 20 T 450 20 T 600 20 T 750 20 T 900 20 T 1050 20 T 1200 20 V 34 H 0 Z" />
             </svg>
         </div>
 

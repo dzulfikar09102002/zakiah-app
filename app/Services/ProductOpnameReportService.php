@@ -40,7 +40,7 @@ class ProductOpnameReportService
             ]);
         }
 
-        $pdf = new ReportPdfDocument('portrait');
+        $pdf = new ReportPdfDocument('portrait', $this->branding->theme($entity?->id));
         $pdf->SetTitle($pdf->encode($title.' '.$session->code));
         $pdf->setFooterText('No. Dokumen '.$session->code);
         $pdf->AddPage();

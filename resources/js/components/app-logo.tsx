@@ -13,15 +13,17 @@ export default function AppLogo() {
 
     return (
         <>
-            <div className="flex aspect-square size-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white shadow-xs ring-1 ring-sidebar-border">
-                <AppLogoIcon className="size-6" entityName={entityName} />
+            <div className="flex aspect-square size-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-md ring-1 shadow-primary/20 ring-primary/15 group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:rounded-lg">
+                <AppLogoIcon
+                    className="size-7 object-contain group-data-[collapsible=icon]:size-6"
+                    entityName={entityName}
+                />
             </div>
-            {/* Font brand sama dengan halaman login (Playfair Display + Lato). */}
-            <div className="grid flex-1 gap-0.5 text-left leading-none">
-                <span className="truncate font-serif text-base font-semibold tracking-[0.14em] uppercase">
-                    {displayName.toUpperCase()}
+            <div className="grid flex-1 text-left leading-none">
+                <span className="truncate text-[15px] font-bold tracking-tight text-foreground">
+                    {displayName}
                 </span>
-                <span className="truncate font-lato text-[10px] tracking-[0.24em] text-sidebar-muted uppercase">
+                <span className="mt-1 truncate text-[10px] font-semibold tracking-[0.2em] text-primary uppercase">
                     Backoffice
                 </span>
             </div>

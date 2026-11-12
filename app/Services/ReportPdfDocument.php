@@ -15,17 +15,37 @@ class ReportPdfDocument extends FPDF
     private const MARGIN = 10;
 
     /*
-     * Palet warna sama dengan cetak laporan NewZakicaPOS (laporan-cetak.css).
+     * Palet warna per tema entity (sama dengan token app.css, lihat EntityBrandingService::theme):
+     * text = teks utama, muted = keterangan, primary = nama kop, judul, garis kop & header tabel,
+     * accent = garis aksen tipis, head = latar header & total tabel,
+     * stripe = baris genap & kotak ringkasan, border = garis antar baris.
+     * Latar dibuat sangat muda agar hemat tinta saat dicetak.
+     *
+     * @var array<string, array<string, array{int, int, int}>>
      */
-    private const COLOR_TEXT = [43, 26, 18];        // #2b1a12
+    private const PALETTES = [
+        'zakiah' => [
+            'text' => [31, 42, 60],         // #1f2a3c
+            'muted' => [95, 107, 128],      // #5f6b80
+            'primary' => [47, 62, 86],      // #2f3e56 navy
+            'accent' => [201, 160, 102],    // #c9a066 emas
+            'head' => [236, 239, 245],      // #eceff5
+            'stripe' => [248, 249, 251],    // #f8f9fb
+            'border' => [223, 227, 234],    // #dfe3ea
+        ],
+        'secaca' => [
+            'text' => [29, 45, 51],         // #1d2d33
+            'muted' => [90, 110, 116],      // #5a6e74
+            'primary' => [31, 127, 140],    // #1f7f8c teal
+            'accent' => [229, 84, 90],      // #e5545a coral
+            'head' => [230, 243, 245],      // #e6f3f5
+            'stripe' => [246, 251, 251],    // #f6fbfb
+            'border' => [214, 232, 235],    // #d6e8eb
+        ],
+    ];
 
-    private const COLOR_MUTED = [107, 90, 82];      // #6b5a52
-
-    private const COLOR_HEAD = [246, 236, 230];     // #f6ece6 header & total tabel
-
-    private const COLOR_STRIPE = [252, 248, 246];   // #fcf8f6 baris genap
-
-    private const COLOR_BORDER = [234, 223, 216];   // #eadfd8
+    /** @var array<string, array{int, int, int}> */
+    private array $palette;
 
     private const ROW_HEIGHT = 6;
 
@@ -53,14 +73,29 @@ class ReportPdfDocument extends FPDF
 
     private string $footerText = '';
 
-    public function __construct(string $orientation)
+    /**
+     * @param  string  $theme  Tema entity: "zakiah" (default) atau "secaca".
+     */
+    public function __construct(string $orientation, string $theme = 'zakiah')
     {
         parent::__construct($orientation === 'portrait' ? 'P' : 'L', 'mm', 'A4');
+
+        $this->palette = self::PALETTES[$theme] ?? self::PALETTES['zakiah'];
 
         $this->SetMargins(self::MARGIN, self::MARGIN, self::MARGIN);
         $this->SetAutoPageBreak(true, 16);
         $this->AliasNbPages();
-        $this->SetTextColor(...self::COLOR_TEXT);
+        $this->SetTextColor(...$this->palette['text']);
+    }
+
+    /**
+     * Warna palet aktif (RGB), mis. untuk bagian laporan yang digambar di luar kelas ini.
+     *
+     * @return array{int, int, int}
+     */
+    public function color(string $name): array
+    {
+        return $this->palette[$name] ?? $this->palette['text'];
     }
 
     public function contentWidth(): float
@@ -99,31 +134,46 @@ class ReportPdfDocument extends FPDF
 
         $this->SetXY($textX, $top + ($blockHeight - $textHeight) / 2);
         $this->SetFont('Helvetica', 'B', 12);
+        $this->SetTextColor(...$this->palette['primary']);
         $this->Cell(0, 7, $this->encode(mb_strtoupper($name)), 0, 2);
 
         $this->SetFont('Helvetica', '', 7.5);
-        $this->SetTextColor(...self::COLOR_MUTED);
+        $this->SetTextColor(...$this->palette['muted']);
 
         foreach ($lines as $line) {
             $this->Cell(0, 4, $this->encode($line), 0, 2);
         }
 
-        $this->SetTextColor(...self::COLOR_TEXT);
+        $this->SetTextColor(...$this->palette['text']);
 
+        // Garis kop ganda: tebal warna utama, lalu garis aksen tipis (emas Zakiah / coral Secaca).
         $lineY = $top + $blockHeight + 2;
-        $this->SetDrawColor(...self::COLOR_TEXT);
-        $this->SetLineWidth(0.5);
-        $this->Line(self::MARGIN, $lineY, $this->GetPageWidth() - self::MARGIN, $lineY);
+        $right = $this->GetPageWidth() - self::MARGIN;
+        $this->SetDrawColor(...$this->palette['primary']);
+        $this->SetLineWidth(0.6);
+        $this->Line(self::MARGIN, $lineY, $right, $lineY);
+        $this->SetDrawColor(...$this->palette['accent']);
+        $this->SetLineWidth(0.3);
+        $this->Line(self::MARGIN, $lineY + 0.9, $right, $lineY + 0.9);
         $this->SetLineWidth(0.2);
 
-        $this->SetY($lineY + 4);
+        $this->SetY($lineY + 4.5);
     }
 
     public function drawTitle(string $title): void
     {
         $this->SetFont('Helvetica', 'B', 11);
+        $this->SetTextColor(...$this->palette['primary']);
         $this->Cell(0, 7, $this->encode(mb_strtoupper($title)), 0, 1, 'C');
-        $this->Ln(1);
+        $this->SetTextColor(...$this->palette['text']);
+
+        // Ornamen kecil di bawah judul: garis aksen pendek di tengah.
+        $center = $this->GetPageWidth() / 2;
+        $this->SetDrawColor(...$this->palette['accent']);
+        $this->SetLineWidth(0.5);
+        $this->Line($center - 9, $this->GetY(), $center + 9, $this->GetY());
+        $this->SetLineWidth(0.2);
+        $this->Ln(2.5);
     }
 
     /**
@@ -133,10 +183,10 @@ class ReportPdfDocument extends FPDF
     {
         foreach ($filters as $label => $value) {
             $this->SetFont('Helvetica', '', 8);
-            $this->SetTextColor(...self::COLOR_MUTED);
+            $this->SetTextColor(...$this->palette['muted']);
             $this->Cell(24, 4.5, $this->encode($label));
             $this->Cell(4, 4.5, ':');
-            $this->SetTextColor(...self::COLOR_TEXT);
+            $this->SetTextColor(...$this->palette['text']);
             $this->MultiCell(0, 4.5, $this->encode($value));
         }
 
@@ -156,20 +206,24 @@ class ReportPdfDocument extends FPDF
         $y = $this->GetY();
         $x = self::MARGIN;
 
-        $this->SetDrawColor(...self::COLOR_BORDER);
-        $this->SetFillColor(...self::COLOR_STRIPE);
+        $this->SetDrawColor(...$this->palette['border']);
+        $this->SetFillColor(...$this->palette['stripe']);
 
         foreach ($summary as $label => $value) {
             $this->Rect($x, $y, $width, 13, 'DF');
+            // Strip warna utama di sisi kiri kotak ringkasan.
+            $this->SetFillColor(...$this->palette['primary']);
+            $this->Rect($x, $y, 1, 13, 'F');
+            $this->SetFillColor(...$this->palette['stripe']);
 
-            $this->SetXY($x + 2.5, $y + 2);
+            $this->SetXY($x + 3, $y + 2);
             $this->SetFont('Helvetica', '', 6.5);
-            $this->SetTextColor(...self::COLOR_MUTED);
+            $this->SetTextColor(...$this->palette['muted']);
             $this->Cell($width - 5, 3.5, $this->encode(mb_strtoupper($label)));
 
-            $this->SetXY($x + 2.5, $y + 6.5);
+            $this->SetXY($x + 3, $y + 6.5);
             $this->SetFont('Helvetica', 'B', 10);
-            $this->SetTextColor(...self::COLOR_TEXT);
+            $this->SetTextColor(...$this->palette['text']);
             $this->Cell($width - 5, 5, $this->fit($this->encode($value), $width - 5));
 
             $x += $width + $gap;
@@ -202,8 +256,8 @@ class ReportPdfDocument extends FPDF
         $this->ensureSpace(self::ROW_HEIGHT);
 
         $this->SetFont('Helvetica', '', $this->fontSize);
-        $this->SetFillColor(...self::COLOR_STRIPE);
-        $this->SetDrawColor(...self::COLOR_BORDER);
+        $this->SetFillColor(...$this->palette['stripe']);
+        $this->SetDrawColor(...$this->palette['border']);
         $this->SetLineWidth(0.1);
 
         foreach ($this->tableColumns as $index => $column) {
@@ -225,8 +279,8 @@ class ReportPdfDocument extends FPDF
         $this->ensureSpace(self::ROW_HEIGHT + ($detailCount > 0 ? self::DETAIL_ROW_HEIGHT : 0));
 
         $this->SetFont('Helvetica', 'B', $this->fontSize);
-        $this->SetFillColor(...self::COLOR_STRIPE);
-        $this->SetDrawColor(...self::COLOR_BORDER);
+        $this->SetFillColor(...$this->palette['stripe']);
+        $this->SetDrawColor(...$this->palette['border']);
         $this->SetLineWidth(0.1);
 
         foreach ($this->tableColumns as $index => $column) {
@@ -251,10 +305,10 @@ class ReportPdfDocument extends FPDF
         $labelWidth = array_sum(array_column(array_slice($this->tableColumns, 0, $span), 'width'));
         $indent = $this->tableColumns[0]['width'] ?? 0;
 
-        $this->SetTextColor(...self::COLOR_MUTED);
+        $this->SetTextColor(...$this->palette['muted']);
         $this->Cell($indent, self::DETAIL_ROW_HEIGHT, '');
         $this->Cell($labelWidth - $indent, self::DETAIL_ROW_HEIGHT, $this->fit($this->encode($label), $labelWidth - $indent - 2));
-        $this->SetTextColor(...self::COLOR_TEXT);
+        $this->SetTextColor(...$this->palette['text']);
 
         foreach (array_slice($this->tableColumns, $span) as $index => $column) {
             $text = $this->fit($this->encode($cells[$index] ?? ''), $column['width'] - 2);
@@ -272,9 +326,10 @@ class ReportPdfDocument extends FPDF
         $this->ensureSpace(self::ROW_HEIGHT + 1);
 
         $this->SetFont('Helvetica', 'B', $this->fontSize);
-        $this->SetFillColor(...self::COLOR_HEAD);
-        $this->SetDrawColor(...self::COLOR_TEXT);
-        $this->SetLineWidth(0.25);
+        $this->SetFillColor(...$this->palette['head']);
+        $this->SetDrawColor(...$this->palette['primary']);
+        $this->SetTextColor(...$this->palette['primary']);
+        $this->SetLineWidth(0.3);
 
         foreach ($this->tableColumns as $index => $column) {
             $text = $this->encode($cells[$index] ?? '');
@@ -293,26 +348,27 @@ class ReportPdfDocument extends FPDF
         $this->SetFontSize($this->fontSize);
 
         $this->Ln();
+        $this->SetTextColor(...$this->palette['text']);
         $this->SetLineWidth(0.2);
     }
 
     public function drawEmptyRow(string $message): void
     {
         $this->SetFont('Helvetica', '', $this->fontSize);
-        $this->SetTextColor(...self::COLOR_MUTED);
-        $this->SetDrawColor(...self::COLOR_BORDER);
+        $this->SetTextColor(...$this->palette['muted']);
+        $this->SetDrawColor(...$this->palette['border']);
         $this->SetLineWidth(0.1);
         $this->Cell($this->contentWidth(), 12, $this->encode($message), 'B', 1, 'C');
-        $this->SetTextColor(...self::COLOR_TEXT);
+        $this->SetTextColor(...$this->palette['text']);
     }
 
     public function drawNote(string $note): void
     {
         $this->Ln(2);
         $this->SetFont('Helvetica', 'I', 7.5);
-        $this->SetTextColor(...self::COLOR_MUTED);
+        $this->SetTextColor(...$this->palette['muted']);
         $this->MultiCell(0, 4, $this->encode($note));
-        $this->SetTextColor(...self::COLOR_TEXT);
+        $this->SetTextColor(...$this->palette['text']);
     }
 
     public function Header(): void
@@ -325,15 +381,15 @@ class ReportPdfDocument extends FPDF
     public function Footer(): void
     {
         $this->SetY(-12);
-        $this->SetDrawColor(...self::COLOR_BORDER);
+        $this->SetDrawColor(...$this->palette['border']);
         $this->SetLineWidth(0.1);
         $this->Line(self::MARGIN, $this->GetY(), $this->GetPageWidth() - self::MARGIN, $this->GetY());
 
         $this->SetFont('Helvetica', '', 7);
-        $this->SetTextColor(...self::COLOR_MUTED);
+        $this->SetTextColor(...$this->palette['muted']);
         $this->Cell($this->contentWidth() / 2, 6, $this->encode($this->footerText));
         $this->Cell($this->contentWidth() / 2, 6, 'Halaman '.$this->PageNo().' dari {nb}', 0, 0, 'R');
-        $this->SetTextColor(...self::COLOR_TEXT);
+        $this->SetTextColor(...$this->palette['text']);
     }
 
     /**
@@ -361,16 +417,17 @@ class ReportPdfDocument extends FPDF
     private function drawTableHeader(): void
     {
         $this->SetFont('Helvetica', 'B', $this->fontSize);
-        $this->SetFillColor(...self::COLOR_HEAD);
-        $this->SetDrawColor(...self::COLOR_TEXT);
-        $this->SetTextColor(...self::COLOR_TEXT);
-        $this->SetLineWidth(0.25);
+        $this->SetFillColor(...$this->palette['head']);
+        $this->SetDrawColor(...$this->palette['primary']);
+        $this->SetTextColor(...$this->palette['primary']);
+        $this->SetLineWidth(0.3);
 
         foreach ($this->tableColumns as $column) {
             $this->Cell($column['width'], 7, $this->fit($this->encode($column['label']), $column['width'] - 2), 'TB', 0, $column['align'], true);
         }
 
         $this->Ln();
+        $this->SetTextColor(...$this->palette['text']);
         $this->SetLineWidth(0.2);
     }
 

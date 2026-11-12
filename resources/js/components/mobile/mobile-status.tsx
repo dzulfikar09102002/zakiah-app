@@ -4,10 +4,17 @@ import { useEffect, useSyncExternalStore } from 'react';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// Warna status bar per tema entity (samakan dengan token di app.css).
 const THEME_COLORS = {
-    brand: '#cc7455',
-    light: '#fff1ea',
-    dark: '#0e0705',
+    zakiah: { brand: '#2f3e56', light: '#faf7f1', dark: '#12161f' },
+    secaca: { brand: '#1f7f8c', light: '#fdf6ee', dark: '#0f1719' },
+    duo: { brand: '#2f3e56', light: '#faf7f1', dark: '#11161d' },
+} as const;
+
+const currentBrand = (): keyof typeof THEME_COLORS => {
+    const brand = document.documentElement.dataset.brand;
+
+    return brand === 'secaca' || brand === 'duo' ? brand : 'zakiah';
 };
 
 /**
@@ -28,10 +35,17 @@ export function useThemeColor(requested: 'brand' | 'surface') {
             return;
         }
 
-        meta.content =
-            variant === 'brand'
-                ? THEME_COLORS.brand
-                : THEME_COLORS[resolvedAppearance];
+        const apply = () => {
+            const colors = THEME_COLORS[currentBrand()];
+            meta.content =
+                variant === 'brand' ? colors.brand : colors[resolvedAppearance];
+        };
+
+        apply();
+        // Tema entity bisa berganti tanpa reload (login/logout), lihat syncBranding di app.tsx.
+        document.addEventListener('brand-change', apply);
+
+        return () => document.removeEventListener('brand-change', apply);
     }, [variant, resolvedAppearance]);
 }
 

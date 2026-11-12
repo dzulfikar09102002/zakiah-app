@@ -28,6 +28,13 @@ const syncBranding = (branding?: Branding) => {
     ) {
         favicon.setAttribute('href', branding.logo);
     }
+
+    // Tema warna entity (lihat [data-brand] di app.css); awalnya diisi server di app.blade.php.
+    const theme = branding?.theme ?? 'duo';
+    if (document.documentElement.dataset.brand !== theme) {
+        document.documentElement.dataset.brand = theme;
+        document.dispatchEvent(new CustomEvent('brand-change'));
+    }
 };
 
 createInertiaApp({

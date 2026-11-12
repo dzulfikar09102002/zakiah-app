@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+@php
+    $brandTheme = $page['props']['branding']['theme'] ?? 'duo';
+    $brandColor = ['secaca' => '#1f7f8c', 'zakiah' => '#2f3e56', 'duo' => '#2f3e56'][$brandTheme] ?? '#2f3e56';
+@endphp
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-brand="{{ $brandTheme }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
 
 <head>
     <meta charset="utf-8">
@@ -7,12 +11,12 @@
 
     {{-- PWA: manifest, warna status bar, dan dukungan "Add to Home Screen" di iOS --}}
     <link rel="manifest" href="/manifest.webmanifest">
-    <meta name="theme-color" content="#cc7455">
+    <meta name="theme-color" content="{{ $brandColor }}">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Zakiah">
-    <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png?v=2">
+    <link rel="apple-touch-icon" href="/pwa/apple-touch-icon.png?v=3">
 
     {{-- Splash statis iOS saat app PWA dibuka (sama dengan frame pertama partials/splash).
          [lebar, tinggi, pixel ratio] layar iPhone dalam px CSS, portrait. --}}
@@ -20,7 +24,7 @@
         @foreach (['light', 'dark'] as $scheme)
             <link rel="apple-touch-startup-image"
                 media="(device-width: {{ $w }}px) and (device-height: {{ $h }}px) and (-webkit-device-pixel-ratio: {{ $dpr }}) and (orientation: portrait) and (prefers-color-scheme: {{ $scheme }})"
-                href="/pwa/splash/iphone-{{ $w * $dpr }}x{{ $h * $dpr }}-{{ $scheme }}.png">
+                href="/pwa/splash/iphone-{{ $w * $dpr }}x{{ $h * $dpr }}-{{ $scheme }}.png?v=3">
         @endforeach
     @endforeach
 
@@ -57,13 +61,11 @@
 
     {{-- Inline style to set the HTML background color based on our theme in app.css --}}
     <style>
-        html {
-            background-color: oklch(1 0 0);
-        }
-
-        html.dark {
-            background-color: oklch(0.145 0 0);
-        }
+        html { background-color: oklch(0.979 0.007 85); }
+        html[data-brand="secaca"] { background-color: oklch(0.978 0.012 70); }
+        html.dark { background-color: oklch(0.17 0.02 260); }
+        html.dark[data-brand="secaca"] { background-color: oklch(0.17 0.018 215); }
+        html.dark[data-brand="duo"] { background-color: oklch(0.17 0.02 240); }
     </style>
 
     @php
@@ -74,10 +76,10 @@
     {{-- Favicon = logo entity (sama dengan kop PDF); diperbarui di app.tsx saat navigasi. --}}
     <link id="app-favicon" rel="icon" type="image/png" href="{{ $branding['logo'] ?? '/favicon.ico' }}">
 
-    {{-- Font disamakan dengan NewZakicaPOS (Views/Shared/_LayoutAuth.cshtml) --}}
+    {{-- Poppins untuk seluruh backoffice (gaya disamakan dengan ERP TWO-M) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,600;1,400;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
 
     @viteReactRefresh
     @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])

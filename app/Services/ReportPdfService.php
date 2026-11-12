@@ -66,7 +66,7 @@ class ReportPdfService
         $printedBy = auth()->user()?->name;
         $printedAt = Carbon::now()->locale('id')->translatedFormat('d F Y H:i');
 
-        $pdf = new ReportPdfDocument($orientation);
+        $pdf = new ReportPdfDocument($orientation, app(EntityBrandingService::class)->theme($entity?->id));
         $pdf->SetTitle($pdf->encode($title));
         $pdf->setFooterText('Dicetak'.($printedBy ? ' oleh '.$printedBy : '').' pada '.$printedAt);
         $pdf->AddPage();

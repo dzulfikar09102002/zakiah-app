@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import { NavSearchButton, NavSearchDialog } from '@/components/nav-search';
 import { NavSection } from '@/components/nav-tree';
 import { NavUser } from '@/components/nav-user';
+import { SidebarArt } from '@/components/sidebar-art';
 import {
     Sidebar,
     SidebarContent,
@@ -26,14 +27,18 @@ export function AppSidebar() {
 
     return (
         <Sidebar collapsible="icon" variant="sidebar">
-            <SidebarHeader className="gap-3 pb-0">
+            {/* Motif butik di belakang menu; disembunyikan saat sidebar hanya ikon. */}
+            <span className="group-data-[collapsible=icon]:hidden">
+                <SidebarArt />
+            </span>
+            <SidebarHeader className="relative gap-3 border-b border-sidebar-border/70 px-3 pt-4 pb-3">
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton
                             size="lg"
                             asChild
                             tooltip="Beranda"
-                            className="hover:bg-sidebar-accent/60"
+                            className="h-12 group-data-[collapsible=icon]:p-0! hover:bg-transparent active:bg-transparent"
                         >
                             <Link href={dashboardRoutes.index()} prefetch>
                                 <AppLogo />
@@ -46,12 +51,12 @@ export function AppSidebar() {
                 </SidebarMenu>
             </SidebarHeader>
 
-            <SidebarContent className="gap-0 py-1 [scrollbar-color:var(--color-sidebar-border)_transparent] [scrollbar-width:thin]">
+            <SidebarContent className="relative gap-0 py-2 [scrollbar-color:var(--color-sidebar-border)_transparent] [scrollbar-width:thin]">
                 <NavSection label="Menu" items={navigation.main} />
                 <NavSection label="Pengaturan" items={navigation.setting} />
             </SidebarContent>
 
-            <SidebarFooter className="gap-2">
+            <SidebarFooter className="relative gap-2">
                 <SidebarSeparator className="mx-0" />
                 <NavUser />
             </SidebarFooter>

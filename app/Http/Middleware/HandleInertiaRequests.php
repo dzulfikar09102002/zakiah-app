@@ -47,6 +47,7 @@ class HandleInertiaRequests extends Middleware
             'branding' => [
                 'name' => $branding->displayName($entityName),
                 'logo' => $branding->logoUrl($entityName),
+                'theme' => $branding->theme($user?->entity?->id, $user === null),
             ],
             'auth' => [
                 'user' => $user ? $user->load('entity', 'employee') : $user,

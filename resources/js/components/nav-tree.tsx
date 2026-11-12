@@ -64,7 +64,7 @@ export function NavSection({
 
     return (
         <SidebarGroup className={className}>
-            <SidebarGroupLabel className="text-[11px] font-semibold tracking-wider text-sidebar-muted uppercase">
+            <SidebarGroupLabel className="text-[10px] font-semibold tracking-[0.18em] text-sidebar-muted uppercase">
                 {label}
             </SidebarGroupLabel>
             <SidebarMenu className="gap-0.5">
@@ -89,7 +89,7 @@ function NavHeader({ item }: { item: NavItem }) {
                     asChild
                     isActive={active}
                     tooltip={item.title}
-                    className="h-9 data-[active=true]:shadow-xs"
+                    className="h-10 rounded-lg px-3 text-[13px] font-semibold tracking-wide uppercase data-[active=true]:bg-sidebar-primary data-[active=true]:font-semibold data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-sm data-[active=true]:shadow-primary/30 data-[active=true]:hover:bg-sidebar-primary data-[active=true]:hover:text-sidebar-primary-foreground"
                 >
                     <Link href={item.href} prefetch>
                         {Icon && <Icon />}
@@ -146,9 +146,9 @@ function NavCollapsible({ item, active }: { item: NavItem; active: boolean }) {
                     <SidebarMenuButton
                         tooltip={item.title}
                         className={cn(
-                            'h-9',
+                            'h-10 rounded-lg px-3 text-[13px] font-semibold tracking-wide uppercase transition-colors data-[state=open]:text-sidebar-accent-foreground',
                             active &&
-                                'font-medium text-sidebar-accent-foreground [&>svg:first-child]:text-sidebar-primary',
+                                'bg-sidebar-accent/70 text-sidebar-accent-foreground [&>svg:first-child]:text-sidebar-primary',
                         )}
                     >
                         {Icon && <Icon />}
@@ -161,7 +161,7 @@ function NavCollapsible({ item, active }: { item: NavItem; active: boolean }) {
                 </CollapsibleTrigger>
 
                 <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down motion-reduce:animate-none">
-                    <SidebarMenuSub className="mr-0 gap-0.5 py-1 pr-0">
+                    <SidebarMenuSub className="mr-0 gap-0.5 border-sidebar-border py-1 pr-0">
                         {(item.items ?? []).map((child) =>
                             child.items?.length ? (
                                 <NavGroup
@@ -207,9 +207,9 @@ function NavGroup({
                         <button
                             type="button"
                             className={cn(
-                                'h-8 w-full cursor-pointer text-sidebar-foreground',
+                                'h-8 w-full cursor-pointer rounded-lg text-[13px] text-sidebar-foreground',
                                 active &&
-                                    'font-medium text-sidebar-accent-foreground',
+                                    'font-semibold text-sidebar-accent-foreground',
                             )}
                         >
                             <span>{group.title}</span>
@@ -252,7 +252,7 @@ function NavLeaf({ item, path }: { item: NavItem; path: string }) {
             <SidebarMenuSubButton
                 asChild
                 isActive={active}
-                className="h-8 text-sidebar-foreground data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground"
+                className="h-8 rounded-lg text-[13px] text-sidebar-foreground transition-colors data-[active=true]:bg-sidebar-primary data-[active=true]:font-semibold data-[active=true]:text-sidebar-primary-foreground data-[active=true]:shadow-sm data-[active=true]:shadow-primary/30 data-[active=true]:hover:bg-sidebar-primary data-[active=true]:hover:text-sidebar-primary-foreground"
             >
                 <Link href={item.href} prefetch>
                     <span>{item.title}</span>

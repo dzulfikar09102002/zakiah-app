@@ -175,11 +175,11 @@ export function NavSearchButton() {
         <SidebarMenuButton
             tooltip="Cari menu (Ctrl K)"
             onClick={openNavSearch}
-            className="h-9 border border-white/15 bg-white/10 text-sidebar-muted hover:bg-white/15 hover:text-sidebar-foreground"
+            className="h-9 rounded-lg border border-sidebar-border bg-sidebar-accent/50 text-sidebar-muted shadow-xs transition-colors hover:border-primary/30 hover:bg-sidebar-accent hover:text-sidebar-foreground"
         >
             <Search />
             <span>Cari menu…</span>
-            <ShortcutHint className="ml-auto border-white/20 bg-white/10 text-sidebar-muted group-data-[collapsible=icon]:hidden" />
+            <ShortcutHint className="ml-auto bg-sidebar text-sidebar-muted group-data-[collapsible=icon]:hidden" />
         </SidebarMenuButton>
     );
 }

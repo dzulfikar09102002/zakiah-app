@@ -15,6 +15,29 @@ class EntityBrandingService
     private const FALLBACK_LOGO = 'zakiah.png';
 
     /**
+     * Tema warna per entity (id di tabel entity). Entity lain memakai tema Zakiah.
+     *
+     * @var array<int, string>
+     */
+    private const ENTITY_THEMES = [
+        1 => 'secaca',
+        3 => 'zakiah',
+    ];
+
+    /**
+     * Tema warna backoffice: "secaca" / "zakiah" untuk user login, "duo" (perpaduan
+     * keduanya) untuk halaman tamu seperti login.
+     */
+    public function theme(?int $entityId, bool $guest = false): string
+    {
+        if ($guest) {
+            return 'duo';
+        }
+
+        return self::ENTITY_THEMES[$entityId] ?? 'zakiah';
+    }
+
+    /**
      * Path absolut file logo (untuk PDF), atau null bila tidak ada sama sekali.
      */
     public function logoFile(?string $entityName): ?string

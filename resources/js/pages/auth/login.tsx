@@ -1,17 +1,16 @@
 import { Form, Head } from '@inertiajs/react';
+import { Eye, EyeOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/auth-layout';
-import { store } from '@/routes/login';
-import { resetOpenSections } from '@/lib/sidebar-sections';
-import { request } from '@/routes/password';
-import { Eye, EyeOff } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import AuthSimpleLayout from '@/layouts/auth/auth-simple-layout';
+import { resetOpenSections } from '@/lib/sidebar-sections';
+import { store } from '@/routes/login';
+import { request } from '@/routes/password';
 
 type Props = {
     status?: string;
@@ -43,8 +42,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             <div className="grid gap-1.5">
                                 <Label
                                     htmlFor="email"
-                                    className="text-[12px] font-bold tracking-wide"
-                                    style={{ color: '#9e5f48' }}
+                                    className="text-[12px] font-semibold tracking-wide text-foreground"
                                 >
                                     Alamat Email
                                 </Label>
@@ -57,11 +55,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="Masukkan email"
-                                    className="h-11 rounded-xl text-[13px] transition-all duration-200"
-                                    style={{
-                                        border: '1.5px solid rgba(196,134,106,0.3)',
-                                        background: 'rgba(253,244,240,0.6)',
-                                    }}
+                                    className="h-11 rounded-xl border-input bg-muted/40 text-[13px] shadow-none transition-all duration-200 focus-visible:bg-card"
                                 />
                                 <InputError message={errors.email} />
                             </div>
@@ -71,16 +65,14 @@ export default function Login({ status, canResetPassword }: Props) {
                                 <div className="flex items-center justify-between">
                                     <Label
                                         htmlFor="password"
-                                        className="text-[12px] font-bold tracking-wide"
-                                        style={{ color: '#9e5f48' }}
+                                        className="text-[12px] font-semibold tracking-wide text-foreground"
                                     >
                                         Password
                                     </Label>
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="text-[12px] font-medium transition-colors"
-                                            style={{ color: '#c4866a' }}
+                                            className="text-[12px] font-medium text-primary no-underline transition-colors hover:underline"
                                             tabIndex={5}
                                         >
                                             Lupa password?
@@ -98,11 +90,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                         tabIndex={2}
                                         autoComplete="current-password"
                                         placeholder="********"
-                                        className="h-11 rounded-xl pr-11 text-[13px] transition-all duration-200"
-                                        style={{
-                                            border: '1.5px solid rgba(196,134,106,0.3)',
-                                            background: 'rgba(253,244,240,0.6)',
-                                        }}
+                                        className="h-11 rounded-xl border-input bg-muted/40 pr-11 text-[13px] shadow-none transition-all duration-200 focus-visible:bg-card"
                                     />
                                     <button
                                         type="button"
@@ -129,15 +117,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={4}
                                     disabled={processing}
                                     data-test="login-button"
-                                    className="relative h-11 w-full overflow-hidden rounded-xl border-none text-[13px] font-bold tracking-widest text-white transition-all duration-200 active:scale-[0.98]"
-                                    style={{
-                                        background: processing
-                                            ? '#d9a48a'
-                                            : 'linear-gradient(135deg, #d4956e 0%, #c4866a 40%, #b87058 70%, #c4956a 100%)',
-                                        boxShadow: processing
-                                            ? 'none'
-                                            : '0 4px 20px rgba(196,134,106,0.45), 0 1px 4px rgba(120,60,30,0.2)',
-                                    }}
+                                    className="relative h-11 w-full overflow-hidden rounded-xl border-none bg-gradient-to-r from-primary to-[#1f7f8c] text-[13px] font-semibold tracking-widest text-primary-foreground shadow-lg shadow-primary/30 transition-all duration-200 hover:shadow-xl hover:shadow-primary/35 active:scale-[0.98] disabled:shadow-none dark:to-primary"
                                 >
                                     {/* Shine sweep overlay */}
                                     {!processing && (
@@ -165,14 +145,7 @@ export default function Login({ status, canResetPassword }: Props) {
             </Form>
 
             {status && (
-                <div
-                    className="mt-4 rounded-xl px-4 py-3 text-center text-[13px] font-medium"
-                    style={{
-                        background: 'rgba(196,134,106,0.08)',
-                        border: '1px solid rgba(196,134,106,0.25)',
-                        color: '#9e5f48',
-                    }}
-                >
+                <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-4 py-3 text-center text-[13px] font-medium text-success">
                     {status}
                 </div>
             )}
