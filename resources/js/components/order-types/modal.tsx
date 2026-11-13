@@ -1,3 +1,8 @@
+import { useForm, usePage } from '@inertiajs/react';
+import type { SubmitEventHandler} from 'react';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogCancel,
@@ -11,13 +16,10 @@ import {
 import { Field, FieldError, FieldLabel, FieldSet } from '@/components/ui/field';
 
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { SubmitEventHandler, useEffect } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
-import { toast } from 'sonner';
-import { SharedData } from '@/types';
+import type { OrderType, PaymentMethod } from '@/lib/model';
 import ordertypes from '@/routes/order-types';
+import type { SharedData } from '@/types';
 import {
     Select,
     SelectContent,
@@ -25,16 +27,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '../ui/select';
-import { PaymentMethod } from '@/lib/model';
 
 export type ModalState = {
     isOpen: boolean;
-    dataId: any;
+    dataId: unknown;
 };
 
 type Props = {
     modalState: ModalState;
-    tableData: any[];
+    tableData: OrderType[];
     paymentMethods: PaymentMethod[];
     onModalSuccess: () => void;
     onModalClose: () => void;
@@ -72,7 +73,7 @@ export default ({
 
         const action = modalState.dataId ? patch : post;
         const url = modalState.dataId
-            ? ordertypes.update(modalState.dataId).url
+            ? ordertypes.update(Number(modalState.dataId)).url
             : ordertypes.store().url;
 
         action(url, {

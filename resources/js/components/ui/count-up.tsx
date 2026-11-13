@@ -1,5 +1,5 @@
-import { toRupiah } from '@/lib/utils';
 import CountUp from 'react-countup';
+import { toRupiah } from '@/lib/utils';
 export function AnimatedValue({
     value,
     isCurrency = true,

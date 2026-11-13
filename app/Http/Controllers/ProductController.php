@@ -9,18 +9,15 @@ use App\Helpers\Services\Product\ProductTransformerFromRequestForUpdateServices;
 use App\Helpers\Services\Product\ProductTransformerFromRequestServices;
 use App\Helpers\Services\Product\ProductUpdaterImportServices;
 use App\Helpers\Services\Product\ProductUpdaterServices;
-use App\Http\Requests\BaseRequest;
 use App\Http\Requests\ImportProductRequest;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use App\Http\Responses\BaseJsonResponse;
 use App\Jobs\ImportProductLogJob;
 use App\Models\Product;
 use App\Services\ProductService;
 use DB;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Throwable;
 
@@ -28,13 +25,12 @@ class ProductController extends Controller
 {
     public function __construct(
         private ProductService $service
-    ) {
-    }
+    ) {}
 
     public function index()
     {
         try {
-            $pagination = $this->service->getProducts();
+            $pagination = Inertia::defer(fn () => $this->service->getProducts());
             $categoryOptions = $this->service->getCategoryOptions();
             $locationOptions = $this->service->getLocationOptions();
             $unitOptions = $this->service->getProuductUnitOptions();
@@ -56,7 +52,8 @@ class ProductController extends Controller
             throw $e;
         }
     }
-   public function importPage()
+
+    public function importPage()
     {
         try {
             $categoryOptions = $this->service->getCategoryOptions();
@@ -81,6 +78,7 @@ class ProductController extends Controller
             throw $e;
         }
     }
+
     public function importStockLookup(Request $request)
     {
         try {
@@ -89,8 +87,7 @@ class ProductController extends Controller
             return response()->json(
                 $this->service->getCurrentStockMap($skus)
             );
-        } 
-        catch (Exception $e) {
+        } catch (Exception $e) {
             Helper::logException($e, [
                 'skus' => $request->input('skus'),
             ]);
@@ -98,9 +95,10 @@ class ProductController extends Controller
             throw $e;
         }
     }
+
     public function store(StoreProductRequest $request)
     {
-        # start transcation
+        // start transcation
         DB::beginTransaction();
         try {
             $transforming = new ProductTransformerFromRequestServices($request);
@@ -129,6 +127,7 @@ class ProductController extends Controller
     {
         if ($request->entity->id != $product->entity_id) {
             Inertia::flash('error', 'Entitas tidak valid');
+
             return back();
         }
 
@@ -159,6 +158,7 @@ class ProductController extends Controller
     {
         if ($product->entity_id != request()->entity->id) {
             Inertia::flash('error', 'Entitas tidak valid');
+
             return back();
         }
 
@@ -247,12 +247,12 @@ class ProductController extends Controller
 
             throw $e;
         }
-            ImportProductLogJob::dispatch(
-                $entity->id,
-                $employee->id,
-                $request->user()->id,
-                $processedProducts
-            );
+        ImportProductLogJob::dispatch(
+            $entity->id,
+            $employee->id,
+            $request->user()->id,
+            $processedProducts
+        );
 
         $count = count($request->validated('products'));
 

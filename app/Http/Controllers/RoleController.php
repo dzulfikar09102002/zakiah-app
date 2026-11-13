@@ -16,7 +16,7 @@ class RoleController extends Controller
 
     public function index()
     {
-        $pagination = $this->service->getRoles();
+        $pagination = Inertia::defer(fn () => $this->service->getRoles());
 
         return Inertia::render('roles/index', compact('pagination'));
     }

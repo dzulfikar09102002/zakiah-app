@@ -16,7 +16,7 @@ class ProductUnitController extends Controller
 
     public function index()
     {
-        $pagination = $this->service->getUnits();
+        $pagination = Inertia::defer(fn () => $this->service->getUnits());
 
         return Inertia::render('units/index', compact('pagination'));
     }
@@ -24,7 +24,7 @@ class ProductUnitController extends Controller
     public function deleted()
     {
         $onlyTrashed = true;
-        $pagination = $this->service->getDeletedUnits();
+        $pagination = Inertia::defer(fn () => $this->service->getDeletedUnits());
 
         return Inertia::render('units/index', compact('pagination', 'onlyTrashed'));
 

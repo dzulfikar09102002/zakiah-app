@@ -40,7 +40,7 @@ const title = 'Karyawan';
 const breadcrumbs: BreadcrumbItem[] = [{ title, href: employees.index().url }];
 
 type Props = {
-    pagination: Pagination<EmployeeRow>;
+    pagination?: Pagination<EmployeeRow>;
     roleOptions: RoleOption[];
     accessRoleOptions: AccessRoleOption[] | null;
     locations: LocationOption[];
@@ -145,7 +145,7 @@ export default function EmployeeIndex({
         {
             header: 'No',
             cell: ({ row }) =>
-                (pagination.current_page - 1) * pagination.per_page +
+                ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0) +
                 row.index +
                 1,
         },
@@ -206,7 +206,7 @@ export default function EmployeeIndex({
     ];
 
     const table = useReactTable({
-        data: pagination.data,
+        data: pagination?.data ?? [],
         columns,
         getCoreRowModel: getCoreRowModel(),
         getRowCanExpand: () => true,
@@ -221,7 +221,7 @@ export default function EmployeeIndex({
 
             <Modal
                 modalState={modal}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
                 roleOptions={roleOptions}
                 accessRoleOptions={accessRoleOptions}
                 locations={locations}
@@ -299,6 +299,7 @@ export default function EmployeeIndex({
                     </Tabs>
 
                     <DataTable
+                        loading={!pagination}
                         columns={columns}
                         table={table}
                         renderDetail={(employee) => (

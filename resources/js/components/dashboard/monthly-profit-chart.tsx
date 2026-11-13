@@ -1,3 +1,4 @@
+import { Input } from '@base-ui/react';
 import { useState } from 'react';
 import {
     Select,
@@ -6,14 +7,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from '../ui/select';
-import ProfitChart from './profit-chart';
-import { Input } from '@base-ui/react';
 import { Skeleton } from '../ui/skeleton';
+import ProfitChart from './profit-chart';
+import type { ProfitChartRow } from './profit-chart';
 
 type Props = {
     monthlyYear: number;
     years: number[];
-    monthlyData: any;
+    monthlyData: ProfitChartRow[];
     onYearChange?: (year: number) => void;
     isLoading?: boolean;
 };

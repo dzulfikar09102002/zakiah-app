@@ -16,7 +16,7 @@ class CustomerCategoryController extends Controller
 
     public function index()
     {
-        $pagination = $this->service->getCustomerCategories();
+        $pagination = Inertia::defer(fn () => $this->service->getCustomerCategories());
 
         return Inertia::render('customers/categories', compact('pagination'));
     }
@@ -49,7 +49,7 @@ class CustomerCategoryController extends Controller
     public function deleted()
     {
         $onlyTrashed = true;
-        $pagination = $this->service->getDeleted();
+        $pagination = Inertia::defer(fn () => $this->service->getDeleted());
 
         return Inertia::render('customers/categories', compact('pagination', 'onlyTrashed'));
     }

@@ -9,10 +9,11 @@ import {
     TableRow,
 } from "@/components/ui/table";
 
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import type { Pagination, Role } from "@/lib/model";
 
 type Props = {
-    pagination: Pagination<Role>;
+    pagination?: Pagination<Role>;
     onEdit: (id: unknown) => void;
     onDelete: (id: unknown) => void;
 };
@@ -20,7 +21,7 @@ type Props = {
 export default ({ pagination, onEdit, onDelete }: Props) => {
 
     const startIndex =
-        (pagination.current_page - 1) * pagination.per_page;
+        ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
 
     return (
         <div className="relative w-full overflow-auto">
@@ -34,7 +35,7 @@ export default ({ pagination, onEdit, onDelete }: Props) => {
                 </TableHeader>
 
                 <TableBody>
-                    {pagination.data.map((role, index) => (
+                    {(pagination?.data ?? []).map((role, index) => (
                         <TableRow key={role.id ?? index}>
                             <TableCell>
                                 {startIndex + index + 1}.
@@ -68,7 +69,8 @@ export default ({ pagination, onEdit, onDelete }: Props) => {
                         </TableRow>
                     ))}
 
-                    {!pagination.data.length && (
+                    {!pagination && <TableRowsSkeleton columns={3} />}
+                    {pagination && !pagination.data.length && (
                         <TableRow>
                             <TableCell
                                 colSpan={3}

@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
+import { Minus, Plus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -9,7 +11,6 @@ import {
     DialogClose,
     DialogCancel,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
     InputGroup,
@@ -17,10 +18,8 @@ import {
     InputGroupButton,
     InputGroupInput,
 } from '@/components/ui/input-group';
-import { cn } from '@/lib/utils';
-import { Minus, Plus } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Select,
     SelectContent,
@@ -28,12 +27,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Option, SharedData } from '@/types';
-import { Product } from '@/lib/model';
+import { Separator } from '@/components/ui/separator';
+import type { Product } from '@/lib/model';
+import { cn } from '@/lib/utils';
 import products from '@/routes/products';
+import type { Option, SharedData } from '@/types';
 import { Spinner } from './ui/spinner';
-import { toast } from 'sonner';
+
+/** Data form produk: nilai sederhana atau objek/array (stock_movements, dsb.). */
+type ProductFormData = Record<string, string | number | boolean | null | object>;
 
 export interface StockMovementRow {
     location_id: number;
@@ -91,7 +93,8 @@ export function ProductFormDialog({
     const employee_code = usePage<SharedData>().props.auth.user.employee.code;
 
     const { post, put, processing, errors, clearErrors, ...iform } =
-        useForm<any>({});
+        // Payload dibentuk di handleSubmit; error divalidasi server per field (mis. stock_movements.0.stock).
+        useForm<ProductFormData>({});
 
     const [categoryId, setCategoryId] = useState(
         String(product?.product_category_id ?? ''),
@@ -105,15 +108,13 @@ export function ProductFormDialog({
 
     // State untuk input supplier & autocomplete dropdown
     const [supplierName, setSupplierName] = useState(
-        String((product as any)?.supplier?.name ?? ''),
+        String(product?.supplier?.name ?? ''),
     );
     const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
     const filteredSuppliers =
         suppliers?.filter((s) =>
             s.toLowerCase().includes(supplierName.toLowerCase()),
         ) || [];
-
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [stockMovements, setStockMovements] = useState<StockMovementRow[]>(
         () => buildStockMovements(product, locations),
@@ -136,15 +137,25 @@ export function ProductFormDialog({
         setStockDelta(index, next === 0 ? '' : String(next));
     };
 
+    // Saat dialog dibuka, isi ulang field dari produk (disesuaikan saat render, bukan lewat effect).
+    const [wasOpen, setWasOpen] = useState(open);
+
+    if (open !== wasOpen) {
+        setWasOpen(open);
+
+        if (open) {
+            setCategoryId(String(product?.product_category_id ?? ''));
+            setLocationId(String(product?.location_id ?? ''));
+            setUnitId(String(product?.product_unit_id ?? ''));
+            setSupplierName(String(product?.supplier?.name ?? ''));
+            setStockMovements(buildStockMovements(product, locations));
+        }
+    }
+
     useEffect(() => {
         if (!open) return;
 
         clearErrors();
-        setCategoryId(String(product?.product_category_id ?? ''));
-        setLocationId(String(product?.location_id ?? ''));
-        setUnitId(String(product?.product_unit_id ?? ''));
-        setSupplierName(String((product as any)?.supplier?.name ?? ''));
-        setStockMovements(buildStockMovements(product, locations));
     }, [open]);
 
     const handleSubmit = () => {
@@ -186,29 +197,23 @@ export function ProductFormDialog({
             product_sell_prices: [],
         };
 
-        iform.setData(payload);
-        setIsSubmitting(true);
-    };
+        // transform() mengganti data yang dikirim tanpa menunggu setData (asinkron).
+        iform.transform(() => payload as ProductFormData);
 
-    useEffect(() => {
-        if (isSubmitting) {
-            const options = {
-                headers: { 'x-employee-code': employee_code },
-                onSuccess: () => {
-                    onOpenChange(false);
-                    onSuccess?.();
-                },
-                onFinish: () => setIsSubmitting(false),
-            };
+        const options = {
+            headers: { 'x-employee-code': employee_code },
+            onSuccess: () => {
+                onOpenChange(false);
+                onSuccess?.();
+            },
+        };
 
-            if (product) {
-                put(products.update(product.id).url, options);
-            } else {
-                post(products.store().url, options);
-            }
-            setIsSubmitting(false);
+        if (product) {
+            put(products.update(product.id).url, options);
+        } else {
+            post(products.store().url, options);
         }
-    }, [isSubmitting]);
+    };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

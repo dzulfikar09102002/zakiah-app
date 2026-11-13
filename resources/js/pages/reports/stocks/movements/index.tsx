@@ -101,12 +101,12 @@ type Option = {
 };
 
 type Props = {
-    pagination: Pagination<StockMovementData>;
+    pagination?: Pagination<StockMovementData>;
     locationOptions: Option[];
 };
 
 export default ({ pagination, locationOptions }: Props) => {
-    const { data } = pagination;
+    const data = pagination?.data ?? [];
 
     const [columnVisibility, setColumnVisibility] =
         useState<VisibilityState>(cachedColumn);
@@ -212,7 +212,8 @@ export default ({ pagination, locationOptions }: Props) => {
                             />
                         </div>
                     </Form>
-                    <DataTable columns={columns} table={table} />
+                    <DataTable
+                        loading={!pagination} columns={columns} table={table} />
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

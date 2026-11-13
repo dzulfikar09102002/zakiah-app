@@ -20,7 +20,7 @@ class CustomerController extends Controller
         $locations = $this->service->getLocations();
         $phoneCountryCodes = PhoneNumberCountryCodeEnum::options();
         $customerCategories = $this->service->getCustomerCategories();
-        $pagination = $this->service->getCustomers();
+        $pagination = Inertia::defer(fn () => $this->service->getCustomers());
 
         return Inertia::render('customers/index', compact('pagination', 'customerCategories', 'phoneCountryCodes', 'locations'));
     }
@@ -28,7 +28,7 @@ class CustomerController extends Controller
     public function deleted()
     {
         $onlyTrashed = true;
-        $pagination = $this->service->getDeletedCustomers();
+        $pagination = Inertia::defer(fn () => $this->service->getDeletedCustomers());
         $locations = $this->service->getLocations();
         $phoneCountryCodes = PhoneNumberCountryCodeEnum::options();
         $customerCategories = $this->service->getCustomerCategories();

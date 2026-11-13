@@ -65,7 +65,18 @@ export default [
         },
     },
     {
-        ignores: ['vendor', 'node_modules', 'public', 'bootstrap/ssr', 'tailwind.config.js', 'vite.config.ts'],
+        ignores: [
+            'vendor',
+            'node_modules',
+            'public',
+            'bootstrap/ssr',
+            'tailwind.config.js',
+            'vite.config.ts',
+            // Dibuat ulang otomatis oleh Wayfinder (di-.gitignore); jangan di-lint/diedit tangan.
+            'resources/js/actions',
+            'resources/js/routes',
+            'resources/js/wayfinder',
+        ],
     },
     prettier, // Turn off all rules that might conflict with Prettier
 ];

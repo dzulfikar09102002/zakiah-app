@@ -1,25 +1,25 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
+import Alert from '@/components/payment-methods/alert';
+import type { AlertState } from '@/components/payment-methods/alert';
 import type { ModalState } from '@/components/payment-methods/modal';
+import Modal from '@/components/payment-methods/modal';
+import Table from '@/components/payment-methods/table';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
-import Modal from '@/components/payment-methods/modal';
-import Alert from '@/components/payment-methods/alert';
 import {
     Card,
     CardContent,
     CardHeader,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination, PaymentMethod } from '@/lib/model';
 import paymentmethods from '@/routes/payment-methods';
 import type { BreadcrumbItem } from '@/types';
-import { AlertState } from '@/components/payment-methods/alert';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Table from '@/components/payment-methods/table';
 
 const title = 'Metode Pembayaran';
 
@@ -31,11 +31,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<PaymentMethod>
+    pagination?: Pagination<PaymentMethod>;
     onlyTrashed?: boolean
 }
 
-export default ({ pagination, onlyTrashed }: Props) => {
+export default ({ pagination }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined as unknown
@@ -74,7 +74,7 @@ export default ({ pagination, onlyTrashed }: Props) => {
                 modalState={modal}
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
             />
             <Alert
                 alertState={alert}

@@ -1,3 +1,7 @@
+import { useForm } from '@inertiajs/react';
+import type { SubmitEventHandler} from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import {
     Dialog,
     DialogCancel,
@@ -10,17 +14,10 @@ import {
 
 import { Field, FieldError, FieldLabel, FieldSet } from '@/components/ui/field';
 
-import { Input } from '../ui/input';
+import type { Location } from '@/lib/model';
+import locations from '@/routes/locations';
 import { Button } from '../ui/button';
-import { Spinner } from '../ui/spinner';
-
-import { SubmitEventHandler, useEffect, useState } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
-import { toast } from 'sonner';
-
-import { Location } from '@/lib/model';
-import { SharedData } from '@/types';
-
+import { Input } from '../ui/input';
 import {
     Select,
     SelectContent,
@@ -28,11 +25,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from '../ui/select';
-import locations from '@/routes/locations';
+import { Spinner } from '../ui/spinner';
+
+
+
+
+/** Wilayah dari API emsifa (provinsi, kabupaten/kota, kecamatan). */
+type Region = { id: string; name: string };
 
 export type ModalState = {
     isOpen: boolean;
-    dataId: any;
+    dataId: unknown;
 };
 
 type Props = {
@@ -53,7 +56,6 @@ export default ({
     onModalClose,
     phoneCountryCodes,
 }: Props) => {
-    const { auth } = usePage<SharedData>().props;
 
     const { processing, patch, post, reset, errors, data, setData } = useForm({
         name: '',
@@ -99,20 +101,20 @@ export default ({
         });
     }, [modalState.dataId]);
 
-    const [provinces, setProvinces] = useState<any[]>([]);
-    const [regencies, setRegencies] = useState<any[]>([]);
-    const [districts, setDistricts] = useState<any[]>([]);
+    const [provinces, setProvinces] = useState<Region[]>([]);
+    const [regencies, setRegencies] = useState<Region[]>([]);
+    const [districts, setDistricts] = useState<Region[]>([]);
 
     const [selectedProvinceId, setSelectedProvinceId] = useState('');
     const [selectedRegencyId, setSelectedRegencyId] = useState('');
-    const [selectedRegencyName, setSelectedRegencyName] = useState('');
+    const [, setSelectedRegencyName] = useState('');
 
     const submit: SubmitEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
         console.log(data);
         const action = modalState.dataId ? patch : post;
         const url = modalState.dataId
-            ? locations.update(modalState.dataId).url
+            ? locations.update(Number(modalState.dataId)).url
             : locations.store().url;
 
         action(url, {

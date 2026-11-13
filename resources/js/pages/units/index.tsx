@@ -1,25 +1,21 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
-import Modal from '@/components/product-units/modal';
-import type { ModalState } from '@/components/product-units/modal';
 import Alert from '@/components/product-units/alert';
 import type { AlertState } from '@/components/product-units/alert';
+import Modal from '@/components/product-units/modal';
+import type { ModalState } from '@/components/product-units/modal';
+import Table from '@/components/product-units/table';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination, Unit } from '@/lib/model';
-import type { BreadcrumbItem } from '@/types';
-import Table from '@/components/product-units/table';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import productUnits from '@/routes/product-units';
+import type { BreadcrumbItem } from '@/types';
 
 const title = 'Produk Unit';
 
@@ -31,21 +27,21 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<Unit>
-    onlyTrashed?: boolean
-}
+    pagination?: Pagination<Unit>;
+    onlyTrashed?: boolean;
+};
 
-export default ({ pagination, onlyTrashed }: Props) => {
+export default ({ pagination }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
-        dataId: undefined as unknown
+        dataId: undefined as unknown,
     });
 
     const [alert, setAlert] = useState<AlertState>({
         delete: true,
         isOpen: false,
         dataId: undefined as unknown,
-        proccessing: false
+        proccessing: false,
     });
 
     const search = useQuery().search || '';
@@ -59,27 +55,27 @@ export default ({ pagination, onlyTrashed }: Props) => {
         setModal({
             ...modal,
             dataId: id,
-            isOpen: true
+            isOpen: true,
         });
     const onAlertClose = () =>
         setAlert({
             isOpen: false,
             proccessing: false,
             dataId: undefined,
-            delete: true
+            delete: true,
         });
 
-    const onAlertProccessing = () =>
-        setAlert({ ...alert, proccessing: true });
+    const onAlertProccessing = () => setAlert({ ...alert, proccessing: true });
 
-    const onDeleteOrRestore = (id: unknown, action: boolean) => setAlert({
-        ...alert,
-        dataId: id,
-        delete: action,
-        isOpen: true
-    })
-    const { url } = usePage()
-    const isDeletedRoute = url.includes('deleted')
+    const onDeleteOrRestore = (id: unknown, action: boolean) =>
+        setAlert({
+            ...alert,
+            dataId: id,
+            delete: action,
+            isOpen: true,
+        });
+    const { url } = usePage();
+    const isDeletedRoute = url.includes('deleted');
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
@@ -88,7 +84,7 @@ export default ({ pagination, onlyTrashed }: Props) => {
                 modalState={modal}
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
             />
 
             <Alert
@@ -103,7 +99,7 @@ export default ({ pagination, onlyTrashed }: Props) => {
                     onClick={() =>
                         setModal({
                             isOpen: true,
-                            dataId: undefined
+                            dataId: undefined,
                         })
                     }
                 >
@@ -111,12 +107,16 @@ export default ({ pagination, onlyTrashed }: Props) => {
                 </Button>
             </div>
 
-            <Card className="bg-background lg:bg-card p-0 lg:py-6 border-0 lg:border">
-                <CardHeader className='p-0 lg:px-6'>
-                    <Form method='GET'>
-                        <div className="grid lg:flex gap-2">
+            <Card className="border-0 bg-background p-0 lg:border lg:bg-card lg:py-6">
+                <CardHeader className="p-0 lg:px-6">
+                    <Form method="GET">
+                        <div className="grid gap-2 lg:flex">
                             <input type="hidden" name="page" value={1} />
-                            <Input defaultValue={search} name='search' placeholder='Cari...' />
+                            <Input
+                                defaultValue={search}
+                                name="search"
+                                placeholder="Cari..."
+                            />
                             <Button variant={'secondary'}>
                                 <Search /> Cari
                             </Button>
@@ -124,8 +124,11 @@ export default ({ pagination, onlyTrashed }: Props) => {
                     </Form>
                 </CardHeader>
 
-                <CardContent className="p-0 lg:px-6 border-t lg:border-0">
-                    <Tabs value={isDeletedRoute ? 'deleted' : 'available'} className="mb-4">
+                <CardContent className="border-t p-0 lg:border-0 lg:px-6">
+                    <Tabs
+                        value={isDeletedRoute ? 'deleted' : 'available'}
+                        className="mb-4"
+                    >
                         <TabsList>
                             <TabsTrigger value="available" asChild>
                                 <Link href={productUnits.index().url}>
@@ -150,4 +153,4 @@ export default ({ pagination, onlyTrashed }: Props) => {
             </Card>
         </AppLayout>
     );
-}
+};

@@ -25,6 +25,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import type { Loyalty, Pagination } from '@/lib/model';
 import { toRupiah } from '@/lib/utils';
 import loyalties from '@/routes/loyalties';
@@ -47,12 +48,12 @@ const statusVariant: Record<
 };
 
 type Props = {
-    pagination: Pagination<Loyalty>;
+    pagination?: Pagination<Loyalty>;
     onAction: (loyalty: Loyalty, action: LoyaltyAction) => void;
 };
 
 export default ({ pagination, onAction }: Props) => {
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
 
     return (
         <Table className="stripped">
@@ -69,7 +70,7 @@ export default ({ pagination, onAction }: Props) => {
             </TableHeader>
 
             <TableBody>
-                {pagination.data.map((loyalty, index) => (
+                {(pagination?.data ?? []).map((loyalty, index) => (
                     <TableRow key={loyalty.id}>
                         <TableCell>{startIndex + index + 1}.</TableCell>
                         <TableCell>
@@ -170,7 +171,8 @@ export default ({ pagination, onAction }: Props) => {
                         </TableCell>
                     </TableRow>
                 ))}
-                {!pagination.data.length && (
+                {!pagination && <TableRowsSkeleton columns={7} />}
+                {pagination && !pagination.data.length && (
                     <TableRow>
                         <TableCell
                             colSpan={7}

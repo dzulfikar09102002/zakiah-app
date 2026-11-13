@@ -9,6 +9,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 
 type Props<T> = {
     table: ITable<T>;
@@ -19,6 +20,8 @@ type Props<T> = {
      * getRowCanExpand dan state expanded di useReactTable.
      */
     renderDetail?: (row: T) => ReactNode;
+    /** Data belum datang (prop deferred): header tetap, isi diganti baris skeleton. */
+    loading?: boolean;
 };
 
 export default function <T>({
@@ -26,6 +29,7 @@ export default function <T>({
     columns,
     emptyMessage = 'Data tidak ditemukan',
     renderDetail,
+    loading = false,
 }: Props<T>) {
     return (
         <Table>
@@ -48,7 +52,11 @@ export default function <T>({
                 ))}
             </TableHeader>
             <TableBody>
-                {table.getRowModel().rows?.length ? (
+                {loading ? (
+                    <TableRowsSkeleton
+                        columns={table.getVisibleLeafColumns().length}
+                    />
+                ) : table.getRowModel().rows?.length ? (
                     table.getRowModel().rows.map((row) => (
                         <Fragment key={row.id}>
                             <TableRow

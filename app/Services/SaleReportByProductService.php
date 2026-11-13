@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Location;
 use App\Models\SaleTransactionDetail;
+use App\Services\Concerns\PaginatesAggregatedRows;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\LazyCollection;
@@ -11,6 +12,8 @@ use Illuminate\Support\Str;
 
 class SaleReportByProductService
 {
+    use PaginatesAggregatedRows;
+
     public function getLocationOptions()
     {
         return (new LocationService)->getLocations()->get()->map(fn (Location $location) => [
@@ -21,10 +24,11 @@ class SaleReportByProductService
 
     public function getSaleReportByProducts()
     {
-        return $this->saleReportByProductQuery()
-            ->paginate(request('per_page', 10))
-            ->through(fn ($row) => $this->transformRow($row))
-            ->withQueryString();
+        // Agregasi sekali jalan (bukan count + data), lihat PaginatesAggregatedRows.
+        return $this->paginateAggregated(
+            $this->saleReportByProductQuery(),
+            fn ($row) => $this->transformRow($row),
+        );
     }
 
     public function getSaleReportByProductsForPdf(): LazyCollection

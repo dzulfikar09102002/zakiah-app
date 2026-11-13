@@ -1,3 +1,5 @@
+import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import {
     AlertDialog,
     AlertDialogCancel,
@@ -7,16 +9,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '../ui/button';
-import { toast } from 'sonner';
-import { router } from '@inertiajs/react';
-import { Spinner } from '../ui/spinner';
 import employees from '@/routes/employees';
+import { Button } from '../ui/button';
+import { Spinner } from '../ui/spinner';
 
 export type AlertState = {
     delete: boolean;
     isOpen: boolean;
-    dataId: any;
+    dataId: unknown;
     proccessing: boolean;
 };
 
@@ -59,7 +59,7 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
                                 only: ['pagination'],
                                 preserveState: true,
                                 onBefore: onAlertProccessing,
-                                onError: (errors: any) => {
+                                onError: (errors: unknown) => {
                                     toast.error(
                                         alertState.delete
                                             ? 'Gagal menghapus Karyawan'
@@ -77,16 +77,20 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
                                 onFinish: onAlertClose,
                             };
 
-                            alertState.delete
-                                ? router.delete(
-                                      employees.destroy(alertState.dataId).url,
-                                      options,
-                                  )
-                                : router.post(
-                                      employees.restore(alertState.dataId).url,
-                                      {},
-                                      options,
-                                  );
+                            if (alertState.delete) {
+                                router.delete(
+                                    employees.destroy(Number(alertState.dataId))
+                                        .url,
+                                    options,
+                                );
+                            } else {
+                                router.post(
+                                    employees.restore(Number(alertState.dataId))
+                                        .url,
+                                    {},
+                                    options,
+                                );
+                            }
                         }}
                     >
                         <Spinner

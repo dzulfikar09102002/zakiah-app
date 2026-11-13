@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import type { LucideIcon } from 'lucide-react';
 import {
     BarChart3,
     DollarSign,
@@ -7,6 +7,7 @@ import {
     RotateCcw,
     TrendingUp,
 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { AnimatedValue } from '../ui/count-up';
 import { Spinner } from '../ui/spinner';
 
@@ -20,7 +21,7 @@ function StatCard({
 }: {
     title: string;
     value: string | number;
-    icon: any;
+    icon: LucideIcon;
     suffix?: string;
     isCurrency?: boolean;
     isLoading?: boolean;

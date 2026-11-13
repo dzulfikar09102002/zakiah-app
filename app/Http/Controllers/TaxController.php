@@ -18,7 +18,7 @@ class TaxController extends Controller
 
     public function index(): Response
     {
-        $pagination = $this->service->getTaxes();
+        $pagination = Inertia::defer(fn () => $this->service->getTaxes());
 
         return Inertia::render('taxes/index', compact('pagination'));
     }

@@ -14,20 +14,20 @@ import DataTable from '@/components/data-table';
 import DateRangePicker from '@/components/date-range-picker';
 import LocationDropdown from '@/components/location-dropdown';
 import PrintPdfButton from '@/components/print-pdf-button';
+import TablePagination from '@/components/table-pagination';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
+import type { EmployeeSalesDetailData, Pagination } from '@/lib/model';
 import {
     capitalize,
     formatDate,
     formatEmployeeName,
     toRupiah,
 } from '@/lib/utils';
-import type { BreadcrumbItem } from '@/types';
 import employee from '@/routes/report-employee-detail';
-import TablePagination from '@/components/table-pagination';
-import type { EmployeeSalesDetailData, Pagination } from '@/lib/model';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import type { BreadcrumbItem } from '@/types';
 
 const columnHelper = createColumnHelper<EmployeeSalesDetailData>();
 
@@ -130,7 +130,7 @@ type Option = {
 };
 
 type Props = {
-    employeeSalesDetail: Pagination<EmployeeSalesDetailData>;
+    employeeSalesDetail?: Pagination<EmployeeSalesDetailData>;
     locationOptions: Option[];
 };
 
@@ -144,7 +144,7 @@ type Params = {
 };
 
 export default ({ employeeSalesDetail, locationOptions }: Props) => {
-    const { data } = employeeSalesDetail;
+    const data = employeeSalesDetail?.data ?? [];
 
     const query = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
@@ -166,7 +166,7 @@ export default ({ employeeSalesDetail, locationOptions }: Props) => {
         localStorage.setItem(cachedColumnKey, JSON.stringify(columnVisibility));
     }, [columnVisibility]);
 
-    const parseToNumberArray = (val: any): number[] => {
+    const parseToNumberArray = (val: unknown): number[] => {
         if (!val) return [];
 
         if (Array.isArray(val)) {
@@ -243,7 +243,8 @@ export default ({ employeeSalesDetail, locationOptions }: Props) => {
                             <PrintPdfButton url={employee.pdf().url} />
                         </div>
                     </Form>
-                    <DataTable columns={columns} table={table} />
+                    <DataTable
+                        loading={!employeeSalesDetail} columns={columns} table={table} />
                     <TablePagination pagination={employeeSalesDetail} />
                 </CardContent>
             </Card>

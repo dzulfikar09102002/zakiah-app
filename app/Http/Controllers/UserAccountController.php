@@ -26,7 +26,7 @@ class UserAccountController extends Controller
         $onlyTrashed = $request->query('status') === 'deleted';
 
         return Inertia::render('user-accounts/index', [
-            'pagination' => $this->service->getAccounts($onlyTrashed),
+            'pagination' => Inertia::defer(fn () => $this->service->getAccounts($onlyTrashed)),
             'employeeOptions' => $onlyTrashed ? [] : $this->service->employeeOptions(),
             'onlyTrashed' => $onlyTrashed,
             'search' => (string) $request->query('search', ''),

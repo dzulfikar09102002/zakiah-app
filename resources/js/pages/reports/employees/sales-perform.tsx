@@ -14,15 +14,15 @@ import DataTable from '@/components/data-table';
 import DateRangePicker from '@/components/date-range-picker';
 import LocationDropdown from '@/components/location-dropdown';
 import PrintPdfButton from '@/components/print-pdf-button';
-import { Card, CardContent } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
-import { capitalize, formatEmployeeName, toRupiah } from '@/lib/utils';
-import type { BreadcrumbItem } from '@/types';
-import employee from '@/routes/report-employee-summary';
 import TablePagination from '@/components/table-pagination';
-import type { EmployeeSalesPerformData, Pagination } from '@/lib/model';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import AppLayout from '@/layouts/app-layout';
+import type { EmployeeSalesPerformData, Pagination } from '@/lib/model';
+import { formatEmployeeName, toRupiah } from '@/lib/utils';
+import employee from '@/routes/report-employee-summary';
+import type { BreadcrumbItem } from '@/types';
 
 const columnHelper = createColumnHelper<EmployeeSalesPerformData>();
 
@@ -116,7 +116,7 @@ type Option = {
 };
 
 type Props = {
-    employeeSalesSummary: Pagination<EmployeeSalesPerformData>;
+    employeeSalesSummary?: Pagination<EmployeeSalesPerformData>;
     locationOptions: Option[];
 };
 
@@ -130,7 +130,7 @@ type Params = {
 };
 
 export default ({ employeeSalesSummary, locationOptions }: Props) => {
-    const { data } = employeeSalesSummary;
+    const data = employeeSalesSummary?.data ?? [];
 
     const query = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
@@ -152,7 +152,7 @@ export default ({ employeeSalesSummary, locationOptions }: Props) => {
         localStorage.setItem(cachedColumnKey, JSON.stringify(columnVisibility));
     }, [columnVisibility]);
 
-    const parseToNumberArray = (val: any): number[] => {
+    const parseToNumberArray = (val: unknown): number[] => {
         if (!val) return [];
 
         if (Array.isArray(val)) {
@@ -227,7 +227,8 @@ export default ({ employeeSalesSummary, locationOptions }: Props) => {
                             <PrintPdfButton url={employee.pdf().url} />
                         </div>
                     </Form>
-                    <DataTable columns={columns} table={table} />
+                    <DataTable
+                        loading={!employeeSalesSummary} columns={columns} table={table} />
                     <TablePagination pagination={employeeSalesSummary} />
                 </CardContent>
             </Card>

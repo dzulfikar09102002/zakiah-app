@@ -1,4 +1,4 @@
-import { Employee } from "@/lib/model";
+import type { Employee } from "@/lib/model";
 
 export type User = {
     id: number;

@@ -1,3 +1,5 @@
+import type { ComboboxRoot } from "@base-ui/react"
+import { useState } from "react"
 import {
     Combobox,
     ComboboxContent,
@@ -6,8 +8,6 @@ import {
     ComboboxItem,
     ComboboxList,
 } from "@/components/ui/combobox"
-import { ComboboxRoot } from "@base-ui/react"
-import { useState } from "react"
 
 type Option = {
     label: string

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Location;
 use App\Models\ProductCategory;
+use App\Services\Concerns\PaginatesAggregatedRows;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
@@ -11,6 +12,8 @@ use Illuminate\Support\Str;
 
 class AssetCategoryService
 {
+    use PaginatesAggregatedRows;
+
     public function getLocationOptions()
     {
         return Location::query()
@@ -26,9 +29,8 @@ class AssetCategoryService
 
     public function getCategoryAssets()
     {
-        return $this->categoryAssetQuery()
-            ->paginate(request('per_page', 10))
-            ->withQueryString();
+        // Agregasi sekali jalan (bukan count + data), lihat PaginatesAggregatedRows.
+        return $this->paginateAggregated($this->categoryAssetQuery(), asModels: true);
     }
 
     public function getCategoryAssetsForPdf(): LazyCollection

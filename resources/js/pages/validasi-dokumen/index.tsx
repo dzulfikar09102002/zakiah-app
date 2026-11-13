@@ -57,7 +57,7 @@ export default function ValidasiDokumen({
                         </p>
                     </div>
 
-                    <dl className="divide-y divide-[#2b1a12]/10 text-sm">
+                    <dl className="divide-y divide-[var(--g-ink)]/10 text-sm">
                         <Row label="Jenis" value={document.type} />
                         <Row label="No. Dokumen" value={document.code} />
                         <Row label="Toko" value={document.location ?? '-'} />

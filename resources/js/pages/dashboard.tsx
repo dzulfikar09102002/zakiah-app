@@ -1,24 +1,24 @@
-import { Head, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
-import type { BreadcrumbItem, Option } from '@/types';
-import RangeDatePicker from '@/components/date-range-picker';
+import { Head } from '@inertiajs/react';
+import { format } from 'date-fns';
+import { Search } from 'lucide-react';
+import type { DateRange } from 'node_modules/react-day-picker/dist/esm/types/shared';
+import QueryString from 'qs';
 import { useEffect, useRef, useState } from 'react';
+import DaillyOverview from '@/components/dashboard/dailly-overview';
+import MonthlyProfitChart from '@/components/dashboard/monthly-profit-chart';
+import ProfitChart from '@/components/dashboard/profit-chart';
+import TopFive from '@/components/dashboard/top-five';
+import YearlyProfitChart from '@/components/dashboard/yearly-profit-chart';
+import RangeDatePicker from '@/components/date-range-picker';
+import LocationDropdown from '@/components/location-dropdown';
+import MobileHome from '@/components/mobile-home/mobile-home';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import TopFive from '@/components/dashboard/top-five';
-import DaillyOverview from '@/components/dashboard/dailly-overview';
-import ProfitChart from '@/components/dashboard/profit-chart';
-import MonthlyProfitChart from '@/components/dashboard/monthly-profit-chart';
-import YearlyProfitChart from '@/components/dashboard/yearly-profit-chart';
-import { Filter, MapPin, Search } from 'lucide-react';
-import QueryString from 'qs';
-import LocationDropdown from '@/components/location-dropdown';
-import { ProfitPotential, Top5Data } from '@/lib/model';
-import { DateRange } from 'node_modules/react-day-picker/dist/esm/types/shared';
-import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import MobileHome from '@/components/mobile-home/mobile-home';
 import { useIsMobile } from '@/hooks/use-mobile';
+import AppLayout from '@/layouts/app-layout';
+import type { ProfitPotential, Top5Data } from '@/lib/model';
+import type { BreadcrumbItem, Option } from '@/types';
 
 const currentYear = new Date().getFullYear();
 
@@ -26,6 +26,16 @@ const years = Array.from(
     { length: currentYear - 2023 + 1 },
     (_, i) => currentYear - i,
 );
+/** Ringkasan penjualan (sales-summary / sales-refund-summary); angka bisa dikirim sebagai string. */
+type SalesTotals = {
+    net_sales_after_tax?: number | string | null;
+    net_profit?: number | string | null;
+};
+
+type SalesByDateRow = SalesTotals & {
+    local_sales_date: string;
+};
+
 type MonthlySales = {
     year: number;
     months: string[];
@@ -38,51 +48,16 @@ type YearlySales = {
     net_sales_after_tax: number[];
     net_profit: number[];
 };
-type Props = {
-    locationOptions?: Option[];
-
-    profitPotential?: ProfitPotential;
-
-    salesRefundSummary?: {
-        net_sales_after_tax: number;
-    };
-
-    salesSummary?: {
-        net_sales_after_tax: number;
-        net_profit: number;
-    };
-
-    top5?: Top5Data;
-
-    salesByDate?: {
-        local_sales_date: string;
-        net_sales_after_tax: number;
-        net_profit: number;
-    }[];
-
-    monthlySales?: {
-        year: number;
-        months: string[];
-        net_sales_after_tax: number[];
-        net_profit: number[];
-    };
-
-    yearlySales?: {
-        years: string[];
-        net_sales_after_tax: number[];
-        net_profit: number[];
-    };
-};
-function DashboardContent({ locationOptions }: Props) {
+function DashboardContent() {
     const [profitPotential, setProfitPotential] = useState<ProfitPotential>();
 
-    const [salesRefundSummary, setSalesRefundSummary] = useState<any>();
+    const [salesRefundSummary, setSalesRefundSummary] = useState<SalesTotals>();
 
-    const [salesSummary, setSalesSummary] = useState<any>();
+    const [salesSummary, setSalesSummary] = useState<SalesTotals>();
 
     const [top5, setTop5] = useState<Top5Data>();
 
-    const [salesByDate, setSalesByDate] = useState<any[]>([]);
+    const [salesByDate, setSalesByDate] = useState<SalesByDateRow[]>([]);
 
     const [monthlySales, setMonthlySales] = useState<MonthlySales | null>(null);
 
@@ -136,7 +111,6 @@ function DashboardContent({ locationOptions }: Props) {
 
     const yearsData = yearlySales?.years ?? [];
 
-    const earlyYear = Number(yearsData[0] ?? new Date().getFullYear() - 1);
 
     const yearlyChartData = yearsData.map((y, i) => ({
         name: String(y),
@@ -144,7 +118,7 @@ function DashboardContent({ locationOptions }: Props) {
         profit: Number(yearlySales?.net_profit?.[i] ?? 0),
     }));
 
-    const parseToNumberArray = (val: any): number[] => {
+    const parseToNumberArray = (val: unknown): number[] => {
         if (!val) return [];
         if (Array.isArray(val)) {
             return val.map(Number);
@@ -289,7 +263,7 @@ function DashboardContent({ locationOptions }: Props) {
     const loadSalesSummary = async () => {
         setSummaryLoading(true);
         try {
-            const data = await fetchJson<any>('/dashboard/sales-summary');
+            const data = await fetchJson<SalesTotals>('/dashboard/sales-summary');
             setSalesSummary(data);
         } finally {
             setSummaryLoading(false);
@@ -299,7 +273,7 @@ function DashboardContent({ locationOptions }: Props) {
     const loadRefundSummary = async () => {
         setRefundLoading(true);
         try {
-            const data = await fetchJson<any>(
+            const data = await fetchJson<SalesTotals>(
                 '/dashboard/sales-refund-summary',
             );
             setSalesRefundSummary(data);
@@ -323,7 +297,7 @@ function DashboardContent({ locationOptions }: Props) {
     const loadChart = async () => {
         setChartLoading(true);
         try {
-            const data = await fetchJson<any[]>('/dashboard/sales-by-date');
+            const data = await fetchJson<SalesByDateRow[]>('/dashboard/sales-by-date');
             setSalesByDate(data);
         } finally {
             setChartLoading(false);
@@ -405,7 +379,7 @@ function DashboardContent({ locationOptions }: Props) {
             try {
                 const [dashboardData, monthlyData, yearlyData] =
                     await Promise.all([
-                        fetchJson<any>('/dashboard/sales-summary'),
+                        fetchJson<SalesTotals>('/dashboard/sales-summary'),
                         fetchJson<MonthlySales>('/dashboard/monthly-sales'),
                         fetchJson<YearlySales>('/dashboard/yearly-sales'),
                     ]);
@@ -564,7 +538,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Dashboard({ locationOptions }: Props) {
+// Lokasi dimuat sendiri lewat /dashboard/location-options, jadi props halaman tidak dipakai.
+export default function Dashboard() {
     const isMobile = useIsMobile();
     // Dibaca sekali: filter desktop menulis ulang query string via replaceState.
     const [showAnalytics] = useState(
@@ -593,7 +568,7 @@ export default function Dashboard({ locationOptions }: Props) {
             }
         >
             <Head title="Dashboard" />
-            <DashboardContent locationOptions={locationOptions} />
+            <DashboardContent />
         </AppLayout>
     );
 }

@@ -17,7 +17,7 @@ class DailySaleController extends Controller
     public function index()
     {
         $locationOptions = $this->service->getLocationOptions();
-        $pagination = $this->service->getDailySales();
+        $pagination = Inertia::defer(fn () => $this->service->getDailySales());
 
         return Inertia::render('revenue/daily-sales/index', compact('pagination', 'locationOptions'));
     }

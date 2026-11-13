@@ -56,8 +56,8 @@ export interface EmployeeLocation {
     location_id: number;
     role_id: number;
     code: string;
-    entity_permission: Record<string, any>;
-    location_permission: Record<string, any>;
+    entity_permission: Record<string, unknown>;
+    location_permission: Record<string, unknown>;
     created_at: string;
     updated_at: string;
     updated_by?: number;
@@ -108,7 +108,7 @@ export interface Product {
     last_buying_price: number;
     total_stock: string | number; // Di data kamu berupa string "544"
     stock_movements?: StockMovement[];
-    product_unit_conversions?: any[];
+    product_unit_conversions?: unknown[];
     product_sell_prices?: number[];
     product_location_stocks?: ProductStock[];
     supplier_name: string;

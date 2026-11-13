@@ -9,16 +9,17 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import type { Pagination, Tax } from '@/lib/model';
 
 type Props = {
-    pagination: Pagination<Tax>;
+    pagination?: Pagination<Tax>;
     onEdit: (id: number) => void;
     onToggleStatus: (tax: Tax) => void;
 };
 
 export default ({ pagination, onEdit, onToggleStatus }: Props) => {
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
 
     return (
         <Table className="stripped">
@@ -33,7 +34,7 @@ export default ({ pagination, onEdit, onToggleStatus }: Props) => {
             </TableHeader>
 
             <TableBody>
-                {pagination.data.map((tax, index) => (
+                {(pagination?.data ?? []).map((tax, index) => (
                     <TableRow key={tax.id}>
                         <TableCell>{startIndex + index + 1}.</TableCell>
                         <TableCell className="font-medium">
@@ -81,7 +82,8 @@ export default ({ pagination, onEdit, onToggleStatus }: Props) => {
                         </TableCell>
                     </TableRow>
                 ))}
-                {!pagination.data.length && (
+                {!pagination && <TableRowsSkeleton columns={5} />}
+                {pagination && !pagination.data.length && (
                     <TableRow>
                         <TableCell
                             colSpan={5}

@@ -18,7 +18,7 @@ class EmployeeReportDetailController extends Controller
     public function index()
     {
         return Inertia::render('reports/employees/sales-perform-detail', [
-            'employeeSalesDetail' => fn () => $this->employeeReportDetailService->getEmployeeSalesDetail(),
+            'employeeSalesDetail' => Inertia::defer(fn () => $this->employeeReportDetailService->getEmployeeSalesDetail()),
             'locationOptions' => fn () => $this->employeeReportDetailService->getLocationOptions(),
         ]);
     }

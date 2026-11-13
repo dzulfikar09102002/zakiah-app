@@ -1,5 +1,10 @@
 <?php
 
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -11,8 +16,8 @@
 |
 */
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
 /*
@@ -41,7 +46,30 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Tabel domain minimal yang dibaca setiap halaman login (HandleInertiaRequests memuat
+ * user->entity lewat employees). Skema aslinya ada di MySQL, bukan di database/migrations,
+ * jadi tes yang membuka halaman ber-login membuatnya di SQLite memori.
+ */
+function createEntitySchema(): void
 {
-    // ..
+    if (! Schema::hasTable('entities')) {
+        Schema::create('entities', function (Blueprint $table) {
+            $table->id();
+            $table->string('name')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
+        });
+    }
+
+    if (! Schema::hasTable('employees')) {
+        Schema::create('employees', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('entity_id');
+            $table->unsignedBigInteger('role_id')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
+        });
+    }
 }

@@ -3,6 +3,8 @@
 use App\Models\User;
 use Inertia\Testing\AssertableInertia as Assert;
 
+beforeEach(fn () => createEntitySchema());
+
 test('confirm password screen can be rendered', function () {
     $user = User::factory()->create();
 

@@ -29,7 +29,7 @@ const periods = [
 ];
 
 type Props = {
-    pagination: Pagination<Promo>;
+    pagination?: Pagination<Promo>;
 };
 
 export default ({ pagination }: Props) => {

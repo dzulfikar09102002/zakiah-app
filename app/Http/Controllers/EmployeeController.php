@@ -61,7 +61,7 @@ class EmployeeController extends Controller
     private function page(bool $onlyTrashed): Response
     {
         return Inertia::render('employees/index', [
-            'pagination' => $this->service->getEmployees($onlyTrashed),
+            'pagination' => Inertia::defer(fn () => $this->service->getEmployees($onlyTrashed)),
             'roleOptions' => $this->service->getRoleOptions(),
             'accessRoleOptions' => $this->service->getAccessRoleOptions(),
             'locations' => $this->service->getLocations(),

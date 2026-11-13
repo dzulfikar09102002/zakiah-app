@@ -16,7 +16,7 @@ class StockMovementReportController extends Controller
 
     public function index(): Response
     {
-        $pagination = $this->service->getStockMovements();
+        $pagination = Inertia::defer(fn () => $this->service->getStockMovements());
         $locationOptions = $this->service->getLocationOptions();
 
         return Inertia::render('reports/stocks/movements/index', compact('locationOptions', 'pagination'));

@@ -69,7 +69,8 @@ createInertiaApp({
         requestAnimationFrame(() => window.__hideSplash?.());
     },
     progress: {
-        color: '#4B5563',
+        // Ikut tema entity (token --primary di app.css).
+        color: 'var(--primary)',
     },
 });
 

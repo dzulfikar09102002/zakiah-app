@@ -1,10 +1,16 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
+import type { AlertState } from '@/components/customers/alert';
+import Alert from '@/components/customers/alert';
+import type { ModalState } from '@/components/customers/modal';
+import Modal from '@/components/customers/modal';
+import Table from '@/components/customers/table';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type {
@@ -13,12 +19,8 @@ import type {
     CustomerCategory,
     Location,
 } from '@/lib/model';
-import type { BreadcrumbItem } from '@/types';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import customers from '@/routes/customers';
-import Modal, { ModalState } from '@/components/customers/modal';
-import Alert, { AlertState } from '@/components/customers/alert';
-import Table from '@/components/customers/table';
+import type { BreadcrumbItem } from '@/types';
 
 const title = 'Daftar Pelanggan';
 
@@ -30,7 +32,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<Customer>;
+    pagination?: Pagination<Customer>;
     onlyTrashed?: boolean;
     customerCategories: CustomerCategory[];
     phoneCountryCodes: {
@@ -105,7 +107,7 @@ export default ({
                 customerCategories={customerCategories}
                 phoneCountryCodes={phoneCountryCodes}
                 locations={locations}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
             />
 
             <Alert

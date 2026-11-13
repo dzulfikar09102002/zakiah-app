@@ -1,16 +1,4 @@
-import AppLayout from '@/layouts/app-layout';
 import { Head, router, usePage } from '@inertiajs/react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import {
     Download,
     Sheet,
@@ -21,19 +9,9 @@ import {
     AlertTriangle,
     ChevronLeft,
 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
-import { Spinner } from '@/components/ui/spinner';
-import { ChangeEvent, DragEvent, Fragment, useRef, useState } from 'react';
-import type { BreadcrumbItem, Option, SharedData } from '@/types';
-import products from '@/routes/products';
+import type { ChangeEvent, DragEvent} from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -44,6 +22,29 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Spinner } from '@/components/ui/spinner';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import AppLayout from '@/layouts/app-layout';
+import products from '@/routes/products';
+import type { BreadcrumbItem, Option, SharedData } from '@/types';
 
 const title = 'Impor Produk';
 
@@ -98,7 +99,7 @@ function resolveId(options: Option[], name: string): number {
     return found ? (found.value as unknown as number) : 0;
 }
 
-function parseSafeNumber(val: any): number {
+function parseSafeNumber(val: unknown): number {
     const num = Number(val);
     return isNaN(num) ? 0 : Math.max(0, num);
 }

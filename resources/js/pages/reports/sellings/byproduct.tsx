@@ -6,22 +6,21 @@ import {
     useReactTable,
     type ColumnDef,
 } from '@tanstack/react-table';
-import TablePagination from '@/components/table-pagination';
-import { Pagination } from '@/lib/model';
-import DateRangePicker from '@/components/date-range-picker';
-import { Button } from '@/components/ui/button';
 import { Search } from 'lucide-react';
-import Select from '@/components/select';
-import MultiSelect from '@/components/multi-select';
 import QueryString from 'qs';
 import { useEffect, useState } from 'react';
 import ColumnVisibilityDropdown from '@/components/column-visibility-dropdown';
 import DataTable from '@/components/data-table';
+import DateRangePicker from '@/components/date-range-picker';
 import LocationDropdown from '@/components/location-dropdown';
 import PrintPdfButton from '@/components/print-pdf-button';
+import Select from '@/components/select';
+import TablePagination from '@/components/table-pagination';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { capitalize, toRupiah } from '@/lib/utils';
+import type { Pagination } from '@/lib/model';
+import { toRupiah } from '@/lib/utils';
 import reportByProducts from '@/routes/report-by-products';
 import sellings from '@/routes/sellings';
 import type { BreadcrumbItem } from '@/types';
@@ -130,7 +129,7 @@ const discountOption: Option[] = [
 ];
 
 type Props = {
-    pagination: Pagination<ProductSalesData>;
+    pagination?: Pagination<ProductSalesData>;
     locationOptions: Option[];
 };
 
@@ -142,7 +141,7 @@ type Params = {
 };
 
 export default ({ pagination, locationOptions }: Props) => {
-    const { data } = pagination;
+    const data = pagination?.data ?? [];
 
     const query = QueryString.parse(window.location.search, {
         ignoreQueryPrefix: true,
@@ -160,15 +159,6 @@ export default ({ pagination, locationOptions }: Props) => {
         },
     });
 
-    const multiSelectPlaceholder = (values: string[]) => {
-        if (values.length === 0) {
-            return 'Pilih lokasi';
-        } else if (values.length >= locationOptions.length) {
-            return 'Semua lokasi';
-        } else {
-            return `${values.length} lokasi`;
-        }
-    };
 
     useEffect(() => {
         localStorage.setItem(cachedColumnKey, JSON.stringify(columnVisibility));
@@ -203,7 +193,7 @@ export default ({ pagination, locationOptions }: Props) => {
     });
 
     // helper biar aman
-    const parseToNumberArray = (val: any): number[] => {
+    const parseToNumberArray = (val: unknown): number[] => {
         if (!val) return [];
 
         if (Array.isArray(val)) {
@@ -284,7 +274,8 @@ export default ({ pagination, locationOptions }: Props) => {
                             <PrintPdfButton url={reportByProducts.pdf().url} />
                         </div>
                     </Form>
-                    <DataTable columns={columns} table={table} />
+                    <DataTable
+                        loading={!pagination} columns={columns} table={table} />
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

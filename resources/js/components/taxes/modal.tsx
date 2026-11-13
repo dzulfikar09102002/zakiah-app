@@ -47,7 +47,7 @@ export default ({
 
         const action = modalState.dataId ? put : post;
         const url = modalState.dataId
-            ? taxes.update(modalState.dataId).url
+            ? taxes.update(Number(modalState.dataId)).url
             : taxes.store().url;
 
         action(url, {

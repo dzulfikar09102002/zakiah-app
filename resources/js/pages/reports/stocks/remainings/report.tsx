@@ -1,4 +1,4 @@
-import { Form, Head, router } from '@inertiajs/react';
+import { Form, Head } from '@inertiajs/react';
 import { FileDown, MapPinPen, Search } from 'lucide-react';
 import type { SubmitEvent } from 'react';
 import { useState } from 'react';
@@ -28,7 +28,6 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
 import {
     Table,
     TableBody,
@@ -37,6 +36,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type { Location, Pagination, ProductStock } from '@/lib/model';
@@ -54,7 +54,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<ProductStock>;
+    pagination?: Pagination<ProductStock>;
     locations: Location[];
     location: Location;
     categoryOptions: {
@@ -72,10 +72,10 @@ export default ({
     const query = useQuery();
     const search = query.search || '';
     const product_category_id = query.product_category_id || 'all';
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
 
     const [dSearch, setDSearch] = useState('');
-    console.log(pagination.data);
+    console.log((pagination?.data ?? []));
     const locationDialogOnSearch = (e: SubmitEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -185,7 +185,7 @@ export default ({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {pagination.data.map(
+                            {(pagination?.data ?? []).map(
                                 (report: ProductStock, index: number) => (
                                     <TableRow key={report.id ?? index}>
                                         <TableCell>
@@ -224,7 +224,8 @@ export default ({
                                 ),
                             )}
 
-                            {!pagination.data.length && (
+                            {!pagination && <TableRowsSkeleton columns={4} />}
+                            {pagination && !pagination.data.length && (
                                 <TableRow>
                                     <TableCell
                                         colSpan={4}

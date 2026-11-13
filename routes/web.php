@@ -374,3 +374,7 @@ Route::middleware(['auth', 'verified', EnsureMenuAccess::class])->group(function
 });
 
 require __DIR__.'/settings.php';
+
+// URL yang tidak terdaftar: 404 lewat middleware web, sehingga halaman error tetap mengenali
+// user yang login (tema & nama entity), bukan tampil sebagai tamu.
+Route::fallback(fn () => abort(404));

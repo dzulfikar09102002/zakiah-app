@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react"
-import { Location } from "@/lib/model"
-import { SubmitEventHandler } from "react"
+import type { SubmitEventHandler } from "react"
+import type { Location } from "@/lib/model"
 
 type LocationChooserContextValue = {
     locations: Location[]

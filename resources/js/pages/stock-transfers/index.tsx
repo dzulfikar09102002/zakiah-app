@@ -18,6 +18,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination, StockTransfer } from '@/lib/model';
 import { capitalize } from '@/lib/utils';
@@ -39,12 +40,12 @@ const statusTabs = [
 ];
 
 type Props = {
-    pagination: Pagination<StockTransfer>;
+    pagination?: Pagination<StockTransfer>;
     locationOptions: Option[];
 };
 
 export default ({ pagination, locationOptions }: Props) => {
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -71,6 +72,7 @@ export default ({ pagination, locationOptions }: Props) => {
                 </CardHeader>
 
                 <CardContent className="border-t p-0 lg:border-0 lg:px-6">
+
                     <Table className="stripped">
                         <TableHeader>
                             <TableRow>
@@ -92,7 +94,7 @@ export default ({ pagination, locationOptions }: Props) => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {pagination.data.map((transfer, index) => (
+                            {(pagination?.data ?? []).map((transfer, index) => (
                                 <TableRow key={transfer.id}>
                                     <TableCell>
                                         {startIndex + index + 1}.
@@ -155,7 +157,8 @@ export default ({ pagination, locationOptions }: Props) => {
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {!pagination.data.length && (
+                            {!pagination && <TableRowsSkeleton columns={9} />}
+                            {pagination && !pagination.data.length && (
                                 <TableRow>
                                     <TableCell
                                         colSpan={9}
@@ -167,7 +170,6 @@ export default ({ pagination, locationOptions }: Props) => {
                             )}
                         </TableBody>
                     </Table>
-
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

@@ -1,3 +1,5 @@
+import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import {
     AlertDialog,
     AlertDialogCancel,
@@ -5,29 +7,26 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogTitle
+    AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '../ui/button';
-import { toast } from 'sonner';
-import { router } from '@inertiajs/react';
-import { Spinner } from '../ui/spinner';
 import paymentmethods from '@/routes/payment-methods';
+import { Button } from '../ui/button';
+import { Spinner } from '../ui/spinner';
 
 export type AlertState = {
-    delete: boolean
-    isOpen: boolean
-    dataId: any
-    proccessing: boolean
-}
+    delete: boolean;
+    isOpen: boolean;
+    dataId: unknown;
+    proccessing: boolean;
+};
 
 type Props = {
-    alertState: AlertState
-    onAlertClose: () => void
-    onAlertProccessing: () => void
-}
+    alertState: AlertState;
+    onAlertClose: () => void;
+    onAlertProccessing: () => void;
+};
 
 export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
-
     return (
         <AlertDialog
             open={alertState.isOpen}
@@ -35,46 +34,69 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
         >
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{alertState.delete ? 'Hapus' : 'Pulihkan'} Item</AlertDialogTitle>
+                    <AlertDialogTitle>
+                        {alertState.delete ? 'Hapus' : 'Pulihkan'} Item
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
                         Apakah anda yakin?
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={alertState.proccessing}>Batal</AlertDialogCancel>
-                    <Button variant={alertState.delete ? 'destructive' : 'default'} disabled={alertState.proccessing} onClick={() => {
-                        const options = {
-                            only: ['pagination'],
-                            preserveState: true,
-                            onBefore: onAlertProccessing,
-                            onError: (errors: any) => {
-                                toast.error(
-                                    alertState.delete
-                                        ? 'Gagal menghapus data'
-                                        : 'Gagal memulihkan data'
-                                )
+                    <AlertDialogCancel disabled={alertState.proccessing}>
+                        Batal
+                    </AlertDialogCancel>
+                    <Button
+                        variant={alertState.delete ? 'destructive' : 'default'}
+                        disabled={alertState.proccessing}
+                        onClick={() => {
+                            const options = {
+                                only: ['pagination'],
+                                preserveState: true,
+                                onBefore: onAlertProccessing,
+                                onError: (errors: unknown) => {
+                                    toast.error(
+                                        alertState.delete
+                                            ? 'Gagal menghapus data'
+                                            : 'Gagal memulihkan data',
+                                    );
 
-                                console.error(errors)
-                            },
-                            onSuccess: () => {
-                                toast.success(
-                                    alertState.delete
-                                        ? 'Data berhasil dihapus'
-                                        : 'Data berhasil dipulihkan'
-                                )
-                            },
-                            onFinish: onAlertClose,
-                        }
+                                    console.error(errors);
+                                },
+                                onSuccess: () => {
+                                    toast.success(
+                                        alertState.delete
+                                            ? 'Data berhasil dihapus'
+                                            : 'Data berhasil dipulihkan',
+                                    );
+                                },
+                                onFinish: onAlertClose,
+                            };
 
-                        alertState.delete
-                            ? router.delete(paymentmethods.destroy(alertState.dataId).url, options)
-                            : router.post(paymentmethods.restore(alertState.dataId).url, {}, options)
-                    }}>
-                        <Spinner className={alertState.proccessing ? '' : 'hidden'} />
+                            if (alertState.delete) {
+                                router.delete(
+                                    paymentmethods.destroy(
+                                        Number(alertState.dataId),
+                                    ).url,
+                                    options,
+                                );
+                            } else {
+                                router.post(
+                                    paymentmethods.restore(
+                                        Number(alertState.dataId),
+                                    ).url,
+                                    {},
+                                    options,
+                                );
+                            }
+                        }}
+                    >
+                        <Spinner
+                            className={alertState.proccessing ? '' : 'hidden'}
+                        />
                         Ya
                     </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
-    )
-}
+    );
+};

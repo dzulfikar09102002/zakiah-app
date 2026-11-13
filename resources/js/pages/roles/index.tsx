@@ -12,6 +12,7 @@ import Table from '@/components/roles/table';
 import TablePagination from '@/components/table-pagination';
 
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 import { useQuery } from '@/hooks/use-query';
@@ -21,7 +22,6 @@ import type { Role, Pagination } from '@/lib/model';
 import roles from '@/routes/roles';
 import type { BreadcrumbItem } from '@/types';
 
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 const title = 'Role';
 
@@ -33,7 +33,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<Role>;
+    pagination?: Pagination<Role>;
 };
 
 export default ({ pagination }: Props) => {
@@ -87,7 +87,7 @@ export default ({ pagination }: Props) => {
                 modalState={modal}
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
             />
 
             <Alert

@@ -19,7 +19,7 @@ class LocationController extends Controller
     public function index()
     {
         $phoneCountryCodes = PhoneNumberCountryCodeEnum::options();
-        $pagination = Helper::getPaginatedData($this->service->getLocations());
+        $pagination = Inertia::defer(fn () => Helper::getPaginatedData($this->service->getLocations()));
 
         return Inertia::render('locations/index', compact('pagination', 'phoneCountryCodes'));
     }
@@ -28,7 +28,7 @@ class LocationController extends Controller
     {
         $onlyTrashed = true;
         $phoneCountryCodes = PhoneNumberCountryCodeEnum::options();
-        $pagination = $this->service->getDeletedLocations();
+        $pagination = Inertia::defer(fn () => $this->service->getDeletedLocations());
 
         return Inertia::render('locations/index', compact('pagination', 'onlyTrashed', 'phoneCountryCodes'));
     }

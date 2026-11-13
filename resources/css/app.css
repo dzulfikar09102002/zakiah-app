@@ -323,6 +323,40 @@
     --sidebar-muted: oklch(0.66 0.02 230);
 }
 
+/*
+ * Halaman kaca (components/glass-page.tsx: validasi dokumen, share opname, error) selalu terang
+ * karena kartunya di atas foto toko; warnanya tetap mengikuti tema entity lewat variabel --g-*.
+ * Default = perpaduan (tamu), lalu override per data-brand.
+ */
+.glass-theme {
+    --g-ink: #1f2a3c;
+    --g-muted: #5f6b80;
+    --g-primary: #2f3e56;
+    --g-primary-hover: #26334a;
+    --g-primary-2: #1f7f8c;
+    --g-accent: #c9a066;
+    --g-soft: #e3c99f;
+    --g-bg: #f3efe7;
+    --g-paper: #fffdf9;
+    --g-vignette: rgba(31, 42, 60, 0.45);
+}
+
+[data-brand='zakiah'] .glass-theme {
+    --g-primary-2: #4a5d7e;
+}
+
+[data-brand='secaca'] .glass-theme {
+    --g-ink: #1d2d33;
+    --g-muted: #5a6e74;
+    --g-primary: #1f7f8c;
+    --g-primary-hover: #196a75;
+    --g-primary-2: #e5545a;
+    --g-accent: #e5545a;
+    --g-soft: #a8d8df;
+    --g-bg: #f6efe6;
+    --g-vignette: rgba(16, 60, 66, 0.42);
+}
+
 @layer base {
     * {
         @apply border-border outline-ring/50;
@@ -439,11 +473,13 @@
     @keyframes pulse-rose {
         0%,
         100% {
-            box-shadow: 0 0 0 0 rgba(196, 134, 106, 0.5);
+            box-shadow: 0 0 0 0
+                color-mix(in oklab, var(--primary) 50%, transparent);
         }
 
         50% {
-            box-shadow: 0 0 0 8px rgba(196, 134, 106, 0);
+            box-shadow: 0 0 0 8px
+                color-mix(in oklab, var(--primary) 0%, transparent);
         }
     }
 
@@ -725,11 +761,13 @@
     @keyframes auth-pulse {
         0%,
         100% {
-            box-shadow: 0 0 0 0 rgba(196, 134, 106, 0.6);
+            box-shadow: 0 0 0 0
+                color-mix(in oklab, var(--primary) 60%, transparent);
         }
 
         50% {
-            box-shadow: 0 0 0 10px rgba(196, 134, 106, 0);
+            box-shadow: 0 0 0 10px
+                color-mix(in oklab, var(--primary) 0%, transparent);
         }
     }
 

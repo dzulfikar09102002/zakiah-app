@@ -1,14 +1,9 @@
 'use client';
 
-import { FC, useEffect, useState, useMemo } from 'react';
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Check, MapPinIcon, Square, SquareCheck } from 'lucide-react';
+import type { FC} from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
 import {
     Command,
     CommandEmpty,
@@ -16,6 +11,12 @@ import {
     CommandItem,
     CommandList,
 } from '@/components/ui/command';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 type Locations = {
     id: number;

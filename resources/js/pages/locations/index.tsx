@@ -1,19 +1,21 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
+import type { AlertState } from '@/components/locations/alert';
+import Alert from '@/components/locations/alert';
+import type { ModalState } from '@/components/locations/modal';
+import Modal from '@/components/locations/modal';
+import Table from '@/components/locations/table';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type { Location, Pagination } from '@/lib/model';
 import locations from '@/routes/locations';
 import type { BreadcrumbItem } from '@/types';
-import Table from '@/components/locations/table';
-import Alert, { AlertState } from '@/components/locations/alert';
-import Modal, { ModalState } from '@/components/locations/modal';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const title = 'Lokasi';
 
@@ -25,7 +27,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<Location>;
+    pagination?: Pagination<Location>;
     onlyTrashed?: boolean;
     phoneCountryCodes: {
         value: string;
@@ -87,7 +89,7 @@ export default ({ pagination, phoneCountryCodes }: Props) => {
                 modalState={modal}
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
                 phoneCountryCodes={phoneCountryCodes}
             />
 
@@ -140,12 +142,11 @@ export default ({ pagination, phoneCountryCodes }: Props) => {
                             </TabsTrigger>
                         </TabsList>
                     </Tabs>
-                        <Table
-                            pagination={pagination}
-                            onEdit={onEdit}
-                            onDeleteOrRestore={onDeleteOrRestore}
-                        ></Table>
-                    
+                    <Table
+                        pagination={pagination}
+                        onEdit={onEdit}
+                        onDeleteOrRestore={onDeleteOrRestore}
+                    />
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

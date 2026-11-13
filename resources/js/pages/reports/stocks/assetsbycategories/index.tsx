@@ -10,6 +10,7 @@ import QueryString from 'qs';
 import { useEffect, useState } from 'react';
 
 import DataTable from '@/components/data-table';
+import { DeferredData, StatCardsSkeleton } from '@/components/deferred-data';
 import LocationDropdown from '@/components/location-dropdown';
 import PrintPdfButton from '@/components/print-pdf-button';
 import TablePagination from '@/components/table-pagination';
@@ -51,7 +52,7 @@ type Option = {
 };
 
 type Props = {
-    pagination: Pagination<CategoryAsset>;
+    pagination?: Pagination<CategoryAsset>;
     locationOptions: Option[];
     summary?: AssetSummary;
 };
@@ -132,7 +133,7 @@ export default ({ pagination, locationOptions, summary }: Props) => {
         ignoreQueryPrefix: true,
     }) as Partial<Params>;
 
-    const parseToNumberArray = (val: any): number[] => {
+    const parseToNumberArray = (val: unknown): number[] => {
         if (!val) return [];
         if (Array.isArray(val)) {
             return val.map(Number);
@@ -170,7 +171,7 @@ export default ({ pagination, locationOptions, summary }: Props) => {
         }
     }, [window.location.search]);
 
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
 
     const columns = [
         columnHelper.display({
@@ -232,24 +233,24 @@ export default ({ pagination, locationOptions, summary }: Props) => {
     ] as ColumnDef<CategoryAsset>[];
 
     const table = useReactTable({
-        data: pagination.data,
+        data: pagination?.data ?? [],
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
 
-    const totalCategories = summary?.total_categories ?? pagination.total;
+    const totalCategories = summary?.total_categories ?? (pagination?.total ?? 0);
     const totalStock =
         summary?.grand_total_stock ??
-        pagination.data.reduce((acc, cur) => acc + Number(cur.total_stock), 0);
+        (pagination?.data ?? []).reduce((acc, cur) => acc + Number(cur.total_stock), 0);
     const buyingAsset =
         summary?.grand_buying_asset ??
-        pagination.data.reduce(
+        (pagination?.data ?? []).reduce(
             (acc, cur) => acc + Number(cur.total_buying_asset),
             0,
         );
     const sellingAsset =
         summary?.grand_selling_asset ??
-        pagination.data.reduce(
+        (pagination?.data ?? []).reduce(
             (acc, cur) => acc + Number(cur.total_selling_asset),
             0,
         );
@@ -259,41 +260,54 @@ export default ({ pagination, locationOptions, summary }: Props) => {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={title} />
 
-            <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <SummaryCard
-                    icon={Layers}
-                    label="Kategori & Produk"
-                    value={Number(totalCategories).toLocaleString('id-ID')}
-                    valueSuffix="Kategori"
-                    description={`Total ${Number(summary?.total_products ?? 0).toLocaleString('id-ID')} produk terdaftar`}
-                />
+            {/* Ringkasan ikut dikirim belakangan bersama tabel (Inertia::defer). */}
+            <DeferredData
+                data="summary"
+                value={summary}
+                fallback={
+                    <div className="mb-6">
+                        <StatCardsSkeleton count={4} />
+                    </div>
+                }
+            >
+                {() => (
+                    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <SummaryCard
+                            icon={Layers}
+                            label="Kategori & Produk"
+                            value={Number(totalCategories).toLocaleString('id-ID')}
+                            valueSuffix="Kategori"
+                            description={`Total ${Number(summary?.total_products ?? 0).toLocaleString('id-ID')} produk terdaftar`}
+                        />
 
-                <SummaryCard
-                    icon={Package}
-                    label="Total Stok Fisik"
-                    value={Number(totalStock).toLocaleString('id-ID')}
-                    valueSuffix="Unit"
-                    description="Akumulasi filter lokasi aktif"
-                />
+                        <SummaryCard
+                            icon={Package}
+                            label="Total Stok Fisik"
+                            value={Number(totalStock).toLocaleString('id-ID')}
+                            valueSuffix="Unit"
+                            description="Akumulasi filter lokasi aktif"
+                        />
 
-                <SummaryCard
-                    icon={Wallet}
-                    iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                    label="Total Valuasi Aset"
-                    value={toRupiah(Number(buyingAsset))}
-                    valueClassName="text-blue-600 dark:text-blue-400"
-                    description="Berdasarkan harga beli terakhir"
-                />
+                        <SummaryCard
+                            icon={Wallet}
+                            iconClassName="bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                            label="Total Valuasi Aset"
+                            value={toRupiah(Number(buyingAsset))}
+                            valueClassName="text-blue-600 dark:text-blue-400"
+                            description="Berdasarkan harga beli terakhir"
+                        />
 
-                <SummaryCard
-                    icon={TrendingUp}
-                    iconClassName="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                    label="Estimasi Nilai Jual"
-                    value={toRupiah(Number(sellingAsset))}
-                    valueClassName="text-emerald-600 dark:text-emerald-400"
-                    description={`+ Potensi Margin: ${toRupiah(Number(potentialMargin))}`}
-                />
-            </div>
+                        <SummaryCard
+                            icon={TrendingUp}
+                            iconClassName="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            label="Estimasi Nilai Jual"
+                            value={toRupiah(Number(sellingAsset))}
+                            valueClassName="text-emerald-600 dark:text-emerald-400"
+                            description={`+ Potensi Margin: ${toRupiah(Number(potentialMargin))}`}
+                        />
+                    </div>
+                )}
+            </DeferredData>
 
             {/* Table Area */}
             <Card className="border-0 bg-background p-0 lg:border lg:bg-card lg:py-6">
@@ -352,7 +366,8 @@ export default ({ pagination, locationOptions, summary }: Props) => {
                 </CardHeader>
 
                 <CardContent className="mt-4 border-t p-0 lg:border-0 lg:px-6">
-                    <DataTable columns={columns} table={table} />
+                    <DataTable
+                        loading={!pagination} columns={columns} table={table} />
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

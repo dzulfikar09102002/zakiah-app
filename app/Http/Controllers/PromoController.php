@@ -17,7 +17,7 @@ class PromoController extends Controller
 
     public function index(): Response
     {
-        $pagination = $this->service->getPromos();
+        $pagination = Inertia::defer(fn () => $this->service->getPromos());
 
         return Inertia::render('promos/index', compact('pagination'));
     }

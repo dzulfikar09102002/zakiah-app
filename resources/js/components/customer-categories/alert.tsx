@@ -1,3 +1,5 @@
+import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import {
     AlertDialog,
     AlertDialogCancel,
@@ -7,16 +9,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '../ui/button';
-import { toast } from 'sonner';
-import { router } from '@inertiajs/react';
-import { Spinner } from '../ui/spinner';
 import customerCategories from '@/routes/customer-categories';
+import { Button } from '../ui/button';
+import { Spinner } from '../ui/spinner';
 
 export type AlertState = {
     delete: boolean;
     isOpen: boolean;
-    dataId: any;
+    dataId: unknown;
     proccessing: boolean;
 };
 
@@ -59,7 +59,7 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
                                 only: ['pagination'],
                                 preserveState: true,
                                 onBefore: onAlertProccessing,
-                                onError: (errors: any) => {
+                                onError: (errors: unknown) => {
                                     toast.error(
                                         alertState.delete
                                             ? 'Gagal menghapus Kategori Pelanggan'
@@ -77,16 +77,22 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
                                 onFinish: onAlertClose,
                             };
 
-                            alertState.delete
-                                ? router.delete(
-                                    customerCategories.destroy(alertState.dataId).url,
+                            if (alertState.delete) {
+                                router.delete(
+                                    customerCategories.destroy(
+                                        Number(alertState.dataId),
+                                    ).url,
                                     options,
-                                )
-                                : router.post(
-                                    customerCategories.restore(alertState.dataId).url,
+                                );
+                            } else {
+                                router.post(
+                                    customerCategories.restore(
+                                        Number(alertState.dataId),
+                                    ).url,
                                     {},
                                     options,
                                 );
+                            }
                         }}
                     >
                         <Spinner

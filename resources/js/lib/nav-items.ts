@@ -16,37 +16,36 @@ import customers from '@/routes/customers';
 import dailySales from '@/routes/daily-sales';
 import employees from '@/routes/employees';
 
-import type { NavItem } from '@/types';
-import stockRemaining from '@/routes/stock-remaining';
-import productCategories from '@/routes/product-categories';
-import productUnits from '@/routes/product-units';
-import orderTypes from '@/routes/order-types';
-import loyalties from '@/routes/loyalties';
-import taxes from '@/routes/taxes';
-import reportSales from '@/routes/report-sales';
 import entityRoutes from '@/routes/entity';
 import legalEntities from '@/routes/legal-entities';
 import legalEntityLocations from '@/routes/legal-entity-locations';
 import locations from '@/routes/locations';
+import loyalties from '@/routes/loyalties';
+import orderTypes from '@/routes/order-types';
 import paymentmethods from '@/routes/payment-methods';
 import paymentRecaps from '@/routes/payment-recaps';
 import productAdjustmentStocks from '@/routes/product-adjustment-stocks';
+import productCategories from '@/routes/product-categories';
 import productOpnameSessions from '@/routes/product-opname-sessions';
 import productTransferServices from '@/routes/product-transfer-services';
+import productUnits from '@/routes/product-units';
 import products from '@/routes/products';
 import promos from '@/routes/promos';
 import reportByLocations from '@/routes/report-by-locations';
 import reportByProducts from '@/routes/report-by-products';
 import reportEmployeeDetail from '@/routes/report-employee-detail';
 import reportEmployeeSummary from '@/routes/report-employee-summary';
+import reportSales from '@/routes/report-sales';
 import reportStockCard from '@/routes/report-stock-card';
 import reportStockMovement from '@/routes/report-stock-movement';
 import reportTopCustomers from '@/routes/report-top-customers';
 import assetsByCategory from '@/routes/reports/assets-by-category';
 import roles from '@/routes/roles';
 import saleTransactions from '@/routes/sale-transactions';
-import sellings from '@/routes/sellings';
+import stockRemaining from '@/routes/stock-remaining';
+import taxes from '@/routes/taxes';
 import userAccounts from '@/routes/user-accounts';
+import type { NavItem } from '@/types';
 
 export const mainNavItems: NavItem[] = [
     {

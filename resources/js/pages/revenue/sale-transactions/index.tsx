@@ -49,7 +49,7 @@ type LocationOption = {
 };
 
 type Props = {
-    pagination: Pagination<SaleTransactionData>;
+    pagination?: Pagination<SaleTransactionData>;
     locationOptions: LocationOption[];
     orderTypeOptions: Option[];
 };
@@ -202,7 +202,7 @@ export default function SaleTransactionIndex({
     }, [columnVisibility]);
 
     const table = useReactTable({
-        data: pagination.data,
+        data: pagination?.data ?? [],
         columns,
         getCoreRowModel: getCoreRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
@@ -298,7 +298,8 @@ export default function SaleTransactionIndex({
                         </div>
                     </Form>
                     <div className="overflow-x-auto">
-                        <DataTable columns={columns} table={table} />
+                        <DataTable
+                            loading={!pagination} columns={columns} table={table} />
                     </div>
                     <TablePagination pagination={pagination} />
                 </CardContent>

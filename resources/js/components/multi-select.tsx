@@ -1,11 +1,6 @@
 import { Check, ChevronDown } from "lucide-react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
-
 import {
     Command,
     CommandEmpty,
@@ -14,8 +9,13 @@ import {
     CommandItem,
     CommandList,
 } from "@/components/ui/command"
-import { useState } from "react"
-import { Option } from "@/types"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+
+import type { Option } from "@/types"
 
 type Props = {
     options: Option[]

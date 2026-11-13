@@ -8,14 +8,14 @@ import type { ModalState } from '@/components/product-categories/modal';
 import Table from '@/components/product-categories/table';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type { Category, Pagination } from '@/lib/model';
-import type { BreadcrumbItem } from '@/types';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import productCategories from '@/routes/product-categories';
+import type { BreadcrumbItem } from '@/types';
 
 const title = 'Produk Kategori';
 const breadcrumbs: BreadcrumbItem[] = [
@@ -26,11 +26,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<Category>;
+    pagination?: Pagination<Category>;
     onlyTrashed?: boolean;
 };
 
-export default ({ pagination, onlyTrashed }: Props) => {
+export default ({ pagination }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined as unknown,
@@ -81,7 +81,7 @@ export default ({ pagination, onlyTrashed }: Props) => {
                 modalState={modal}
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
             />
             <Alert
                 alertState={alert}

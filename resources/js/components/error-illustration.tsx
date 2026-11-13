@@ -11,10 +11,11 @@ export type ErrorScene =
     | 'hourglass'
     | 'gears';
 
-const ink = '#9b462c';
-const accent = '#cc7455';
-const soft = '#f0b48a';
-const paper = '#fffbf5';
+// Warna dari .glass-theme (app.css), jadi ikut tema entity.
+const ink = 'var(--g-primary, #2f3e56)';
+const accent = 'var(--g-primary-2, #1f7f8c)';
+const soft = 'var(--g-soft, #e3c99f)';
+const paper = 'var(--g-paper, #fffdf9)';
 
 export function ErrorIllustration({ scene }: { scene: ErrorScene }) {
     return (
@@ -213,7 +214,7 @@ function ServerScene() {
                 className="err-spark"
                 d="M122 50 l-8 14 h9 l-7 14"
                 fill="none"
-                stroke="#e0a030"
+                stroke="var(--g-accent, #c9a066)"
                 strokeWidth="4"
                 strokeLinecap="round"
                 strokeLinejoin="round"

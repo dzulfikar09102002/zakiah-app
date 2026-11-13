@@ -110,7 +110,7 @@ export default function ShareSession({
                                 key={value}
                                 className={`flex items-center gap-2 text-sm font-medium ${glassMuted}`}
                             >
-                                <Icon className="size-4 shrink-0 text-[#9b462c]" />
+                                <Icon className="size-4 shrink-0 text-[var(--g-primary)]" />
                                 <span className="min-w-0 break-words">
                                     {value}
                                 </span>
@@ -124,7 +124,7 @@ export default function ShareSession({
                                 key={step}
                                 className="flex items-center gap-3 text-sm font-semibold"
                             >
-                                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#9b462c] to-[#cc7455] text-xs text-white">
+                                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[var(--g-primary)] to-[var(--g-primary-2)] text-xs text-white">
                                     {index + 1}
                                 </span>
                                 {step}
@@ -139,7 +139,7 @@ export default function ShareSession({
                 </div>
 
                 <div className="mx-auto w-full max-w-sm min-w-0 md:w-80 lg:w-96">
-                    <div className="relative rounded-3xl bg-white p-4 shadow-[0_30px_60px_-30px_rgba(120,70,40,0.6),0_0_0_6px_rgba(204,116,85,0.18)]">
+                    <div className="relative rounded-3xl bg-white p-4 shadow-[0_30px_60px_-30px_rgba(31,42,60,0.55),0_0_0_6px_color-mix(in_oklab,var(--g-primary)_18%,transparent)]">
                         <svg
                             role="img"
                             aria-label={`QR masuk sesi ${session.code}`}
@@ -155,7 +155,7 @@ export default function ShareSession({
                                 animation:
                                     'so-qr-scan 2.8s ease-in-out infinite',
                             }}
-                            className="so-qr-line absolute inset-x-[6%] h-[3px] rounded-full bg-gradient-to-r from-transparent via-[#e27d2b] to-transparent shadow-[0_0_14px_#f09a4a]"
+                            className="so-qr-line absolute inset-x-[6%] h-[3px] rounded-full bg-gradient-to-r from-transparent via-[var(--g-accent)] to-transparent shadow-[0_0_14px_var(--g-accent)]"
                         />
                     </div>
                     <p

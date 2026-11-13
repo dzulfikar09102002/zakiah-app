@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
-import ProfitChart from './profit-chart';
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
 import { Search } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { Skeleton } from '../ui/skeleton';
+import ProfitChart from './profit-chart';
+import type { ProfitChartRow } from './profit-chart';
 
 type Props = {
-    yearlyData: any;
+    yearlyData: ProfitChartRow[];
     earlyYear: number;
     endYear: number;
     onStartYearChange?: (year: number) => void;
@@ -25,10 +26,14 @@ export default function YearlyProfitChart({
     const [startYear, setStartYear] = useState(String(earlyYear));
     const [finishYear, setFinishYear] = useState(String(endYear));
 
-    useEffect(() => {
+    // Ikuti rentang tahun dari induk saat berubah (disesuaikan saat render, bukan lewat effect).
+    const [syncedYears, setSyncedYears] = useState({ earlyYear, endYear });
+
+    if (syncedYears.earlyYear !== earlyYear || syncedYears.endYear !== endYear) {
+        setSyncedYears({ earlyYear, endYear });
         setStartYear(String(earlyYear));
         setFinishYear(String(endYear));
-    }, [earlyYear, endYear]);
+    }
 
     const applyYearFilter = () => {
         if (onStartYearChange) onStartYearChange(Number(startYear));

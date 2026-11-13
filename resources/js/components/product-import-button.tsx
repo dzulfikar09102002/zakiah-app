@@ -1,5 +1,8 @@
-import { useRef, useState } from 'react';
 import { useForm, usePage } from '@inertiajs/react';
+import { Upload, Download } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
@@ -9,15 +12,12 @@ import {
     DialogFooter,
     DialogClose,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { SharedData, Option } from '@/types';
-import { Spinner } from './ui/spinner';
-import { toast } from 'sonner';
 import products from '@/routes/products';
-import { Upload, Download } from 'lucide-react';
+import type { SharedData, Option } from '@/types';
+import { Spinner } from './ui/spinner';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -408,8 +408,7 @@ export function ProductImportDialog({
 
 // ─── Trigger button ────────────────────────────────────────────────────────────
 
-interface ProductImportButtonProps
-    extends Omit<ProductImportDialogProps, 'open' | 'onOpenChange'> { }
+type ProductImportButtonProps = Omit<ProductImportDialogProps, 'open' | 'onOpenChange'>;
 
 /**
  * Tombol siap pakai yang mengontrol state open/close dialog secara internal.

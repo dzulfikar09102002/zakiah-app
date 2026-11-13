@@ -1,8 +1,12 @@
 <?php
 
 use App\Models\User;
+use App\Services\SsoTicketService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
+
+beforeEach(fn () => createEntitySchema());
 
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
@@ -19,7 +23,7 @@ test('users can authenticate using the login screen', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('dashboard.index', absolute: false));
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {
@@ -64,10 +68,22 @@ test('users can not authenticate with invalid password', function () {
 test('users can logout', function () {
     $user = User::factory()->create();
 
+    DB::table('sso_tickets')->insert([
+        'token_hash' => 'hash-aktif',
+        'user_id' => $user->id,
+        'source' => SsoTicketService::APP_ZAKIAH,
+        'audience' => 'newzakica',
+        'expires_at' => now()->addHour(),
+        'created_at' => now(),
+    ]);
+
     $response = $this->actingAs($user)->post(route('logout'));
 
     $this->assertGuest();
     $response->assertRedirect(route('home'));
+
+    // Tiket SSO ke NewZakicaPOS ikut dicabut saat logout.
+    expect(DB::table('sso_tickets')->where('token_hash', 'hash-aktif')->value('revoked_at'))->not->toBeNull();
 });
 
 test('users are rate limited', function () {

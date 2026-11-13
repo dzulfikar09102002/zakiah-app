@@ -1,3 +1,7 @@
+import { useForm, usePage } from '@inertiajs/react';
+import type { SubmitEventHandler} from 'react';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 import {
     Dialog,
     DialogCancel,
@@ -13,20 +17,17 @@ import {
     FieldLabel,
     FieldSet
 } from '@/components/ui/field';
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
-import { Spinner } from '../ui/spinner';
-import { SubmitEventHandler, useEffect } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
-import { toast } from 'sonner';
-import { Category } from '@/lib/model';
-import { SharedData } from '@/types';
+import type { Category } from '@/lib/model';
 import productCategories from '@/routes/product-categories';
+import type { SharedData } from '@/types';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Spinner } from '../ui/spinner';
 
 
 export type ModalState = {
     isOpen: boolean;
-    dataId: any;
+    dataId: unknown;
 }
 
 type Props = {
@@ -55,7 +56,7 @@ export default ({ modalState, tableData, onModalSuccess, onModalClose }: Props) 
         e.preventDefault();
 
         const action = modalState.dataId ? patch : post;
-        const url = modalState.dataId ? productCategories.update(modalState.dataId).url : productCategories.store().url;
+        const url = modalState.dataId ? productCategories.update(Number(modalState.dataId)).url : productCategories.store().url;
 
         action(url, {
             only: ['pagination'],
@@ -78,7 +79,9 @@ export default ({ modalState, tableData, onModalSuccess, onModalClose }: Props) 
     return (
         <Dialog
             open={modalState.isOpen}
-            onOpenChange={() => { processing || onModalClose() }}
+            onOpenChange={() => {
+                if (!processing) onModalClose();
+            }}
         >
             <DialogContent asChild>
                 <form onSubmit={submit}>

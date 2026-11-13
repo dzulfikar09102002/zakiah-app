@@ -16,7 +16,7 @@ class PaymentMethodController extends Controller
 
     public function index()
     {
-        $pagination = $this->service->getPaymentMethod();
+        $pagination = Inertia::defer(fn () => $this->service->getPaymentMethod());
 
         return Inertia::render('payment-methods/index', compact('pagination'));
     }
@@ -56,7 +56,7 @@ class PaymentMethodController extends Controller
     public function deleted()
     {
         $onlyTrashed = true;
-        $pagination = $this->service->getDeletedMethod();
+        $pagination = Inertia::defer(fn () => $this->service->getDeletedMethod());
 
         return Inertia::render('payment-methods/index', compact('pagination', 'onlyTrashed'));
     }

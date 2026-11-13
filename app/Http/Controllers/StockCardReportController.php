@@ -16,7 +16,7 @@ class StockCardReportController extends Controller
 
     public function index(): Response
     {
-        $pagination = $this->service->getStockCards();
+        $pagination = Inertia::defer(fn () => $this->service->getStockCards());
         $locationOptions = $this->service->getLocationOptions();
 
         return Inertia::render('reports/stocks/cards/index', compact('locationOptions', 'pagination'));

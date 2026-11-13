@@ -53,12 +53,12 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
 
         if (alertState.delete) {
             router.delete(
-                legalEntities.destroy(alertState.dataId).url,
+                legalEntities.destroy(Number(alertState.dataId)).url,
                 options,
             );
         } else {
             router.post(
-                legalEntities.restore(alertState.dataId).url,
+                legalEntities.restore(Number(alertState.dataId)).url,
                 {},
                 options,
             );

@@ -10,10 +10,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import type { LegalEntity, Option, Pagination } from '@/lib/model';
 
 type Props = {
-    pagination: Pagination<LegalEntity>;
+    pagination?: Pagination<LegalEntity>;
     legalTypes: Option[];
     onEdit: (id: number) => void;
     onDeleteOrRestore: (id: number, action: boolean) => void;
@@ -25,7 +26,7 @@ export default ({
     onEdit,
     onDeleteOrRestore,
 }: Props) => {
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
     const { url } = usePage();
     const isDeletedRoute = url.includes('deleted');
 
@@ -49,7 +50,7 @@ export default ({
             </TableHeader>
 
             <TableBody>
-                {pagination.data.map((legalEntity, index) => (
+                {(pagination?.data ?? []).map((legalEntity, index) => (
                     <TableRow key={legalEntity.id}>
                         <TableCell>{startIndex + index + 1}.</TableCell>
                         <TableCell>{legalEntity.initial}</TableCell>
@@ -119,7 +120,8 @@ export default ({
                     </TableRow>
                 ))}
 
-                {!pagination.data.length && (
+                {!pagination && <TableRowsSkeleton columns={9} />}
+                {pagination && !pagination.data.length && (
                     <TableRow>
                         <TableCell
                             colSpan={9}

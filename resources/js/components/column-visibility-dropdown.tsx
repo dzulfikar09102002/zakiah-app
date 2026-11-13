@@ -1,15 +1,17 @@
+import type { Table } from '@tanstack/react-table';
+import { ChevronDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Table } from '@tanstack/react-table';
-import { ChevronDown } from 'lucide-react';
 import '@tanstack/react-table';
 
 declare module '@tanstack/react-table' {
+    // Parameter generik wajib sama dengan deklarasi asli TanStack agar bisa digabung.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     interface ColumnMeta<TData, TValue> {
         label?: string;
     }

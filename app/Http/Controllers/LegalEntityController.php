@@ -21,7 +21,7 @@ class LegalEntityController extends Controller
     public function index(): Response
     {
         return Inertia::render('legal-entities/index', [
-            'pagination' => $this->service->getLegalEntities(),
+            'pagination' => Inertia::defer(fn () => $this->service->getLegalEntities()),
             'legalTypes' => LegalEntityTypeEnum::options(),
             'phoneCountryCodes' => PhoneNumberCountryCodeEnum::options(),
         ]);
@@ -30,7 +30,7 @@ class LegalEntityController extends Controller
     public function deleted(): Response
     {
         return Inertia::render('legal-entities/index', [
-            'pagination' => $this->service->getLegalEntities(onlyTrashed: true),
+            'pagination' => Inertia::defer(fn () => $this->service->getLegalEntities(onlyTrashed: true)),
             'onlyTrashed' => true,
             'legalTypes' => LegalEntityTypeEnum::options(),
             'phoneCountryCodes' => PhoneNumberCountryCodeEnum::options(),

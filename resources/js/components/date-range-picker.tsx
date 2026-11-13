@@ -1,3 +1,9 @@
+import { format, subDays } from 'date-fns';
+import { id } from 'date-fns/locale';
+import { CalendarIcon } from 'lucide-react';
+import QueryString from 'qs';
+import { useEffect, useState } from 'react';
+import type { DateRange } from 'react-day-picker';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
@@ -5,13 +11,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
-import { format, subDays } from 'date-fns';
-import { id } from 'date-fns/locale';
 import { formatDate } from '@/lib/utils';
-import { CalendarIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { DateRange } from 'react-day-picker';
-import QueryString from 'qs';
 
 type Props = {
     onValueChange?: (value?: DateRange) => void;
@@ -30,7 +30,7 @@ export default function RangeDatePicker({
     const getInitialDate = (): DateRange => {
         const query = QueryString.parse(window.location.search, {
             ignoreQueryPrefix: true,
-        }) as any;
+        }) as { start_at?: string; end_at?: string };
 
         if (query.start_at && query.end_at) {
             return {

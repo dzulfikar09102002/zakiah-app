@@ -1,3 +1,10 @@
+
+
+
+import { useForm, usePage } from '@inertiajs/react';
+import type { SubmitEventHandler} from 'react';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 import {
     Dialog,
     DialogCancel,
@@ -7,20 +14,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-
 import { Field, FieldError, FieldLabel, FieldSet } from '@/components/ui/field';
 
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
-import { Spinner } from '../ui/spinner';
-
-import { SubmitEventHandler, useEffect } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
-import { toast } from 'sonner';
-
-import { Customer, CustomerCategory, Location } from '@/lib/model';
-import { SharedData } from '@/types';
+import type { Customer, CustomerCategory, Location } from '@/lib/model';
 import customers from '@/routes/customers';
+import type { SharedData } from '@/types';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import {
     Select,
     SelectContent,
@@ -28,10 +28,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from '../ui/select';
+import { Spinner } from '../ui/spinner';
 
 export type ModalState = {
     isOpen: boolean;
-    dataId: any;
+    dataId: unknown;
 };
 
 type Props = {
@@ -72,7 +73,7 @@ export default ({
 
         const action = modalState.dataId ? patch : post;
         const url = modalState.dataId
-            ? customers.update(modalState.dataId).url
+            ? customers.update(Number(modalState.dataId)).url
             : customers.store().url;
 
         action(url, {

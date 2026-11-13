@@ -211,7 +211,7 @@ export default ({
 
         const action = modalState.dataId ? patch : post;
         const url = modalState.dataId
-            ? legalEntities.update(modalState.dataId).url
+            ? legalEntities.update(Number(modalState.dataId)).url
             : legalEntities.store().url;
 
         action(url, {

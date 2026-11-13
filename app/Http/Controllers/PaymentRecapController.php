@@ -17,9 +17,13 @@ class PaymentRecapController extends Controller
     public function index(): Response
     {
         $locationOptions = $this->service->getLocationOptions();
-        $recaps = $this->service->getRecaps();
-        $pagination = $this->service->paginateRows($recaps);
-        $summary = $this->service->summarize($recaps);
+        // Data berat dikirim belakangan (deferred); rekap dihitung sekali untuk tabel dan ringkasan.
+        $recaps = null;
+        $loadRecaps = function () use (&$recaps) {
+            return $recaps ??= $this->service->getRecaps();
+        };
+        $pagination = Inertia::defer(fn () => $this->service->paginateRows($loadRecaps()));
+        $summary = Inertia::defer(fn () => $this->service->summarize($loadRecaps()));
 
         return Inertia::render('revenue/payment-recaps/index', compact('pagination', 'summary', 'locationOptions'));
     }

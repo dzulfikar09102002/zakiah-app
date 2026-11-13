@@ -1,9 +1,7 @@
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Mail } from 'lucide-react';
-import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
 
 const title = 'Segera Hadir';

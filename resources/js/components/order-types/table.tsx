@@ -1,4 +1,6 @@
+import { usePage } from '@inertiajs/react';
 import { ArchiveRestore, Pencil, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
     Table,
     TableBody,
@@ -7,19 +9,18 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import type { Pagination, OrderType } from '@/lib/model';
-import { usePage } from '@inertiajs/react';
 import { toRupiah } from '@/lib/utils';
 
 type Props = {
-    pagination: Pagination<OrderType>;
+    pagination?: Pagination<OrderType>;
     onEdit: (id: unknown) => void;
     onDeleteOrRestore: (id: unknown, action: boolean) => void;
 };
 
 export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
     const { url } = usePage();
     const isDeletedRoute = url.includes('deleted');
 
@@ -38,7 +39,7 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
             </TableHeader>
 
             <TableBody>
-                {pagination.data.map((orderType: OrderType, index: number) => (
+                {(pagination?.data ?? []).map((orderType: OrderType, index: number) => (
                     <TableRow key={orderType.id ?? index}>
                         <TableCell className="w-[8%]">
                             {startIndex + index + 1}.
@@ -95,7 +96,8 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                         </TableCell>
                     </TableRow>
                 ))}
-                {!pagination.data.length && (
+                {!pagination && <TableRowsSkeleton columns={7} />}
+                {pagination && !pagination.data.length && (
                     <TableRow>
                         <TableCell
                             colSpan={7}

@@ -242,9 +242,12 @@ it('membiarkan data lama satu akun dua karyawan, dan menandainya', function () {
 
     $this->actingAs($this->admin)
         ->get(route('employees.index'))
+        // Data tabel dikirim belakangan (Inertia::defer).
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('pagination.data', fn ($rows) => collect($rows)->where('user_id', $balqis->id)->count() === 2
-                && collect($rows)->where('user_id', $balqis->id)->every(fn ($row) => $row['shares_account'] === true)));
+            ->missing('pagination')
+            ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
+                ->where('pagination.data', fn ($rows) => collect($rows)->where('user_id', $balqis->id)->count() === 2
+                    && collect($rows)->where('user_id', $balqis->id)->every(fn ($row) => $row['shares_account'] === true))));
 
     // Mengubah profil Kasir tidak menyentuh profil Sales, jadi POS tetap menampilkannya.
     $this->actingAs($this->admin)->put(route('employees.update', $kasir), [
@@ -340,7 +343,8 @@ it('menghapus akun sehingga email kosong (tidak bisa login di POS), lalu memulih
     $this->actingAs($this->admin)
         ->get(route('user-accounts.index', ['status' => 'deleted']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('pagination.data.0.deleted_email', 'tia@zakiah.com'));
+            ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
+                ->where('pagination.data.0.deleted_email', 'tia@zakiah.com')));
 
     // Tidak muncul sebagai pilihan "Akun Baru"; dipulihkan lewat tab Terhapus.
     $this->actingAs($this->admin)
@@ -379,7 +383,8 @@ it('hanya menampilkan dan mengubah akun milik karyawan entity ini', function () 
     $this->actingAs($this->admin)
         ->get(route('user-accounts.index'))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('pagination.data', fn ($rows) => collect($rows)->pluck('id')->all() === [$this->admin->id]));
+            ->loadDeferredProps(fn (AssertableInertia $reload) => $reload
+                ->where('pagination.data', fn ($rows) => collect($rows)->pluck('id')->all() === [$this->admin->id])));
 
     foreach ([$customer, $other] as $user) {
         $this->actingAs($this->admin)->put(route('user-accounts.update', $user->id), ['email' => 'dibajak@zakiah.com'])->assertNotFound();

@@ -1,3 +1,5 @@
+import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import {
     AlertDialog,
     AlertDialogCancel,
@@ -8,16 +10,14 @@ import {
     AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 
-import { Button } from '../ui/button';
-import { toast } from 'sonner';
-import { router } from '@inertiajs/react';
-import { Spinner } from '../ui/spinner';
 import roles from '@/routes/roles';
+import { Button } from '../ui/button';
+import { Spinner } from '../ui/spinner';
 
 export type AlertState = {
     delete: boolean
     isOpen: boolean
-    dataId: any
+    dataId: unknown
     proccessing: boolean
 }
 
@@ -58,14 +58,14 @@ export default ({ alertState, onAlertClose, onAlertProccessing }: Props) => {
                         onClick={() => {
 
                             router.delete(
-                                roles.destroy(alertState.dataId).url,
+                                roles.destroy(Number(alertState.dataId)).url,
                                 {
                                     only: ['pagination'],
                                     preserveState: true,
 
                                     onBefore: onAlertProccessing,
 
-                                    onError: (errors: any) => {
+                                    onError: (errors: unknown) => {
                                         toast.error('Gagal menghapus data')
                                         console.error(errors)
                                     },

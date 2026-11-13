@@ -142,7 +142,7 @@ export default function ErrorPage({
                 {particles.map((particle) => (
                     <span
                         key={particle.left}
-                        className="err-particle absolute bottom-0 rounded-full bg-[#cc7455]"
+                        className="err-particle absolute bottom-0 rounded-full bg-[var(--g-accent)]"
                         style={{
                             left: particle.left,
                             width: particle.size,
@@ -168,7 +168,7 @@ export default function ErrorPage({
                     </div>
 
                     <p
-                        className="flex text-6xl font-extrabold tracking-tight text-[#9b462c] tabular-nums"
+                        className="flex text-6xl font-extrabold tracking-tight text-[var(--g-primary)] tabular-nums"
                         aria-label={`Kode ${status}`}
                     >
                         {String(status)

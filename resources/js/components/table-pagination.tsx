@@ -20,18 +20,72 @@ import {
     SelectTrigger,
     SelectValue
 } from "./ui/select"
+import { Skeleton } from "./ui/skeleton"
 
 type Props<T> = {
-    pagination: Pagination<T>
+    /** undefined = data tabel masih dimuat (prop deferred); paginasi tetap tampil. */
+    pagination?: Pagination<T>
+}
+
+/**
+ * Total baris terakhir per halaman + filter (tanpa page/per_page), agar saat pindah halaman atau
+ * ganti per page paginasi tetap tampil penuh selama data berikutnya dimuat.
+ */
+const knownTotals = new Map<string, number>()
+
+function filterKey(): string {
+    const params = new URLSearchParams(window.location.search)
+    params.delete('page')
+    params.delete('per_page')
+    params.sort()
+
+    return `${window.location.pathname}?${params.toString()}`
+}
+
+function urlNumber(name: string): number | undefined {
+    const value = Number(new URLSearchParams(window.location.search).get(name))
+
+    return Number.isFinite(value) && value > 0 ? value : undefined
 }
 
 export default function TablePagination<T>({ pagination }: Props<T>) {
-    const { per_page, total, prev_page_url, next_page_url, current_page, last_page, first_page_url } = pagination
+    const key = filterKey()
+
+    if (pagination) {
+        knownTotals.set(key, pagination.total)
+    }
+
+    const perPage = pagination?.per_page ?? urlNumber('per_page') ?? 10
+    const currentPage = pagination?.current_page ?? urlNumber('page') ?? 1
+    const total = pagination?.total ?? knownTotals.get(key)
+    const lastPage = pagination?.last_page ?? (total !== undefined ? Math.max(1, Math.ceil(total / perPage)) : undefined)
+
+    // Dengan data: URL dari server (sama seperti sebelumnya). Saat dimuat: URL halaman saat ini.
+    const baseUrl = pagination?.first_page_url ?? `${window.location.pathname}${window.location.search}`
+    const visit = (params: Record<string, string | number>) =>
+        router.get(baseUrl, params, { preserveScroll: true })
+
+    const goToPage = (direction: -1 | 1) => {
+        if (pagination) {
+            const url = direction < 0 ? pagination.prev_page_url : pagination.next_page_url
+
+            if (url) {
+                router.get(url, {}, { preserveScroll: true })
+            }
+
+            return
+        }
+
+        visit({ page: currentPage + direction })
+    }
+
+    const canPrev = pagination ? Boolean(pagination.prev_page_url) : currentPage > 1 && lastPage !== undefined
+    const canNext = pagination ? Boolean(pagination.next_page_url) : lastPage !== undefined && currentPage < lastPage
 
     // Fungsi untuk handle perpindahan halaman via Select
     const handlePageChange = (page: string | null) => {
         if (page) {
-            router.get(first_page_url, { page: page }, { preserveScroll: true })
+            visit({ page })
         }
     }
 
@@ -41,8 +95,8 @@ export default function TablePagination<T>({ pagination }: Props<T>) {
             <div className="text-sm flex items-center gap-2 mb-2">
                 <span>Menampilkan</span>
                 <Select
-                    value={String(per_page)}
-                    onValueChange={(val) => router.get(first_page_url, { per_page: val }, { preserveScroll: true })}
+                    value={String(perPage)}
+                    onValueChange={(val) => visit({ per_page: val, page: 1 })}
                 >
                     <SelectTrigger className="h-9 w-20">
                         <SelectValue placeholder="Per page" />
@@ -54,7 +108,15 @@ export default function TablePagination<T>({ pagination }: Props<T>) {
                         <SelectItem value="100">100</SelectItem>
                     </SelectContent>
                 </Select>
-                <span>dari <b>{total}</b> baris data</span>
+                <span className="flex items-center gap-1">
+                    dari{' '}
+                    {total !== undefined ? (
+                        <b>{total}</b>
+                    ) : (
+                        <Skeleton className="inline-block h-4 w-10 align-middle" aria-label="Memuat jumlah data" />
+                    )}{' '}
+                    baris data
+                </span>
             </div>
 
             <div className="flex items-center gap-2 text-sm">
@@ -63,8 +125,9 @@ export default function TablePagination<T>({ pagination }: Props<T>) {
                     <Button
                         size={"icon"}
                         variant="outline"
-                        disabled={!prev_page_url}
-                        onClick={() => prev_page_url && router.get(prev_page_url, {}, { preserveScroll: true })}
+                        disabled={!canPrev}
+                        aria-label="Halaman sebelumnya"
+                        onClick={() => goToPage(-1)}
                     >
                         <ChevronLeft />
                     </Button>
@@ -72,8 +135,9 @@ export default function TablePagination<T>({ pagination }: Props<T>) {
 
                 {/* --- Select Page Baru Disisipkan di Sini --- */}
                 <Combobox
-                    items={Array.from({ length: last_page }, (_, i) => (i + 1).toString())}
-                    defaultValue={String(current_page)}
+                    key={`${currentPage}-${lastPage ?? 'x'}`}
+                    items={Array.from({ length: lastPage ?? currentPage }, (_, i) => (i + 1).toString())}
+                    defaultValue={String(currentPage)}
                     onValueChange={(handlePageChange)}
                 >
                     <ComboboxInput placeholder="Pilih Halaman" />
@@ -94,8 +158,9 @@ export default function TablePagination<T>({ pagination }: Props<T>) {
                     <Button
                         size={"icon"}
                         variant="outline"
-                        disabled={!next_page_url}
-                        onClick={() => next_page_url && router.get(next_page_url, {}, { preserveScroll: true })}
+                        disabled={!canNext}
+                        aria-label="Halaman berikutnya"
+                        onClick={() => goToPage(1)}
                     >
                         <ChevronRight />
                     </Button>

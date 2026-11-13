@@ -21,7 +21,7 @@ class LegalEntityLocationController extends Controller
     public function index(): Response
     {
         return Inertia::render('legal-entity-locations/index', [
-            'pagination' => $this->service->getLocations(),
+            'pagination' => Inertia::defer(fn () => $this->service->getLocations()),
             'legalEntityOptions' => $this->legalEntityService->getLegalEntityOptions(),
             'legalTypes' => LegalEntityTypeEnum::options(),
         ]);

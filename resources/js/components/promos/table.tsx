@@ -10,6 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import type { Pagination, Promo } from '@/lib/model';
 import { capitalize, formatDate, toRupiah } from '@/lib/utils';
 import promos from '@/routes/promos';
@@ -52,11 +53,11 @@ export const promoRewardLabel = (promo: Promo) => {
 };
 
 type Props = {
-    pagination: Pagination<Promo>;
+    pagination?: Pagination<Promo>;
 };
 
 export default ({ pagination }: Props) => {
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
 
     return (
         <Table className="stripped">
@@ -73,7 +74,7 @@ export default ({ pagination }: Props) => {
             </TableHeader>
 
             <TableBody>
-                {pagination.data.map((promo, index) => {
+                {(pagination?.data ?? []).map((promo, index) => {
                     const period = promoPeriod(promo);
 
                     return (
@@ -127,7 +128,8 @@ export default ({ pagination }: Props) => {
                         </TableRow>
                     );
                 })}
-                {!pagination.data.length && (
+                {!pagination && <TableRowsSkeleton columns={7} />}
+                {pagination && !pagination.data.length && (
                     <TableRow>
                         <TableCell
                             colSpan={7}

@@ -1,15 +1,16 @@
 import { Form, Head, Link, usePage } from '@inertiajs/react';
-import { Plus, Pencil, Search, X, Upload } from 'lucide-react';
-import { useState, useEffect } from 'react';
 import {
     createColumnHelper,
     getCoreRowModel,
     useReactTable,
     type ColumnDef,
 } from '@tanstack/react-table';
+import { Plus, Pencil, Search, X, Upload } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-import TablePagination from '@/components/table-pagination';
+import { toast } from 'sonner';
 import DataTable from '@/components/data-table';
+import TablePagination from '@/components/table-pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -28,8 +29,8 @@ import type { Pagination, Product } from '@/lib/model';
 import { formatDate, toRupiah } from '@/lib/utils';
 import products from '@/routes/products';
 import type { BreadcrumbItem, SharedData } from '@/types';
+import type { Option } from '@/types/ui';
 import { ProductFormDialog } from '../../components/product-form-dialog';
-import { toast } from 'sonner';
 
 const title = 'Kelola Produk';
 
@@ -40,16 +41,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-type Option = {
-    label: string;
-    value: any;
-};
-
 type Props = {
     categoryOptions: Option[];
     locationOptions: Option[];
     unitOptions: Option[];
-    pagination: Pagination<Product>;
+    pagination?: Pagination<Product>;
     suppliers: string[];
 };
 
@@ -92,7 +88,7 @@ export default ({
 
     const [categoryValue, setCategoryValue] = useState(product_category_id);
 
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
 
     const columns = [
         columnHelper.display({
@@ -164,7 +160,7 @@ export default ({
     ] as ColumnDef<Product>[];
 
     const table = useReactTable({
-        data: pagination.data,
+        data: pagination?.data ?? [],
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
@@ -238,7 +234,8 @@ export default ({
                 </CardHeader>
 
                 <CardContent className="mt-4 border-t p-0 lg:border-0 lg:px-6">
-                    <DataTable columns={columns} table={table} />
+                    <DataTable
+                        loading={!pagination} columns={columns} table={table} />
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

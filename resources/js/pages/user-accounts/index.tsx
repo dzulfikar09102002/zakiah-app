@@ -48,7 +48,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<UserAccountRow>;
+    pagination?: Pagination<UserAccountRow>;
     employeeOptions: EmployeeOption[];
     onlyTrashed: boolean;
     search: string;
@@ -93,7 +93,7 @@ export default function UserAccountIndex({
         {
             header: 'No',
             cell: ({ row }) =>
-                (pagination.current_page - 1) * pagination.per_page +
+                ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0) +
                 row.index +
                 1,
         },
@@ -182,7 +182,7 @@ export default function UserAccountIndex({
     ];
 
     const table = useReactTable({
-        data: pagination.data,
+        data: pagination?.data ?? [],
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
@@ -297,7 +297,8 @@ export default function UserAccountIndex({
                         </TabsList>
                     </Tabs>
 
-                    <DataTable columns={columns} table={table} />
+                    <DataTable
+                        loading={!pagination} columns={columns} table={table} />
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

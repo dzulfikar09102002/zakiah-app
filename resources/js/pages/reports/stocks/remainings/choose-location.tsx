@@ -1,12 +1,13 @@
+import { Head, router } from "@inertiajs/react"
+import type { SubmitEvent} from "react";
+import { useState } from "react"
 import { LocationChooserContainer, LocationChooserFilter, LocationChooserList } from "@/components/reports/stocks/remainings/location-chooser"
 import { Separator } from "@/components/ui/separator"
 import { useQuery } from "@/hooks/use-query"
 import AppLayout from "@/layouts/app-layout"
-import { Location } from "@/lib/model"
+import type { Location } from "@/lib/model"
 import stockRemaining from "@/routes/stock-remaining"
-import { BreadcrumbItem } from "@/types"
-import { Head, router } from "@inertiajs/react"
-import { SubmitEvent, useState } from "react"
+import type { BreadcrumbItem } from "@/types"
 
 const title = "Laporan Stok Sisa"
 

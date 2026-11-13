@@ -17,7 +17,7 @@ class LoyaltyController extends Controller
 
     public function index(): Response
     {
-        $pagination = $this->service->getLoyalties();
+        $pagination = Inertia::defer(fn () => $this->service->getLoyalties());
 
         return Inertia::render('loyalties/index', compact('pagination'));
     }

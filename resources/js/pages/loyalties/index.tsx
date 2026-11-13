@@ -24,7 +24,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<Loyalty>;
+    pagination?: Pagination<Loyalty>;
 };
 
 export default ({ pagination }: Props) => {

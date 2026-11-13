@@ -27,6 +27,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import {
     Tooltip,
     TooltipContent,
@@ -60,7 +61,7 @@ const kindLabels: Record<string, string> = {
 };
 
 type Props = {
-    pagination: Pagination<LocationWithLegalEntities>;
+    pagination?: Pagination<LocationWithLegalEntities>;
     legalEntityOptions: LegalEntityOption[];
     legalTypes: Option[];
 };
@@ -149,7 +150,7 @@ export default ({ pagination, legalEntityOptions, legalTypes }: Props) => {
     const [expanded, setExpanded] = useState<number[]>([]);
 
     const search = useQuery().search || '';
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
 
     const toggle = (id: number) =>
         setExpanded((prev) =>
@@ -233,6 +234,7 @@ export default ({ pagination, legalEntityOptions, legalTypes }: Props) => {
                     </Form>
                 </CardHeader>
                 <CardContent className="border-t p-0 lg:border-0 lg:px-6">
+
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -247,7 +249,7 @@ export default ({ pagination, legalEntityOptions, legalTypes }: Props) => {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {pagination.data.map((location, index) => {
+                            {(pagination?.data ?? []).map((location, index) => {
                                 const isOpen = expanded.includes(location.id);
 
                                 return (
@@ -331,7 +333,8 @@ export default ({ pagination, legalEntityOptions, legalTypes }: Props) => {
                                 );
                             })}
 
-                            {!pagination.data.length && (
+                            {!pagination && <TableRowsSkeleton columns={6} />}
+                            {pagination && !pagination.data.length && (
                                 <TableRow>
                                     <TableCell
                                         colSpan={6}
@@ -343,7 +346,6 @@ export default ({ pagination, legalEntityOptions, legalTypes }: Props) => {
                             )}
                         </TableBody>
                     </Table>
-
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

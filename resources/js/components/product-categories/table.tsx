@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { ArchiveRestore, Pencil, X } from 'lucide-react';
 import {
     Table,
@@ -7,17 +8,17 @@ import {
     TableHeader,
     TableRow
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import type { Category, Pagination } from '@/lib/model';
 import { Button } from '../ui/button';
-import { usePage } from '@inertiajs/react';
 
 type Props = {
-    pagination: Pagination<Category>
+    pagination?: Pagination<Category>;
     onEdit: (id: unknown) => void
     onDeleteOrRestore: (id: unknown, action: boolean) => void
 }
 export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
-    const startIndex = (pagination.current_page - 1) * pagination.per_page
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0)
     const { url } = usePage()
     const isDeletedRoute = url.includes('deleted')
     return (
@@ -30,7 +31,7 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {pagination.data.map((category: Category, index: number) => (
+                {(pagination?.data ?? []).map((category: Category, index: number) => (
                     <TableRow key={category.id ?? index}>
                         <TableCell>{startIndex + index + 1}.</TableCell>
                         <TableCell>{category.name}</TableCell>
@@ -52,7 +53,8 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                     </TableRow>
                 ))}
 
-                {!pagination.data.length && (
+                {!pagination && <TableRowsSkeleton columns={4} />}
+                {pagination && !pagination.data.length && (
                     <TableRow>
                         <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
                             Data tidak ditemukan

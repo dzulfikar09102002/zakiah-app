@@ -27,7 +27,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<Tax>;
+    pagination?: Pagination<Tax>;
 };
 
 export default ({ pagination }: Props) => {
@@ -49,7 +49,7 @@ export default ({ pagination }: Props) => {
 
             <Modal
                 modalState={modal}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
                 onModalSuccess={closeModal}
                 onModalClose={closeModal}
             />

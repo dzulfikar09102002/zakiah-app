@@ -17,7 +17,7 @@ class ProductTransferServiceController extends Controller
 
     public function index(): Response
     {
-        $pagination = $this->service->getTransfers();
+        $pagination = Inertia::defer(fn () => $this->service->getTransfers());
         $locationOptions = $this->service->getLocationOptions();
 
         return Inertia::render('stock-transfers/index', compact('pagination', 'locationOptions'));

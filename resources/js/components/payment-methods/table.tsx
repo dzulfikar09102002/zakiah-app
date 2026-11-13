@@ -1,3 +1,4 @@
+import { usePage } from '@inertiajs/react';
 import { ArchiveRestore, Pencil, X } from 'lucide-react';
 import {
     Table,
@@ -7,19 +8,19 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import type { Pagination, PaymentMethod } from '@/lib/model';
-import { Button } from '../ui/button';
-import { usePage } from '@inertiajs/react';
 import { toRupiah } from '@/lib/utils';
+import { Button } from '../ui/button';
 
 type Props = {
-    pagination: Pagination<PaymentMethod>;
+    pagination?: Pagination<PaymentMethod>;
     onEdit: (id: unknown) => void;
     onDeleteOrRestore: (id: unknown, action: boolean) => void;
 };
 
 export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
-    const startIndex = (pagination.current_page - 1) * pagination.per_page;
+    const startIndex = ((pagination?.current_page ?? 1) - 1) * (pagination?.per_page ?? 0);
 
     const { url } = usePage();
     const isDeletedRoute = url.includes('deleted');
@@ -38,7 +39,7 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
             </TableHeader>
 
             <TableBody>
-                {pagination.data.map(
+                {(pagination?.data ?? []).map(
                     (pmethod: PaymentMethod, index: number) => (
                         <TableRow key={pmethod.id ?? index}>
                             <TableCell>{startIndex + index + 1}.</TableCell>
@@ -89,7 +90,8 @@ export default ({ pagination, onEdit, onDeleteOrRestore }: Props) => {
                     ),
                 )}
 
-                {!pagination.data.length && (
+                {!pagination && <TableRowsSkeleton columns={6} />}
+                {pagination && !pagination.data.length && (
                     <TableRow>
                         <TableCell
                             colSpan={6}

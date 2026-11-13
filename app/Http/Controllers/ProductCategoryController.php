@@ -16,7 +16,7 @@ class ProductCategoryController extends Controller
 
     public function index()
     {
-        $pagination = $this->service->getCategories();
+        $pagination = Inertia::defer(fn () => $this->service->getCategories());
 
         return Inertia::render('categories/index', compact('pagination'));
     }
@@ -24,7 +24,7 @@ class ProductCategoryController extends Controller
     public function deleted()
     {
         $onlyTrashed = true;
-        $pagination = $this->service->getDeletedCategories();
+        $pagination = Inertia::defer(fn () => $this->service->getDeletedCategories());
 
         return Inertia::render('categories/index', compact('pagination', 'onlyTrashed'));
     }

@@ -104,7 +104,7 @@ class SaleReportService
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%$search%")
-                    ->orWhere('invoice_number', 'like', "%$search%");
+                    ->orWhere('sales_no', 'like', "%$search%");
             });
         }
 

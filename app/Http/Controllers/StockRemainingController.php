@@ -35,7 +35,7 @@ class StockRemainingController extends Controller
     {
         $this->ensureOwnedByEntity($location);
 
-        $pagination = $this->service->getRemainingStock($location->id);
+        $pagination = Inertia::defer(fn () => $this->service->getRemainingStock($location->id));
         $categoryOptions = $this->service->getCategoryOptions();
         $locations = $this->service->getLocations();
 

@@ -2,20 +2,22 @@ import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 
+import type { AlertState } from '@/components/customer-categories/alert';
+import Alert from '@/components/customer-categories/alert';
+import type { ModalState } from '@/components/customer-categories/modal';
+import Modal from '@/components/customer-categories/modal';
+import Table from '@/components/customer-categories/table';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination, CustomerCategory } from '@/lib/model';
-import type { BreadcrumbItem } from '@/types';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import customerCategories from '@/routes/customer-categories';
-import Modal, { ModalState } from '@/components/customer-categories/modal';
-import Alert, { AlertState } from '@/components/customer-categories/alert';
-import Table from '@/components/customer-categories/table';
+import type { BreadcrumbItem } from '@/types';
 
 const title = 'Kategori Pelanggan';
 
@@ -27,7 +29,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<CustomerCategory>;
+    pagination?: Pagination<CustomerCategory>;
     onlyTrashed?: boolean;
 };
 
@@ -88,7 +90,7 @@ export default ({ pagination }: Props) => {
                 modalState={modal}
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
             />
 
             <Alert

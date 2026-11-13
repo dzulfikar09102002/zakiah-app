@@ -2,6 +2,11 @@ import { Form, Head, Link, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 
+import type { AlertState } from '@/components/order-types/alert';
+import Alert from '@/components/order-types/alert';
+import type { ModalState } from '@/components/order-types/modal';
+import Modal from '@/components/order-types/modal';
+import Table from '@/components/order-types/table';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 
@@ -11,16 +16,13 @@ import {
     CardHeader,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@/hooks/use-query';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination, OrderType, PaymentMethod } from '@/lib/model';
 import ordertypes from '@/routes/order-types';
 import type { BreadcrumbItem } from '@/types';
 
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Table from '@/components/order-types/table';
-import Modal, { ModalState } from '@/components/order-types/modal';
-import Alert, { AlertState } from '@/components/order-types/alert';
 
 const title = 'Jenis Pesanan';
 
@@ -32,12 +34,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<OrderType>
+    pagination?: Pagination<OrderType>;
     onlyTrashed?: boolean
     paymentMethods: PaymentMethod[]
 }
 
-export default ({ pagination, onlyTrashed, paymentMethods }: Props) => {
+export default ({ pagination, paymentMethods }: Props) => {
     const [modal, setModal] = useState<ModalState>({
         isOpen: false,
         dataId: undefined as unknown
@@ -90,7 +92,7 @@ export default ({ pagination, onlyTrashed, paymentMethods }: Props) => {
                 modalState={modal}
                 onModalClose={onModalClose}
                 onModalSuccess={onModalSuccess}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
                 paymentMethods={paymentMethods}
             />
 

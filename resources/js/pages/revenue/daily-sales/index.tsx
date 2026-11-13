@@ -41,7 +41,7 @@ type LocationOption = {
 };
 
 type Props = {
-    pagination: Pagination<DailySaleData>;
+    pagination?: Pagination<DailySaleData>;
     locationOptions: LocationOption[];
 };
 
@@ -151,7 +151,7 @@ export default function DailySaleIndex({ pagination, locationOptions }: Props) {
         useState<number[]>(initialExcludeLocs);
 
     const table = useReactTable({
-        data: pagination.data,
+        data: pagination?.data ?? [],
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
@@ -200,7 +200,8 @@ export default function DailySaleIndex({ pagination, locationOptions }: Props) {
                             <Search /> Cari
                         </Button>
                     </Form>
-                    <DataTable columns={columns} table={table} />
+                    <DataTable
+                        loading={!pagination} columns={columns} table={table} />
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>

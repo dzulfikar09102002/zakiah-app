@@ -4,7 +4,7 @@ import type { Pagination, StockCountDocument } from '@/lib/model';
 import type { Option } from '@/types';
 
 type Props = {
-    pagination: Pagination<StockCountDocument>;
+    pagination?: Pagination<StockCountDocument>;
     locationOptions: Option[];
 };
 

@@ -11,7 +11,14 @@ import { Card, CardContent } from '../ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../ui/chart';
 import { Skeleton } from '../ui/skeleton'; // PENTING: Import Skeleton
 
-export default ({ data, isLoading }: { data: any[]; isLoading?: boolean }) => {
+/** Satu batang chart: label (tanggal/bulan/tahun), penjualan bersih, dan laba. */
+export type ProfitChartRow = {
+    name: string;
+    sales: number;
+    profit: number;
+};
+
+export default ({ data, isLoading }: { data: ProfitChartRow[]; isLoading?: boolean }) => {
     // Tampilkan Skeleton jika sedang loading
     if (isLoading) {
         return <Skeleton className="h-[400px] w-full rounded-xl" />;

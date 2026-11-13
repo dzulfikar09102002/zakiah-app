@@ -2,6 +2,8 @@
 
 use App\Models\User;
 
+beforeEach(fn () => createEntitySchema());
+
 test('profile page is displayed', function () {
     $user = User::factory()->create();
 
@@ -64,7 +66,8 @@ test('user can delete their account', function () {
         ->assertRedirect(route('home'));
 
     $this->assertGuest();
-    expect($user->fresh())->toBeNull();
+    // User memakai SoftDeletes: akun ditandai terhapus, bukan dihapus permanen.
+    $this->assertSoftDeleted($user);
 });
 
 test('correct password must be provided to delete account', function () {

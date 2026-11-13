@@ -1,3 +1,8 @@
+import { useForm } from '@inertiajs/react';
+import type { SubmitEventHandler} from 'react';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogCancel,
@@ -11,22 +16,23 @@ import {
 import { Field, FieldError, FieldLabel, FieldSet } from '@/components/ui/field';
 
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { SubmitEventHandler, useEffect } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
-import { toast } from 'sonner';
-import { SharedData } from '@/types';
+import type { CustomerCategory } from '@/lib/model';
 import customerCategories from '@/routes/customer-categories';
+
+// Relasi dikirim Laravel dalam snake_case (customer_category_rule).
+type CustomerCategoryRow = CustomerCategory & {
+    customer_category_rule?: { minimal_spend?: number } | null;
+};
 
 export type ModalState = {
     isOpen: boolean;
-    dataId: any;
+    dataId: unknown;
 };
 
 type Props = {
     modalState: ModalState;
-    tableData: any[];
+    tableData: CustomerCategoryRow[];
     onModalSuccess: () => void;
     onModalClose: () => void;
 };
@@ -37,7 +43,6 @@ export default ({
     onModalSuccess,
     onModalClose,
 }: Props) => {
-    const { auth } = usePage<SharedData>().props;
 
     const {
         processing,
@@ -59,7 +64,7 @@ export default ({
 
         const action = modalState.dataId ? patch : post;
         const url = modalState.dataId
-            ? customerCategories.update(modalState.dataId).url
+            ? customerCategories.update(Number(modalState.dataId)).url
             : customerCategories.store().url;
 
         action(url, {

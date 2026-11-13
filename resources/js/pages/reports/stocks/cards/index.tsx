@@ -92,7 +92,7 @@ type Option = {
 };
 
 type Props = {
-    pagination: Pagination<StockCardData> | null;
+    pagination?: Pagination<StockCardData> | null;
     locationOptions: Option[];
 };
 
@@ -161,16 +161,23 @@ export default ({ pagination, locationOptions }: Props) => {
                             />
                         </div>
                     </Form>
-                    <DataTable
-                        columns={columns}
-                        table={table}
-                        emptyMessage={
-                            pagination
-                                ? undefined
-                                : 'Silakan pilih lokasi yang diinginkan terlebih dahulu'
-                        }
-                    />
-                    {pagination && <TablePagination pagination={pagination} />}
+                    {/* Lokasi dipilih: data dikirim belakangan (deferred); selama dimuat isi tabel skeleton. */}
+                    {initialLoc > 0 ? (
+                        <>
+                            <DataTable
+                                columns={columns}
+                                table={table}
+                                loading={!pagination}
+                            />
+                            <TablePagination pagination={pagination ?? undefined} />
+                        </>
+                    ) : (
+                        <DataTable
+                            columns={columns}
+                            table={table}
+                            emptyMessage="Silakan pilih lokasi yang diinginkan terlebih dahulu"
+                        />
+                    )}
                 </CardContent>
             </Card>
         </AppLayout>

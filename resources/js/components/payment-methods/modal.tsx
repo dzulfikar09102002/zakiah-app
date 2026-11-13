@@ -1,3 +1,8 @@
+import { useForm, usePage } from '@inertiajs/react';
+import type { SubmitEventHandler} from 'react';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogCancel,
@@ -16,22 +21,19 @@ import {
 } from '@/components/ui/field';
 
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { SubmitEventHandler, useEffect } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
-import { toast } from 'sonner';
-import { SharedData } from '@/types';
+import type { PaymentMethod } from '@/lib/model';
 import paymentMethods from '@/routes/payment-methods';
+import type { SharedData } from '@/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 export type ModalState = {
     isOpen: boolean;
-    dataId: any;
+    dataId: unknown;
 }
 type Props = {
     modalState: ModalState;
-    tableData: any[];
+    tableData: PaymentMethod[];
     onModalSuccess: () => void;
     onModalClose: () => void;
 };
@@ -67,7 +69,7 @@ export default function PaymentMethodModal({
 
         const action = modalState.dataId ? patch : post;
         const url = modalState.dataId
-            ? paymentMethods.update(modalState.dataId).url
+            ? paymentMethods.update(Number(modalState.dataId)).url
             : paymentMethods.store().url;
 
         action(url, {

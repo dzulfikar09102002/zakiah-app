@@ -17,7 +17,7 @@ class ProductAdjustmentStockController extends Controller
 
     public function index(): Response
     {
-        $pagination = $this->service->getDocuments();
+        $pagination = Inertia::defer(fn () => $this->service->getDocuments());
         $locationOptions = $this->service->getLocationOptions();
 
         return Inertia::render('stock-adjustments/index', compact('pagination', 'locationOptions'));

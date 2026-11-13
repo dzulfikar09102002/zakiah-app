@@ -22,6 +22,7 @@ import { useState } from 'react';
 
 import DataTable from '@/components/data-table';
 import DateRangePicker from '@/components/date-range-picker';
+import { DeferredData, StatCardsSkeleton } from '@/components/deferred-data';
 import LocationDropdown from '@/components/location-dropdown';
 import PrintPdfButton from '@/components/print-pdf-button';
 import TablePagination from '@/components/table-pagination';
@@ -68,8 +69,8 @@ type LocationOption = {
 };
 
 type Props = {
-    pagination: Pagination<RecapRow>;
-    summary: Summary;
+    pagination?: Pagination<RecapRow>;
+    summary?: Summary;
     locationOptions: LocationOption[];
 };
 
@@ -287,12 +288,10 @@ export default function PaymentRecapIndex({
         useState<number[]>(initialExcludeLocs);
 
     const table = useReactTable({
-        data: pagination.data,
+        data: pagination?.data ?? [],
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
-
-    const cards = summaryCards(summary);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -341,15 +340,24 @@ export default function PaymentRecapIndex({
                     <PrintPdfButton url={paymentRecaps.pdf().url} />
                 </Form>
 
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                    {cards.map((card) => (
-                        <StatCard key={card.label} {...card} />
-                    ))}
-                </div>
+                <DeferredData
+                    data="summary"
+                    value={summary}
+                    fallback={<StatCardsSkeleton count={5} />}
+                >
+                    {(summary) => (
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                            {summaryCards(summary).map((card) => (
+                                <StatCard key={card.label} {...card} />
+                            ))}
+                        </div>
+                    )}
+                </DeferredData>
 
                 <Card>
                     <CardContent>
-                        <DataTable columns={columns} table={table} />
+                        <DataTable
+                            loading={!pagination} columns={columns} table={table} />
                         <TablePagination pagination={pagination} />
                     </CardContent>
                 </Card>

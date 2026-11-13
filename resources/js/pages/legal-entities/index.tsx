@@ -27,7 +27,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type Props = {
-    pagination: Pagination<LegalEntity>;
+    pagination?: Pagination<LegalEntity>;
     onlyTrashed?: boolean;
     legalTypes: Option[];
     phoneCountryCodes: Option[];
@@ -57,7 +57,7 @@ export default ({ pagination, legalTypes, phoneCountryCodes }: Props) => {
                 modalState={modal}
                 onModalClose={closeModal}
                 onModalSuccess={closeModal}
-                tableData={pagination.data}
+                tableData={pagination?.data ?? []}
                 legalTypes={legalTypes}
                 phoneCountryCodes={phoneCountryCodes}
             />

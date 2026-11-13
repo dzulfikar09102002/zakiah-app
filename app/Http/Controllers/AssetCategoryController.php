@@ -18,9 +18,9 @@ class AssetCategoryController extends Controller
     public function index()
     {
         try {
-            $pagination = $this->service->getCategoryAssets();
+            $pagination = Inertia::defer(fn () => $this->service->getCategoryAssets());
             $locationOptions = $this->service->getLocationOptions();
-            $summary = $this->service->getAssetSummary();
+            $summary = Inertia::defer(fn () => $this->service->getAssetSummary());
 
             return Inertia::render('reports/stocks/assetsbycategories/index', compact(
                 'pagination',

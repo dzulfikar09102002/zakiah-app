@@ -86,10 +86,13 @@ class SsoTicketService
      */
     public function revokeIssuedBy(int $userId): void
     {
-        DB::update(
-            'UPDATE sso_tickets SET revoked_at = UTC_TIMESTAMP() WHERE user_id = ? AND source = ? AND revoked_at IS NULL',
-            [$userId, self::APP_ZAKIAH]
-        );
+        // Query builder (bukan fungsi khusus MySQL) agar logout juga jalan di SQLite tes.
+        // Waktu cabut memakai zona aplikasi (Asia/Jakarta); kolom ini hanya dicek IS NULL.
+        DB::table('sso_tickets')
+            ->where('user_id', $userId)
+            ->where('source', self::APP_ZAKIAH)
+            ->whereNull('revoked_at')
+            ->update(['revoked_at' => now()->format('Y-m-d H:i:s')]);
     }
 
     /**

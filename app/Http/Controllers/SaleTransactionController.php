@@ -18,7 +18,7 @@ class SaleTransactionController extends Controller
 
     public function index(DailySaleService $dailySaleService)
     {
-        $pagination = $this->service->getSaleTransactions();
+        $pagination = Inertia::defer(fn () => $this->service->getSaleTransactions());
         $locationOptions = $dailySaleService->getLocationOptions();
         $orderTypeOptions = $this->service->getOrderTypeOptions();
 

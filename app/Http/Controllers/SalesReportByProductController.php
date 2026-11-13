@@ -15,7 +15,7 @@ class SalesReportByProductController extends Controller
 
     public function index()
     {
-        $pagination = $this->service->getSaleReportByProducts();
+        $pagination = Inertia::defer(fn () => $this->service->getSaleReportByProducts());
         $locationOptions = $this->service->getLocationOptions();
 
         return Inertia::render('reports/sellings/byproduct', compact('locationOptions', 'pagination'));

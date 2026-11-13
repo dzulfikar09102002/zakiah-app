@@ -39,7 +39,7 @@ class ProductOpnameSessionController extends Controller
     public function index(): Response
     {
         return Inertia::render('stock-opname-sessions/index', [
-            'pagination' => $this->sessions->getSessions(),
+            'pagination' => Inertia::defer(fn () => $this->sessions->getSessions()),
             'locationOptions' => $this->sessions->getLocationOptions(),
             'legacyDocuments' => $this->sessions->getPendingLegacyDocuments(),
         ]);

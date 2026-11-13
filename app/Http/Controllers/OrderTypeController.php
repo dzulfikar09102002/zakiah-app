@@ -17,7 +17,7 @@ class OrderTypeController extends Controller
     public function index()
     {
         $paymentMethods = $this->service->getPaymentMethods();
-        $pagination = $this->service->getOrderTypes();
+        $pagination = Inertia::defer(fn () => $this->service->getOrderTypes());
 
         return Inertia::render('order-types/index', compact('pagination', 'paymentMethods'));
     }
@@ -58,7 +58,7 @@ class OrderTypeController extends Controller
     {
         $onlyTrashed = true;
         $paymentMethods = $this->service->getPaymentMethods();
-        $pagination = $this->service->getDeletedOrderTypes();
+        $pagination = Inertia::defer(fn () => $this->service->getDeletedOrderTypes());
 
         return Inertia::render('order-types/index', compact('pagination', 'onlyTrashed', 'paymentMethods'));
     }

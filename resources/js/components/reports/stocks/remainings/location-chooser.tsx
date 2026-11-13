@@ -70,12 +70,11 @@
 //     )
 // }
 
-import { ReactNode } from "react"
-import { Location } from "@/lib/model"
-import LocationChooserContext, { useLocationChooser } from "@/context/location-chooser-context"
+import { Link } from "@inertiajs/react"
+import { Search } from "lucide-react"
+import type { ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
 import {
     Item,
     ItemActions,
@@ -83,10 +82,10 @@ import {
     ItemDescription,
     ItemTitle,
 } from "@/components/ui/item"
-import { Link } from "@inertiajs/react"
-import { Separator } from "@/components/ui/separator"
-import stockRemaining from "@/routes/stock-remaining"
+import LocationChooserContext, { useLocationChooser } from "@/context/location-chooser-context"
+import type { Location } from "@/lib/model"
 import { capitalize } from "@/lib/utils"
+import stockRemaining from "@/routes/stock-remaining"
 
 type Props = {
     locations: Location[]

@@ -11,6 +11,7 @@ import type { OpnameSession } from '@/components/stock-opname-session/types';
 import TablePagination from '@/components/table-pagination';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
     Table,
     TableBody,
@@ -19,6 +20,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { TableRowsSkeleton } from '@/components/ui/table-rows-skeleton';
 import AppLayout from '@/layouts/app-layout';
 import type { Pagination } from '@/lib/model';
 import { capitalize } from '@/lib/utils';
@@ -27,7 +29,7 @@ import productOpnameSessions from '@/routes/product-opname-sessions';
 import type { Option } from '@/types';
 
 type Props = {
-    pagination: Pagination<OpnameSession>;
+    pagination?: Pagination<OpnameSession>;
     locationOptions: Option[];
     legacyDocuments: { id: number; code: string }[];
 };
@@ -112,8 +114,10 @@ export default function Index({
 
                 <CardContent className="border-t p-0 pt-3 lg:border-0 lg:px-6">
                     {/* HP: kartu supaya tidak perlu geser tabel. */}
+
+
                     <ul className="space-y-2 md:hidden">
-                        {pagination.data.map((session) => (
+                        {(pagination?.data ?? []).map((session) => (
                             <li
                                 key={session.id}
                                 className="space-y-2 rounded-xl border bg-card p-3"
@@ -146,13 +150,24 @@ export default function Index({
                                 <EnterButton session={session} />
                             </li>
                         ))}
-                        {!pagination.data.length && (
+                        {!pagination &&
+                            Array.from({ length: 3 }).map((_, i) => (
+                                <li
+                                    key={`skeleton-${i}`}
+                                    aria-hidden="true"
+                                    className="space-y-2 rounded-xl border bg-card p-3"
+                                >
+                                    <Skeleton className="h-4 w-2/3" />
+                                    <Skeleton className="h-3 w-1/3" />
+                                    <Skeleton className="h-3 w-1/2" />
+                                </li>
+                            ))}
+                        {pagination && !pagination.data.length && (
                             <li className="p-6 text-center text-sm text-muted-foreground">
                                 Belum ada sesi SO
                             </li>
                         )}
                     </ul>
-
                     <div className="hidden md:block">
                         <Table className="stripped">
                             <TableHeader>
@@ -172,7 +187,7 @@ export default function Index({
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {pagination.data.map((session) => (
+                                {(pagination?.data ?? []).map((session) => (
                                     <TableRow key={session.id}>
                                         <TableCell className="font-medium">
                                             {session.code}
@@ -208,7 +223,8 @@ export default function Index({
                                         </TableCell>
                                     </TableRow>
                                 ))}
-                                {!pagination.data.length && (
+                                {!pagination && <TableRowsSkeleton columns={8} />}
+                                {pagination && !pagination.data.length && (
                                     <TableRow>
                                         <TableCell
                                             colSpan={8}
@@ -221,7 +237,6 @@ export default function Index({
                             </TableBody>
                         </Table>
                     </div>
-
                     <TablePagination pagination={pagination} />
                 </CardContent>
             </Card>
