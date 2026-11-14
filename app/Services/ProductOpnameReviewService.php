@@ -14,11 +14,15 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
  * Review PJ per produk. Daftarnya gabungan barang ter-scan dan barang berstok yang
- * tidak ter-scan (dianggap stok SO 0). Centang langsung mengubah stok dan bersifat final.
+ * tidak ter-scan (dianggap stok SO 0). Untuk tiap selisih PJ memilih pakai stok SO atau
+ * stok sistem beserta alasannya lalu menguncinya. Baris terkunci adalah draf yang bisa
+ * dibuka lagi. Saat sesi ditutup semuanya diselesaikan sekaligus supaya fisik dan sistem
+ * klop: stok SO menyesuaikan stok sistem, stok sistem menyesuaikan catatan SO.
  */
 class ProductOpnameReviewService
 {
@@ -36,8 +40,8 @@ class ProductOpnameReviewService
                 ->whereLike('name', "%{$search}%")
                 ->orWhereLike('barcode', "%{$search}%")
                 ->orWhereLike('sku', "%{$search}%")))
-            // Yang belum diputuskan selalu di atas, lalu yang mungkin dobel, lalu selisih terbesar.
-            ->orderByRaw('CASE WHEN decision IS NULL THEN 0 ELSE 1 END')
+            // Selisih yang belum dikunci selalu di atas, lalu yang mungkin dobel, lalu selisih terbesar.
+            ->orderByRaw('CASE WHEN decision IS NULL AND difference_stock <> 0 THEN 0 ELSE 1 END')
             ->when($suspects !== [], fn (Builder $query) => $query->orderByRaw(
                 'CASE WHEN product_id IN ('.implode(',', array_fill(0, count($suspects), '?')).') THEN 0 ELSE 1 END',
                 $suspects,
@@ -63,7 +67,7 @@ class ProductOpnameReviewService
     }
 
     /**
-     * Jumlah produk yang ditandai mungkin dobel dan belum diputuskan.
+     * Jumlah produk yang ditandai mungkin dobel dan belum dikunci.
      */
     public function suspectCount(ProductOpnameSession $session): int
     {
@@ -179,7 +183,8 @@ class ProductOpnameReviewService
     }
 
     /**
-     * Scan yang masih berlaku: bukan baris koreksi dan belum dibatalkan, urut waktu.
+     * Scan petugas yang masih berlaku: bukan baris koreksi, bukan koreksi PJ, dan belum
+     * dibatalkan, urut waktu.
      */
     private function validScans(ProductOpnameSession $session): Builder
     {
@@ -188,7 +193,10 @@ class ProductOpnameReviewService
             ->where('s.qty', '>', 0)
             ->when(ProductOpnameSessionScan::supportsCorrections(), fn (Builder $query) => $query
                 ->leftJoin('product_opname_session_scans as c', 'c.cancelled_scan_id', '=', 's.id')
-                ->whereNull('c.id'))
+                ->whereNull('c.id')
+                ->where(fn (Builder $q) => $q
+                    ->whereNull('s.reason')
+                    ->orWhere('s.reason', 'not like', ProductOpnameScanService::PJ_CORRECTION_PREFIX.'%')))
             ->orderBy('s.id');
     }
 
@@ -200,17 +208,15 @@ class ProductOpnameReviewService
         $row = DB::query()
             ->fromSub($this->rows($session), 'rows')
             ->selectRaw('
-                SUM(CASE WHEN difference_stock <> 0 AND (decision IS NULL OR decision <> ?) THEN 1 ELSE 0 END) as difference_count,
+                SUM(CASE WHEN difference_stock <> 0 THEN 1 ELSE 0 END) as difference_count,
                 SUM(CASE WHEN difference_stock = 0 THEN 1 ELSE 0 END) as matched,
                 SUM(CASE WHEN difference_stock <> 0 AND decision IS NULL THEN 1 ELSE 0 END) as pending,
                 SUM(CASE WHEN decision = ? THEN 1 ELSE 0 END) as accepted,
                 SUM(CASE WHEN decision = ? THEN 1 ELSE 0 END) as rejected,
-                SUM(CASE WHEN scanned = 0 AND difference_stock <> 0 AND (decision IS NULL OR decision <> ?) THEN 1 ELSE 0 END) as unscanned,
+                SUM(CASE WHEN scanned = 0 AND difference_stock <> 0 THEN 1 ELSE 0 END) as unscanned,
                 SUM(CASE WHEN decision = ? THEN difference_stock ELSE 0 END) as difference_stock
             ', [
-                OpnameReviewDecision::Rejected->value,
                 OpnameReviewDecision::Accepted->value,
-                OpnameReviewDecision::Rejected->value,
                 OpnameReviewDecision::Rejected->value,
                 OpnameReviewDecision::Accepted->value,
             ])
@@ -232,7 +238,7 @@ class ProductOpnameReviewService
     }
 
     /**
-     * Lampiran laporan: produk selisih yang diterima PJ, dasar anak toko mencari barang.
+     * Lampiran laporan: selisih yang memakai stok SO, stoknya berubah.
      *
      * @return Collection<int, object>
      */
@@ -248,22 +254,7 @@ class ProductOpnameReviewService
     }
 
     /**
-     * Lampiran laporan: produk selisih yang ditolak PJ, stoknya tidak berubah.
-     *
-     * @return Collection<int, object>
-     */
-    public function rejectedRows(ProductOpnameSession $session): Collection
-    {
-        return DB::query()
-            ->fromSub($this->rows($session), 'rows')
-            ->where('decision', OpnameReviewDecision::Rejected->value)
-            ->orderBy('name')
-            ->get()
-            ->map(fn (object $row) => $this->castRow($row));
-    }
-
-    /**
-     * Ringkasan laporan per kelompok: sesuai, tidak sesuai tapi diterima, dan ditolak.
+     * Ringkasan laporan per kelompok: sesuai, pakai stok SO, dan pakai stok sistem.
      *
      * @return array<string, array{products: int, recorded: int, counted: int, difference: int}>
      */
@@ -305,16 +296,15 @@ class ProductOpnameReviewService
         return $totals;
     }
 
-    public function decide(ProductOpnameSession $session, int $productId, OpnameReviewDecision $decision, ?string $note): void
+    /**
+     * Kunci keputusan satu produk selisih sebagai draf. Stok belum bergerak.
+     */
+    public function lock(ProductOpnameSession $session, int $productId, OpnameReviewDecision $decision, string $note): void
     {
         $employeeId = $this->employeeId();
 
         DB::transaction(function () use ($session, $productId, $decision, $note, $employeeId) {
-            $locked = ProductOpnameSession::query()->lockForUpdate()->findOrFail($session->id);
-
-            if ($locked->currentStatus() !== OpnameSessionStatus::Review) {
-                $this->fail('Sesi tidak sedang dalam tahap review.');
-            }
+            $locked = $this->lockedReviewSession($session);
 
             $row = DB::query()
                 ->fromSub($this->rows($locked), 'rows')
@@ -326,16 +316,12 @@ class ProductOpnameReviewService
             }
 
             if ($row->decision !== null) {
-                $this->fail('Produk ini sudah diputuskan.');
+                $this->fail('Produk ini sudah dikunci.');
             }
 
             if ((int) $row->difference_stock === 0) {
                 $this->fail('Produk ini cocok, tidak perlu diputuskan.');
             }
-
-            $detailId = $decision === OpnameReviewDecision::Accepted
-                ? $this->applyToStock($locked, $row, $note, $employeeId)
-                : null;
 
             DB::table('product_opname_session_reviews')->insert([
                 'session_id' => $locked->id,
@@ -344,12 +330,104 @@ class ProductOpnameReviewService
                 'counted_stock' => (int) $row->counted_stock,
                 'difference_stock' => (int) $row->difference_stock,
                 'decision' => $decision->value,
-                'product_opname_service_detail_id' => $detailId,
                 'note' => $note,
                 'ins_date' => now(),
                 'ins_by' => $employeeId,
             ]);
         });
+    }
+
+    /**
+     * Buka kunci supaya keputusan atau hitungannya bisa diubah lagi, selama sesi belum ditutup.
+     */
+    public function unlock(ProductOpnameSession $session, int $productId): void
+    {
+        DB::transaction(function () use ($session, $productId) {
+            $locked = $this->lockedReviewSession($session);
+
+            $deleted = DB::table('product_opname_session_reviews')
+                ->where('session_id', $locked->id)
+                ->where('product_id', $productId)
+                ->delete();
+
+            if (! $deleted) {
+                $this->fail('Produk ini belum dikunci.');
+            }
+        });
+    }
+
+    /**
+     * Saat sesi ditutup, dipanggil di dalam transaksi penutupan sesi:
+     * - Pakai stok SO: stok sistem disesuaikan. Yang diterapkan selisihnya (stok SO dikurangi
+     *   stok sistem saat scan), sehingga penjualan setelah scan tidak terhapus.
+     * - Pakai stok sistem: fisiknya dinyatakan PJ sama dengan stok sistem, jadi catatan SO yang
+     *   disamakan lewat satu baris koreksi atas nama PJ beserta alasannya. Keputusannya dilepas
+     *   sehingga produk ini terhitung sesuai di laporan; jejaknya ada di baris koreksi itu.
+     */
+    public function applyLocked(ProductOpnameSession $session): void
+    {
+        $employeeId = $this->employeeId();
+
+        $rows = DB::table('product_opname_session_reviews')
+            ->where('session_id', $session->id)
+            ->whereNull('product_opname_service_detail_id')
+            ->where('difference_stock', '<>', 0)
+            ->orderBy('product_id')
+            ->get();
+
+        foreach ($rows as $row) {
+            if ((int) $row->decision === OpnameReviewDecision::Accepted->value) {
+                $detailId = $this->applyToStock($session, $row, $row->note, $employeeId);
+
+                DB::table('product_opname_session_reviews')
+                    ->where('session_id', $session->id)
+                    ->where('product_id', $row->product_id)
+                    ->update(['product_opname_service_detail_id' => $detailId]);
+
+                continue;
+            }
+
+            $this->recordPicCorrection($session, $row, $employeeId);
+
+            DB::table('product_opname_session_reviews')
+                ->where('session_id', $session->id)
+                ->where('product_id', $row->product_id)
+                ->delete();
+        }
+    }
+
+    private function recordPicCorrection(ProductOpnameSession $session, object $row, int $employeeId): void
+    {
+        $product = DB::table('products')->where('id', $row->product_id)->first(['barcode', 'sku']);
+
+        $data = [
+            'uuid' => (string) Str::uuid(),
+            'session_id' => $session->id,
+            'product_id' => (int) $row->product_id,
+            'barcode' => $product->barcode ?? $product->sku ?? '',
+            // Stok sistem dikurangi stok SO: plus bila tidak ter-scan, minus bila kelebihan.
+            'qty' => (int) $row->recorded_stock - (int) $row->counted_stock,
+            'recorded_stock' => (int) $row->recorded_stock,
+            'ins_date' => now(),
+            'ins_by' => $employeeId,
+        ];
+
+        if (ProductOpnameSessionScan::supportsCorrections()) {
+            $data['reason'] = Str::limit(ProductOpnameScanService::PJ_CORRECTION_PREFIX.$row->note, 255, '');
+        }
+
+        ProductOpnameSessionScan::query()->insert($data);
+    }
+
+    private function lockedReviewSession(ProductOpnameSession $session): ProductOpnameSession
+    {
+        $locked = ProductOpnameSession::query()->lockForUpdate()->findOrFail($session->id);
+
+        if ($locked->currentStatus() !== OpnameSessionStatus::Review) {
+            $this->fail('Sesi tidak sedang dalam tahap review.');
+        }
+
+        return $locked;
     }
 
     /**
@@ -440,16 +518,12 @@ class ProductOpnameReviewService
     {
         return DB::query()
             ->fromSub($this->rows($session), 'rows')
-            // Produk yang ditolak hilang dari tampilan, keputusannya tetap tersimpan.
-            ->where(fn (Builder $query) => $query
-                ->whereNull('decision')
-                ->orWhere('decision', '<>', OpnameReviewDecision::Rejected->value))
             ->when($filter === 'difference', fn (Builder $query) => $query->where('difference_stock', '<>', 0))
             ->when($filter === 'matched', fn (Builder $query) => $query->where('difference_stock', 0));
     }
 
     /**
-     * Satu baris per produk. Stok sistem: nilai saat diputuskan, lalu stok saat scan pertama,
+     * Satu baris per produk. Stok sistem: nilai saat dikunci, lalu stok saat scan pertama,
      * lalu stok terkini untuk barang yang tidak ter-scan.
      */
     private function rows(ProductOpnameSession $session): Builder
@@ -502,7 +576,7 @@ class ProductOpnameReviewService
 
     /**
      * MySQL mengembalikan hasil SUM sebagai teks ("0"), sedangkan tampilan membandingkan
-     * angka secara ketat. Tanpa ini baris cocok ikut memunculkan tombol terima dan tolak.
+     * angka secara ketat. Tanpa ini baris cocok ikut memunculkan pilihan stok SO dan sistem.
      */
     private function castRow(object $row): object
     {

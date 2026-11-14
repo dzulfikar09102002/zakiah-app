@@ -13,7 +13,6 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class ProductOpnameSessionService
@@ -51,6 +50,8 @@ class ProductOpnameSessionService
             ->when($endAt, fn (Builder $query) => $query->where('opname_date', '<=', $endAt->toDateString()))
             ->when($selectAll && count($excludeLocs), fn (Builder $query) => $query->whereNotIn('location_id', $excludeLocs))
             ->when(! $selectAll && count($locs), fn (Builder $query) => $query->whereIn('location_id', $locs))
+            // Tanggal SO terbaru di atas; di tanggal yang sama, yang terakhir dibuat lebih dulu.
+            ->orderByDesc('opname_date')
             ->latest('id')
             ->paginate(request('per_page', 10))
             ->withQueryString()
@@ -77,8 +78,6 @@ class ProductOpnameSessionService
                 'location:id,name',
                 'pic:id,first_name,last_name',
                 'employees:id,first_name,last_name',
-                'parent:id,code,entity_id,location_id',
-                'children:id,parent_session_id,code,type,opname_date,start_at,review_at,end_at',
             ])
             ->findOrFail($id);
     }
@@ -98,7 +97,7 @@ class ProductOpnameSessionService
                 'entity_id' => $this->entityId(),
                 'location_id' => $data['location_id'],
                 'type' => OpnameSessionType::Opname->value,
-                'code' => $this->generateCode('SO', $data['opname_date']),
+                'code' => $this->generateCode('SO', $data['opname_date'], (int) $data['location_id']),
                 'opname_date' => $data['opname_date'],
                 'pic_employee_id' => $data['pic_employee_id'],
                 'start_at' => $startNow ? now() : null,
@@ -165,13 +164,12 @@ class ProductOpnameSessionService
     public function closeScan(ProductOpnameSession $session): void
     {
         $this->ensureSessionStatus($session, OpnameSessionStatus::Started);
-        $this->ensureOpnameType($session);
 
         $this->touchSession($session, ['review_at' => now()]);
     }
 
     /**
-     * Buka scan lagi untuk hitung ulang. Produk yang sudah diputuskan tetap final.
+     * Buka scan lagi untuk hitung ulang. Produk yang sudah dikunci tetap terkunci.
      */
     public function reopenScan(ProductOpnameSession $session): void
     {
@@ -180,31 +178,26 @@ class ProductOpnameSessionService
         $this->touchSession($session, ['review_at' => null]);
     }
 
+    /**
+     * Simpan hasil review dan tutup sesi. Hanya bisa bila semua selisih sudah dikunci;
+     * di sinilah stok bergerak untuk selisih yang memakai stok SO.
+     */
     public function finish(ProductOpnameSession $session): void
     {
         DB::transaction(function () use ($session) {
             $locked = ProductOpnameSession::query()->lockForUpdate()->findOrFail($session->id);
 
-            if ($locked->sessionType() === OpnameSessionType::Revision) {
-                $this->ensureSessionStatus($locked, OpnameSessionStatus::Started);
+            $this->ensureSessionStatus($locked, OpnameSessionStatus::Review);
 
-                if (! DB::table('product_opname_session_revisions')->where('session_id', $locked->id)->exists()) {
-                    throw ValidationException::withMessages([
-                        'session' => 'Belum ada hasil revisi yang disimpan.',
-                    ]);
-                }
-            } else {
-                $this->ensureSessionStatus($locked, OpnameSessionStatus::Review);
+            $pending = $this->reviews->summary($locked)['pending'];
 
-                $pending = $this->reviews->summary($locked)['pending'];
-
-                if ($pending > 0) {
-                    throw ValidationException::withMessages([
-                        'session' => "Masih ada {$pending} produk selisih yang belum diputuskan.",
-                    ]);
-                }
+            if ($pending > 0) {
+                throw ValidationException::withMessages([
+                    'session' => "Masih ada {$pending} produk selisih yang belum dikunci.",
+                ]);
             }
 
+            $this->reviews->applyLocked($locked);
             $this->touchSession($locked, ['end_at' => now()]);
         });
     }
@@ -247,46 +240,7 @@ class ProductOpnameSessionService
         return $session->product_opname_service_id !== null
             || $session->product_adjustment_stock_id !== null
             || DB::table('product_opname_session_scans')->where('session_id', $session->id)->exists()
-            || DB::table('product_opname_session_reviews')->where('session_id', $session->id)->exists()
-            || DB::table('product_opname_session_revisions')->where('session_id', $session->id)->exists();
-    }
-
-    /**
-     * Buat sesi Revisi SO dari sesi SO yang sudah selesai. Revisi langsung berjalan
-     * dan hanya berisi produk selisih yang diterima pada sesi asal.
-     */
-    public function createRevision(ProductOpnameSession $parent): ProductOpnameSession
-    {
-        $this->ensureSessionStatus($parent, OpnameSessionStatus::Finished);
-        $this->ensureOpnameType($parent);
-        $employeeId = $this->employeeId();
-
-        return DB::transaction(function () use ($parent, $employeeId) {
-            if (! $this->reviews->attachmentRows($parent)->count()) {
-                throw ValidationException::withMessages([
-                    'session' => 'Tidak ada produk selisih yang perlu direvisi.',
-                ]);
-            }
-
-            $this->ensureLocationFree($parent->location_id);
-
-            $session = ProductOpnameSession::create([
-                'entity_id' => $parent->entity_id,
-                'location_id' => $parent->location_id,
-                'type' => OpnameSessionType::Revision->value,
-                'parent_session_id' => $parent->id,
-                'code' => $this->generateCode('RSO', now()->toDateString()),
-                'opname_date' => now()->toDateString(),
-                'pic_employee_id' => $parent->pic_employee_id,
-                'start_at' => now(),
-                'ins_date' => now(),
-                'ins_by' => $employeeId,
-            ]);
-
-            $this->syncEmployees($session, [$parent->pic_employee_id], $employeeId);
-
-            return $session;
-        });
+            || DB::table('product_opname_session_reviews')->where('session_id', $session->id)->exists();
     }
 
     public function isMember(ProductOpnameSession $session): bool
@@ -308,10 +262,6 @@ class ProductOpnameSessionService
      */
     public function canCorrect(ProductOpnameSession $session): bool
     {
-        if ($session->sessionType() === OpnameSessionType::Revision) {
-            return false;
-        }
-
         return match ($session->currentStatus()) {
             OpnameSessionStatus::Started => $this->isMember($session),
             OpnameSessionStatus::Review => $this->isPic($session),
@@ -470,17 +420,30 @@ class ProductOpnameSessionService
         }
     }
 
-    private function ensureOpnameType(ProductOpnameSession $session): void
+    /**
+     * Format seperti nomor invoice: SO/20261114/<initial toko>.
+     * Kalau toko yang sama punya sesi lain di tanggal itu, diberi akhiran /2, /3, dst.
+     */
+    private function generateCode(string $prefix, string $date, int $locationId): string
     {
-        if ($session->sessionType() !== OpnameSessionType::Opname) {
-            throw ValidationException::withMessages([
-                'session' => 'Aksi ini hanya untuk sesi Stok Opname.',
-            ]);
-        }
-    }
+        $initial = DB::table('locations')->where('id', $locationId)->value('initial') ?: (string) $locationId;
+        $base = $prefix.'/'.Carbon::parse($date)->format('Ymd').'/'.$initial;
 
-    private function generateCode(string $prefix, string $date): string
-    {
-        return $prefix.'-'.Carbon::parse($date)->format('ymd').'-'.Str::upper(Str::random(5));
+        $taken = ProductOpnameSession::query()
+            ->where('entity_id', $this->entityId())
+            ->where(fn (Builder $query) => $query->where('code', $base)->orWhereLike('code', $base.'/%'))
+            ->pluck('code');
+
+        if (! $taken->contains($base)) {
+            return $base;
+        }
+
+        $sequence = 2;
+
+        while ($taken->contains($base.'/'.$sequence)) {
+            $sequence++;
+        }
+
+        return $base.'/'.$sequence;
     }
 }

@@ -16,7 +16,6 @@ export type OpnameSession = {
     location_id: number;
     opname_date: string;
     pic_employee_id: number;
-    parent_session_id: number | null;
     start_at: string | null;
     review_at: string | null;
     end_at: string | null;
@@ -26,11 +25,6 @@ export type OpnameSession = {
     employees?: SessionEmployee[];
     employees_count?: number;
     can_enter?: boolean;
-    parent?: { id: number; code: string } | null;
-    children?: Pick<
-        OpnameSession,
-        'id' | 'code' | 'type' | 'opname_date' | 'status'
-    >[];
 };
 
 export type Viewer = {
@@ -81,7 +75,7 @@ export type ReviewRow = {
     scanned: number;
     decision: number | null;
     note: string | null;
-    /** Hanya terisi di tabel review, tidak di lampiran revisi. */
+    /** Hanya terisi di tabel review. */
     scanners?: { name: string; qty: number }[];
     rapid_repeats?: number;
     cancelled_scans?: number;
@@ -92,6 +86,8 @@ export type ProductScan = {
     barcode: string;
     scanned_at: string;
     employee: string;
+    /** Ditambah manual lewat tombol Tambah Scan, bukan dari barcode. */
+    manual: boolean;
     cancelled: boolean;
     reason: string | null;
     cancelled_at: string | null;
@@ -119,24 +115,7 @@ export type ReviewData = {
     search: string;
 };
 
-export type RevisionRow = {
-    product_id: number;
-    seq: number;
-    name: string;
-    barcode: string | null;
-    sku: string | null;
-    adjustment_qty: number;
-    reason: number;
-    reason_label: string;
-    note: string | null;
-};
-
-export type RevisionData = {
-    products: ReviewRow[];
-    rows: RevisionRow[];
-    reasons: { value: number; label: string }[];
-};
-
+/** Pakai stok hasil SO: stok sistem disesuaikan saat sesi ditutup. */
 export const DECISION_ACCEPTED = 1;
+/** Pakai stok sistem yang sudah ada: stok tidak berubah. */
 export const DECISION_REJECTED = 2;
-export const REASON_LOST = 3;

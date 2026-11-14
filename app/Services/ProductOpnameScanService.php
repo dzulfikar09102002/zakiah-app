@@ -22,6 +22,18 @@ class ProductOpnameScanService
 {
     use HandlesStockDocuments;
 
+    /** Batas tambah scan manual sekali simpan, supaya salah ketik tidak menambah ribuan baris. */
+    public const MAX_MANUAL_QTY = 500;
+
+    /** Penanda baris tambah manual, supaya bisa dibedakan dari scan barcode di rincian. */
+    public const MANUAL_REASON = 'Tambah scan manual';
+
+    /**
+     * Awalan baris koreksi PJ saat sesi ditutup: PJ memilih stok sistem, artinya fisiknya
+     * dinyatakan sama dengan stok sistem, jadi catatan SO disamakan. Diikuti alasan PJ.
+     */
+    public const PJ_CORRECTION_PREFIX = 'Koreksi PJ: ';
+
     /**
      * @param  array{uuid: string, barcode?: string|null, product_id?: int|null}  $data
      * @return array{product_id: int, name: string, counted: int}
@@ -80,7 +92,7 @@ class ProductOpnameScanService
             ->where('s.qty', '>', 0)
             ->orderByDesc('s.id')
             ->get([
-                's.id', 's.barcode', 's.ins_date', 'e.first_name', 'e.last_name',
+                's.id', 's.barcode', 's.ins_date', 's.reason as scan_reason', 'e.first_name', 'e.last_name',
                 'c.id as correction_id', 'c.reason', 'c.ins_date as cancelled_at',
                 'ce.first_name as cancelled_first_name', 'ce.last_name as cancelled_last_name',
             ])
@@ -89,6 +101,7 @@ class ProductOpnameScanService
                 'barcode' => $row->barcode,
                 'scanned_at' => Carbon::parse($row->ins_date)->toIso8601String(),
                 'employee' => trim($row->first_name.' '.$row->last_name),
+                'manual' => $row->scan_reason === self::MANUAL_REASON,
                 'cancelled' => $row->correction_id !== null,
                 'reason' => $row->reason,
                 'cancelled_at' => $row->cancelled_at ? Carbon::parse($row->cancelled_at)->toIso8601String() : null,
@@ -97,14 +110,58 @@ class ProductOpnameScanService
     }
 
     /**
-     * Koreksi scan: scan lama tidak diubah, ditambah satu baris qty -1 yang menunjuk scan itu.
-     * Anggota sesi boleh selama scan dibuka; setelah scan ditutup hanya PJ.
+     * Tambah scan manual: dicatat sebagai $qty baris qty 1, sama seperti scan barcode,
+     * supaya jumlah tetap SUM(qty) dan tiap baris tetap bisa dibatalkan satu per satu.
+     * Hak aksesnya sama dengan batalkan scan.
      */
-    public function cancelScan(ProductOpnameSession $session, int $scanId, string $reason, bool $isPic): void
+    public function addScans(ProductOpnameSession $session, int $productId, int $qty, bool $isPic): void
     {
         $employeeId = $this->employeeId();
+        $product = $this->resolveProduct(['product_id' => $productId]);
 
-        DB::transaction(function () use ($session, $scanId, $reason, $employeeId, $isPic) {
+        DB::transaction(function () use ($session, $product, $qty, $employeeId, $isPic) {
+            $locked = ProductOpnameSession::query()->lockForUpdate()->findOrFail($session->id);
+            $status = $locked->currentStatus();
+
+            if (! in_array($status, [OpnameSessionStatus::Started, OpnameSessionStatus::Review], true)) {
+                $this->fail('Scan hanya bisa ditambah sebelum sesi selesai.');
+            }
+
+            // Dicek ulang di dalam kunci: PJ bisa saja menutup scan tepat sebelum ini.
+            if (! $isPic && $status !== OpnameSessionStatus::Started) {
+                $this->fail('Scan sudah ditutup, hanya PJ SO yang bisa menambah scan.');
+            }
+
+            $this->ensureNotDecided($locked, $product);
+
+            $now = now();
+            $recordedStock = $this->liveStock($product->id, $locked->location_id);
+
+            ProductOpnameSessionScan::query()->insert(array_map(fn () => [
+                'uuid' => (string) Str::uuid(),
+                'session_id' => $locked->id,
+                'product_id' => $product->id,
+                'barcode' => $product->barcode ?? $product->sku ?? '',
+                'qty' => 1,
+                'recorded_stock' => $recordedStock,
+                'reason' => self::MANUAL_REASON,
+                'ins_date' => $now,
+                'ins_by' => $employeeId,
+            ], range(1, $qty)));
+        });
+    }
+
+    /**
+     * Batalkan $qty scan sekaligus, mulai dari scan terbaru yang masih berlaku. Setiap scan
+     * mendapat satu baris qty -1 yang menunjuknya, sama seperti membatalkan satu per satu.
+     * Hak aksesnya sama dengan tambah scan.
+     */
+    public function cancelScans(ProductOpnameSession $session, int $productId, int $qty, string $reason, bool $isPic): void
+    {
+        $employeeId = $this->employeeId();
+        $product = $this->resolveProduct(['product_id' => $productId]);
+
+        DB::transaction(function () use ($session, $product, $qty, $reason, $employeeId, $isPic) {
             $locked = ProductOpnameSession::query()->lockForUpdate()->findOrFail($session->id);
             $status = $locked->currentStatus();
 
@@ -112,44 +169,44 @@ class ProductOpnameScanService
                 $this->fail('Scan hanya bisa dibatalkan sebelum sesi selesai.');
             }
 
-            // Dicek ulang di dalam kunci: PJ bisa saja menutup scan tepat sebelum ini.
             if (! $isPic && $status !== OpnameSessionStatus::Started) {
                 $this->fail('Scan sudah ditutup, hanya PJ SO yang bisa membatalkan scan.');
             }
 
-            $scan = ProductOpnameSessionScan::query()
-                ->where('session_id', $locked->id)
-                ->where('qty', '>', 0)
-                ->find($scanId);
+            $this->ensureNotDecided($locked, $product);
 
-            if (! $scan) {
-                $this->fail('Scan tidak ditemukan.');
+            $targets = DB::table('product_opname_session_scans as s')
+                ->leftJoin('product_opname_session_scans as c', 'c.cancelled_scan_id', '=', 's.id')
+                ->where('s.session_id', $locked->id)
+                ->where('s.product_id', $product->id)
+                ->where('s.qty', '>', 0)
+                ->whereNull('c.id')
+                ->orderByDesc('s.id')
+                ->limit($qty)
+                ->get(['s.id', 's.barcode', 's.recorded_stock']);
+
+            if ($targets->count() < $qty) {
+                $this->fail("Scan berlaku hanya {$targets->count()}, tidak bisa dibatalkan {$qty}.");
             }
 
-            $decided = DB::table('product_opname_session_reviews')
-                ->where('session_id', $locked->id)
-                ->where('product_id', $scan->product_id)
-                ->exists();
-
-            if ($decided) {
-                $this->fail('Produk ini sudah diputuskan, koreksi hanya lewat Revisi SO.');
-            }
+            $now = now();
 
             try {
-                ProductOpnameSessionScan::query()->create([
+                ProductOpnameSessionScan::query()->insert($targets->map(fn (object $scan) => [
                     'uuid' => (string) Str::uuid(),
                     'session_id' => $locked->id,
-                    'product_id' => $scan->product_id,
+                    'product_id' => $product->id,
                     'barcode' => $scan->barcode,
                     'qty' => -1,
                     'recorded_stock' => $scan->recorded_stock,
                     'cancelled_scan_id' => $scan->id,
                     'reason' => $reason,
-                    'ins_date' => now(),
+                    'ins_date' => $now,
                     'ins_by' => $employeeId,
-                ]);
+                ])->all());
             } catch (UniqueConstraintViolationException) {
-                $this->fail('Scan ini sudah dibatalkan.');
+                // Orang lain membatalkan scan yang sama di saat bersamaan.
+                $this->fail('Sebagian scan baru saja dibatalkan orang lain, silakan coba lagi.');
             }
         });
     }
@@ -252,7 +309,7 @@ class ProductOpnameScanService
             ->exists();
 
         if ($decided) {
-            $this->fail("{$product->name} sudah diputuskan PJ, tidak bisa di-scan lagi.");
+            $this->fail("{$product->name} sudah dikunci di review. Buka kuncinya dulu untuk mengubah hitungan.");
         }
     }
 

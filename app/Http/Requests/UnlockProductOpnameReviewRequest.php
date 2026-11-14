@@ -2,12 +2,10 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\OpnameReviewDecision;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class DecideProductOpnameReviewRequest extends FormRequest
+class UnlockProductOpnameReviewRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -21,8 +19,6 @@ class DecideProductOpnameReviewRequest extends FormRequest
     {
         return [
             'product_id' => ['required', 'integer'],
-            'decision' => ['required', Rule::enum(OpnameReviewDecision::class)],
-            'note' => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

@@ -3,21 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OpnameReviewDecision;
-use App\Enums\OpnameRevisionReason;
 use App\Enums\OpnameSessionStatus;
-use App\Enums\OpnameSessionType;
-use App\Http\Requests\CancelProductOpnameScanRequest;
-use App\Http\Requests\DecideProductOpnameReviewRequest;
+use App\Http\Requests\AddProductOpnameScansRequest;
+use App\Http\Requests\CancelProductOpnameScansRequest;
 use App\Http\Requests\FinishProductOpnameSessionRequest;
-use App\Http\Requests\StoreProductOpnameRevisionRequest;
+use App\Http\Requests\LockProductOpnameReviewRequest;
 use App\Http\Requests\StoreProductOpnameScanRequest;
 use App\Http\Requests\StoreProductOpnameSessionRequest;
+use App\Http\Requests\UnlockProductOpnameReviewRequest;
 use App\Models\ProductOpnameSession;
 use App\Models\ProductOpnameSessionScan;
 use App\Services\DocumentSignatureService;
 use App\Services\ProductOpnameReportService;
 use App\Services\ProductOpnameReviewService;
-use App\Services\ProductOpnameRevisionService;
 use App\Services\ProductOpnameScanService;
 use App\Services\ProductOpnameSessionService;
 use Illuminate\Http\JsonResponse;
@@ -33,7 +31,6 @@ class ProductOpnameSessionController extends Controller
         protected ProductOpnameSessionService $sessions,
         protected ProductOpnameScanService $scans,
         protected ProductOpnameReviewService $reviews,
-        protected ProductOpnameRevisionService $revisions,
     ) {}
 
     public function index(): Response
@@ -70,10 +67,7 @@ class ProductOpnameSessionController extends Controller
 
         $status = $session->currentStatus();
         $isPic = $this->sessions->isPic($session);
-        $isRevision = $session->sessionType() === OpnameSessionType::Revision;
-
-        $canSeeReview = ! $isRevision
-            && ($status === OpnameSessionStatus::Finished || ($status === OpnameSessionStatus::Review && $isPic));
+        $canSeeReview = ($status === OpnameSessionStatus::Finished || ($status === OpnameSessionStatus::Review && $isPic));
 
         $filter = in_array($request->query('filter'), ['all', 'difference', 'matched'], true)
             ? (string) $request->query('filter')
@@ -95,12 +89,6 @@ class ProductOpnameSessionController extends Controller
                 'suspect_count' => $this->reviews->suspectCount($session),
                 'filter' => $filter,
                 'search' => $search,
-            ] : null,
-            'revision' => $isRevision ? [
-                'products' => $this->revisions->eligibleProducts($session)->values(),
-                'rows' => $this->revisions->rows($session)->values(),
-                'reasons' => collect(OpnameRevisionReason::cases())
-                    ->map(fn (OpnameRevisionReason $reason) => ['value' => $reason->value, 'label' => $reason->label()]),
             ] : null,
         ]);
     }
@@ -192,7 +180,7 @@ class ProductOpnameSessionController extends Controller
     {
         $this->sessions->finish($this->picSession($id));
 
-        return back()->with('success', 'Sesi diakhiri, laporan sudah tersedia');
+        return back()->with('success', 'Hasil review disimpan, sesi SO ditutup');
     }
 
     public function cancel(int $id): RedirectResponse
@@ -224,13 +212,28 @@ class ProductOpnameSessionController extends Controller
         return response()->json($this->scans->productScans($session, $productId));
     }
 
-    public function cancelScan(CancelProductOpnameScanRequest $request, int $id, int $scanId): JsonResponse
+    public function addScans(AddProductOpnameScansRequest $request, int $id, int $productId): JsonResponse
     {
         $session = $this->correctableSession($id);
 
-        $this->scans->cancelScan(
+        $this->scans->addScans(
             $session,
-            $scanId,
+            $productId,
+            (int) $request->validated('qty'),
+            $this->sessions->isPic($session),
+        );
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function cancelScans(CancelProductOpnameScansRequest $request, int $id, int $productId): JsonResponse
+    {
+        $session = $this->correctableSession($id);
+
+        $this->scans->cancelScans(
+            $session,
+            $productId,
+            (int) $request->validated('qty'),
             $request->validated('reason'),
             $this->sessions->isPic($session),
         );
@@ -246,30 +249,23 @@ class ProductOpnameSessionController extends Controller
         return response()->json($this->scans->live($session, (int) $request->query('since', 0)));
     }
 
-    public function decide(DecideProductOpnameReviewRequest $request, int $id): RedirectResponse
+    public function lockReview(LockProductOpnameReviewRequest $request, int $id): RedirectResponse
     {
         $data = $request->validated();
         $decision = OpnameReviewDecision::from((int) $data['decision']);
 
-        $this->reviews->decide($this->picSession($id), (int) $data['product_id'], $decision, $data['note'] ?? null);
+        $this->reviews->lock($this->picSession($id), (int) $data['product_id'], $decision, trim($data['note']));
 
         return back()->with('success', $decision === OpnameReviewDecision::Accepted
-            ? 'Revisi diterima, stok telah diperbarui'
-            : 'Revisi ditolak, stok tidak berubah');
+            ? 'Dikunci: pakai stok SO'
+            : 'Dikunci: pakai stok sistem');
     }
 
-    public function storeRevisionSession(int $id): RedirectResponse
+    public function unlockReview(UnlockProductOpnameReviewRequest $request, int $id): RedirectResponse
     {
-        $revision = $this->sessions->createRevision($this->picSession($id));
+        $this->reviews->unlock($this->picSession($id), (int) $request->validated('product_id'));
 
-        return to_route('product-opname-sessions.show', $revision->id)->with('success', 'Sesi Revisi SO dibuat');
-    }
-
-    public function storeRevision(StoreProductOpnameRevisionRequest $request, int $id): RedirectResponse
-    {
-        $this->revisions->store($this->picSession($id), $request->validated());
-
-        return back()->with('success', 'Hasil revisi disimpan');
+        return back()->with('success', 'Kunci dibuka, keputusan bisa diubah');
     }
 
     public function report(ProductOpnameReportService $report, int $id): HttpResponse

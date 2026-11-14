@@ -1,13 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import {
-    FileText,
-    Pencil,
-    Play,
-    QrCode,
-    RotateCcw,
-    Trash2,
-    XCircle,
-} from 'lucide-react';
+import { FileText, Pencil, Play, QrCode, Trash2, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import {
@@ -18,12 +10,10 @@ import {
     sessionEmployeeName,
 } from '@/components/stock-opname-session/helpers';
 import ReviewPanel from '@/components/stock-opname-session/review-panel';
-import RevisionPanel from '@/components/stock-opname-session/revision-panel';
 import ScanPanel from '@/components/stock-opname-session/scan-panel';
 import type {
     OpnameSession,
     ReviewData,
-    RevisionData,
     Viewer,
 } from '@/components/stock-opname-session/types';
 import {
@@ -46,14 +36,12 @@ type Props = {
     session: OpnameSession;
     viewer: Viewer;
     review: ReviewData | null;
-    revision: RevisionData | null;
 };
 
-export default function Show({ session, viewer, review, revision }: Props) {
+export default function Show({ session, viewer, review }: Props) {
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [confirmCancel, setConfirmCancel] = useState(false);
-    const isRevision = session.type === 2;
-    const title = isRevision ? 'Revisi SO' : 'Sesi SO';
+    const title = 'Sesi SO';
 
     return (
         <AppLayout
@@ -125,25 +113,6 @@ export default function Show({ session, viewer, review, revision }: Props) {
                                         .join(', ') || '-'}
                                 </dd>
                             </div>
-                            {session.parent && (
-                                <div className="col-span-2 lg:col-span-4">
-                                    <dt className="text-muted-foreground">
-                                        SO Asal
-                                    </dt>
-                                    <dd>
-                                        <Link
-                                            className="font-medium break-all text-primary underline"
-                                            href={
-                                                productOpnameSessions.show(
-                                                    session.parent.id,
-                                                ).url
-                                            }
-                                        >
-                                            {session.parent.code}
-                                        </Link>
-                                    </dd>
-                                </div>
-                            )}
                             {session.note && (
                                 <div className="col-span-2 lg:col-span-4">
                                     <dt className="text-muted-foreground">
@@ -212,7 +181,6 @@ export default function Show({ session, viewer, review, revision }: Props) {
                 )}
 
                 {viewer.is_pic &&
-                    !isRevision &&
                     (session.status === 'scheduled' ||
                         session.status === 'started') && (
                         <Button
@@ -241,92 +209,27 @@ export default function Show({ session, viewer, review, revision }: Props) {
                     </Button>
                 )}
 
-                {revision && (
-                    <RevisionPanel
-                        session={session}
-                        viewer={viewer}
-                        revision={revision}
-                    />
-                )}
-
-                {!isRevision && session.status === 'started' && (
+                {session.status === 'started' && (
                     <ScanPanel session={session} viewer={viewer} />
                 )}
 
-                {!isRevision &&
-                    session.status === 'review' &&
-                    !viewer.is_pic && (
-                        <p className="rounded-lg border p-4 text-center text-sm text-muted-foreground">
-                            Scan sudah ditutup. PJ SO sedang mereview hasilnya.
-                        </p>
-                    )}
-
-                {!isRevision && session.status === 'finished' && (
-                    <div className="flex flex-col gap-2 md:flex-row">
-                        <Button className="h-11 md:h-9" asChild>
-                            <a
-                                href={
-                                    productOpnameSessions.report(session.id).url
-                                }
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                <FileText /> Lihat Laporan Hasil SO
-                            </a>
-                        </Button>
-                        {viewer.is_pic && (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="h-11 md:h-9"
-                                onClick={() =>
-                                    postSessionAction(
-                                        productOpnameSessions.storeRevisionSession(
-                                            session.id,
-                                        ).url,
-                                        {},
-                                        { success: 'Sesi Revisi SO dibuat' },
-                                    )
-                                }
-                            >
-                                <RotateCcw /> Buat Revisi SO
-                            </Button>
-                        )}
-                    </div>
+                {session.status === 'review' && !viewer.is_pic && (
+                    <p className="rounded-lg border p-4 text-center text-sm text-muted-foreground">
+                        Scan sudah ditutup. PJ SO sedang mereview hasilnya.
+                    </p>
                 )}
 
-                {!isRevision &&
-                    session.status === 'finished' &&
-                    !!session.children?.length && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Riwayat Revisi</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <ul className="divide-y rounded-lg border">
-                                    {session.children.map((child) => (
-                                        <li key={child.id}>
-                                            <Link
-                                                href={
-                                                    productOpnameSessions.show(
-                                                        child.id,
-                                                    ).url
-                                                }
-                                                className="flex min-h-11 items-center justify-between gap-2 p-3"
-                                            >
-                                                <span className="min-w-0 break-all">
-                                                    {child.code}
-                                                </span>
-                                                <SessionStatusBadge
-                                                    status={child.status}
-                                                />
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </CardContent>
-                        </Card>
-                    )}
+                {session.status === 'finished' && (
+                    <Button className="h-11 w-full md:h-9 md:w-auto" asChild>
+                        <a
+                            href={productOpnameSessions.report(session.id).url}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            <FileText /> Lihat Laporan Hasil SO
+                        </a>
+                    </Button>
+                )}
 
                 {review && (
                     <ReviewPanel

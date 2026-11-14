@@ -5,6 +5,7 @@ use App\Models\User;
 use App\Services\DocumentSignatureService;
 use App\Services\ProductOpnameReviewService;
 use App\Services\ProductOpnameScanService;
+use App\Services\ProductOpnameSessionService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -55,6 +56,7 @@ beforeEach(function () {
         $table->id();
         $table->unsignedBigInteger('entity_id');
         $table->string('name');
+        $table->string('initial')->nullable();
         $table->string('status')->default('active');
         $table->string('timezone')->nullable();
         $table->softDeletes();
@@ -248,9 +250,9 @@ beforeEach(function () {
 
     DB::table('entities')->insert(['id' => 1, 'name' => 'Toko Uji']);
     DB::table('locations')->insert([
-        ['id' => 2, 'entity_id' => 1, 'name' => 'Tulangan'],
-        ['id' => 3, 'entity_id' => 1, 'name' => 'ZAKIAH OFFICE'],
-        ['id' => 4, 'entity_id' => 1, 'name' => 'Mojosari'],
+        ['id' => 2, 'entity_id' => 1, 'name' => 'Tulangan', 'initial' => 'tul'],
+        ['id' => 3, 'entity_id' => 1, 'name' => 'ZAKIAH OFFICE', 'initial' => null],
+        ['id' => 4, 'entity_id' => 1, 'name' => 'Mojosari', 'initial' => null],
     ]);
     DB::table('roles')->insert([
         ['id' => 1, 'name' => 'Cashier', 'allow_pos' => true, 'allow_backoffice' => false],
@@ -335,18 +337,23 @@ beforeEach(function () {
         return $session->refresh();
     };
 
-    $this->decide = fn (ProductOpnameSession $session, int $productId, int $decision) => $this
-        ->actingAs($this->pic)
-        ->post(route('product-opname-sessions.decide', $session->id), [
+    $this->lock = fn (ProductOpnameSession $session, int $productId, int $decision, ?User $user = null) => $this
+        ->actingAs($user ?? $this->pic)
+        ->post(route('product-opname-sessions.lock-review', $session->id), [
             'product_id' => $productId,
             'decision' => $decision,
+            'note' => 'alasan uji',
         ]);
+
+    $this->unlock = fn (ProductOpnameSession $session, int $productId, ?User $user = null) => $this
+        ->actingAs($user ?? $this->pic)
+        ->post(route('product-opname-sessions.unlock-review', $session->id), ['product_id' => $productId]);
 
     $this->finishedSession = function (): ProductOpnameSession {
         $session = ($this->sessionInReview)();
 
-        ($this->decide)($session, 10, 1)->assertSessionHasNoErrors();
-        ($this->decide)($session, 11, 1)->assertSessionHasNoErrors();
+        ($this->lock)($session, 10, 1)->assertSessionHasNoErrors();
+        ($this->lock)($session, 11, 1)->assertSessionHasNoErrors();
 
         $this->actingAs($this->pic)
             ->post(route('product-opname-sessions.finish', $session->id), ['agreement' => true])
@@ -389,6 +396,48 @@ it('menjadwalkan sesi bila tidak langsung dimulai, dan hanya PJ yang bisa memula
     $this->actingAs($this->pic)->post(route('product-opname-sessions.start', $session->id))->assertRedirect();
 
     expect($session->refresh()->start_at)->not->toBeNull();
+});
+
+it('memberi kode sesi seperti nomor invoice: SO/tanggal/kode toko', function () {
+    $store = fn () => $this->actingAs($this->pic)->post(route('product-opname-sessions.store'), [
+        'location_id' => 2,
+        'opname_date' => '2026-11-14',
+        'pic_employee_id' => $this->picEmployee,
+        'employee_ids' => [$this->memberEmployee],
+        'start_now' => false,
+    ])->assertSessionHasNoErrors();
+
+    $store();
+    $store();
+
+    expect(ProductOpnameSession::query()->orderBy('id')->pluck('code')->all())
+        ->toBe(['SO/20261114/tul', 'SO/20261114/tul/2']);
+});
+
+it('mengurutkan daftar sesi dari tanggal SO terbaru', function () {
+    $store = fn (int $location, string $date) => $this->actingAs($this->pic)->post(route('product-opname-sessions.store'), [
+        'location_id' => $location,
+        'opname_date' => $date,
+        'pic_employee_id' => $this->picEmployee,
+        'employee_ids' => [$this->memberEmployee],
+        'start_now' => false,
+    ])->assertSessionHasNoErrors();
+
+    // Dibuat berurutan, tapi tanggal SO-nya tidak urut.
+    $store(2, now()->addDays(3)->toDateString());
+    $store(3, now()->addDays(5)->toDateString());
+    $store(4, now()->addDays(3)->toDateString());
+
+    $this->actingAs($this->pic);
+    $codes = app(ProductOpnameSessionService::class)->getSessions()->getCollection()
+        ->map(fn ($session) => [$session->opname_date->toDateString(), $session->location_id])
+        ->all();
+
+    expect($codes)->toBe([
+        [now()->addDays(5)->toDateString(), 3],
+        [now()->addDays(3)->toDateString(), 4],
+        [now()->addDays(3)->toDateString(), 2],
+    ]);
 });
 
 it('menolak karyawan di luar daftar', function () {
@@ -540,67 +589,159 @@ it('menampilkan barang tak ter-scan sebagai selisih, tanpa jasa, dengan filter d
             ->where('review.pagination.data.0.product_id', 12));
 });
 
-it('mengubah stok saat PJ menerima, dan menolak keputusan ganda', function () {
+it('mengunci keputusan sebagai draf, dan stok baru berubah saat sesi ditutup', function () {
     $session = ($this->sessionInReview)();
 
-    ($this->decide)($session, 10, 1)->assertSessionHasNoErrors();
+    ($this->lock)($session, 10, 1)->assertSessionHasNoErrors();
+
+    // Masih draf: stok dan dokumen belum tersentuh.
+    expect(($this->stock)(10))->toBe(5);
+    expect(DB::table('product_stock_movements')->count())->toBe(0);
+    expect(DB::table('product_opname_services')->count())->toBe(0);
+    expect(DB::table('product_opname_session_reviews')->where('product_id', 10)->value('note'))->toBe('alasan uji');
+
+    ($this->lock)($session, 10, 1)->assertSessionHasErrors('review');
+
+    // Buka kunci lalu ubah keputusan.
+    ($this->lock)($session, 11, 2)->assertSessionHasNoErrors();
+    ($this->unlock)($session, 11)->assertSessionHasNoErrors();
+    expect(DB::table('product_opname_session_reviews')->where('product_id', 11)->exists())->toBeFalse();
+    ($this->unlock)($session, 11)->assertSessionHasErrors('review');
+    ($this->lock)($session, 11, 1)->assertSessionHasNoErrors();
+
+    $this->actingAs($this->pic)
+        ->post(route('product-opname-sessions.finish', $session->id), ['agreement' => true])
+        ->assertSessionHasNoErrors();
 
     expect(($this->stock)(10))->toBe(3);
-    expect(DB::table('product_stock_movements')->where('product_id', 10)->count())->toBe(1);
-    expect(DB::table('product_opname_services')->value('status'))->toBe('approved');
-
-    ($this->decide)($session, 10, 1)->assertSessionHasErrors('review');
-
-    expect(($this->stock)(10))->toBe(3);
-    expect(DB::table('product_stock_movements')->where('product_id', 10)->count())->toBe(1);
-
     // Barang tak ter-scan: stok menjadi 0.
-    ($this->decide)($session, 11, 1)->assertSessionHasNoErrors();
     expect(($this->stock)(11))->toBe(0);
 
     $document = DB::table('product_opname_services')->first();
     expect((int) $document->difference_product_count)->toBe(2);
     expect((int) $document->difference_stock)->toBe(-9);
     expect(DB::table('product_opname_services')->count())->toBe(1);
+    expect(DB::table('product_opname_session_reviews')->whereNull('product_opname_service_detail_id')->count())->toBe(0);
+
+    // Setelah ditutup tidak bisa dibuka lagi.
+    ($this->unlock)($session, 10)->assertSessionHasErrors('review');
 });
 
-it('tidak mengubah stok saat ditolak, menyembunyikan baris, tapi tetap mencatatnya', function () {
+it('menerapkan selisih saat ditutup, sehingga penjualan setelah scan tidak terhapus', function () {
     $session = ($this->sessionInReview)();
 
-    ($this->decide)($session, 11, 2)->assertSessionHasNoErrors();
+    ($this->lock)($session, 10, 1)->assertSessionHasNoErrors();
+    ($this->lock)($session, 11, 2)->assertSessionHasNoErrors();
 
-    expect(($this->stock)(11))->toBe(7);
-    expect(DB::table('product_stock_movements')->count())->toBe(0);
-    expect(DB::table('product_opname_session_reviews')->where('product_id', 11)->value('decision'))->toEqual(2);
+    // Semalam terjual 1: stok sistem 5 menjadi 4 sebelum review ditutup.
+    DB::table('product_location_stocks')->where('product_id', 10)->update(['stock' => 4]);
+
+    $this->actingAs($this->pic)
+        ->post(route('product-opname-sessions.finish', $session->id), ['agreement' => true])
+        ->assertSessionHasNoErrors();
+
+    // Selisih SO -2 diterapkan ke stok terkini: 4 - 2 = 2.
+    expect(($this->stock)(10))->toBe(2);
+});
+
+it('mewajibkan pilihan stok dan alasan saat mengunci', function () {
+    $session = ($this->sessionInReview)();
+    $url = route('product-opname-sessions.lock-review', $session->id);
+
+    $this->actingAs($this->pic)->post($url, ['product_id' => 10, 'decision' => 1])->assertSessionHasErrors('note');
+    $this->actingAs($this->pic)->post($url, ['product_id' => 10, 'decision' => 1, 'note' => 'ok'])->assertSessionHasErrors('note');
+    $this->actingAs($this->pic)->post($url, ['product_id' => 10, 'note' => 'alasan uji'])->assertSessionHasErrors('decision');
+
+    expect(DB::table('product_opname_session_reviews')->count())->toBe(0);
+});
+
+it('tidak mengubah stok bila memakai stok sistem, lalu mencatatnya cocok lewat koreksi PJ', function () {
+    $session = ($this->sessionInReview)();
+
+    ($this->lock)($session, 11, 2)->assertSessionHasNoErrors();
 
     $this->actingAs($this->pic)
         ->get(route('product-opname-sessions.show', ['id' => $session->id, 'filter' => 'all']))
         ->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('review.pagination.data', 2)
+            ->has('review.pagination.data', 3)
             ->where('review.summary.rejected', 1)
+            ->where('review.summary.difference', 2)
             ->where('review.summary.pending', 1));
+
+    ($this->lock)($session, 10, 1)->assertSessionHasNoErrors();
+    $this->actingAs($this->pic)
+        ->post(route('product-opname-sessions.finish', $session->id), ['agreement' => true])
+        ->assertSessionHasNoErrors();
+
+    expect(($this->stock)(11))->toBe(7);
+    expect(DB::table('product_stock_movements')->where('product_id', 11)->count())->toBe(0);
+
+    // Tidak ter-scan: catatan SO ditambah 7 atas nama PJ, sehingga klop dengan stok sistem.
+    $correction = DB::table('product_opname_session_scans')->where('product_id', 11)->first();
+    expect((int) $correction->qty)->toBe(7)
+        ->and($correction->reason)->toBe(ProductOpnameScanService::PJ_CORRECTION_PREFIX.'alasan uji')
+        ->and((int) $correction->ins_by)->toBe($this->picEmployee);
+    expect(DB::table('product_opname_session_reviews')->where('product_id', 11)->exists())->toBeFalse();
+
+    // Terhitung sesuai, dan koreksi PJ tidak tampil sebagai scan petugas.
+    $this->actingAs($this->pic)
+        ->get(route('product-opname-sessions.show', ['id' => $session->id, 'filter' => 'matched']))
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('review.summary.matched', 2)
+            ->where('review.summary.difference', 1)
+            ->where('review.pagination.data', function ($rows) {
+                $row = collect($rows)->firstWhere('product_id', 11);
+
+                return $row['counted_stock'] === 7
+                    && $row['difference_stock'] === 0
+                    && $row['scanners'] === [];
+            }));
 });
 
-it('tidak butuh aksi untuk baris cocok, dan hanya PJ yang bisa memutuskan', function () {
+it('mencatat koreksi PJ minus bila hasil SO berlebih tapi memakai stok sistem', function () {
     $session = ($this->sessionInReview)();
 
-    ($this->decide)($session, 12, 1)->assertSessionHasErrors('review');
+    // Produk 12 (stok 1) ter-scan dua kali.
+    $this->actingAs($this->pic)->post(route('product-opname-sessions.reopen-scan', $session->id))->assertRedirect();
+    ($this->scan)($session, '333')->assertOk();
+    $this->actingAs($this->pic)->post(route('product-opname-sessions.close-scan', $session->id))->assertRedirect();
 
-    $this->actingAs($this->member)
-        ->post(route('product-opname-sessions.decide', $session->id), ['product_id' => 10, 'decision' => 1])
-        ->assertForbidden();
+    ($this->lock)($session, 10, 1)->assertSessionHasNoErrors();
+    ($this->lock)($session, 11, 2)->assertSessionHasNoErrors();
+    ($this->lock)($session, 12, 2)->assertSessionHasNoErrors();
+
+    $this->actingAs($this->pic)
+        ->post(route('product-opname-sessions.finish', $session->id), ['agreement' => true])
+        ->assertSessionHasNoErrors();
+
+    expect((int) DB::table('product_opname_session_scans')
+        ->where('product_id', 12)
+        ->where('reason', 'like', ProductOpnameScanService::PJ_CORRECTION_PREFIX.'%')
+        ->value('qty'))->toBe(-1);
+    expect((int) DB::table('product_opname_session_scans')->where('product_id', 12)->sum('qty'))->toBe(1);
+    expect(($this->stock)(12))->toBe(1);
+});
+
+it('tidak butuh kunci untuk baris cocok, dan hanya PJ yang bisa mengunci', function () {
+    $session = ($this->sessionInReview)();
+
+    ($this->lock)($session, 12, 1)->assertSessionHasErrors('review');
+    ($this->lock)($session, 10, 1, $this->member)->assertForbidden();
+
+    ($this->lock)($session, 10, 1)->assertSessionHasNoErrors();
+    ($this->unlock)($session, 10, $this->member)->assertForbidden();
 
     expect(($this->stock)(10))->toBe(5);
 });
 
-it('mewajibkan persetujuan dan semua selisih diputuskan sebelum sesi diakhiri', function () {
+it('mewajibkan persetujuan dan semua selisih dikunci sebelum sesi ditutup', function () {
     $session = ($this->sessionInReview)();
     $url = route('product-opname-sessions.finish', $session->id);
 
     $this->actingAs($this->pic)->post($url, ['agreement' => true])->assertSessionHasErrors('session');
 
-    ($this->decide)($session, 10, 1);
-    ($this->decide)($session, 11, 2);
+    ($this->lock)($session, 10, 1);
+    ($this->lock)($session, 11, 2);
 
     $this->actingAs($this->pic)->post($url, [])->assertSessionHasErrors('agreement');
     $this->actingAs($this->pic)->post($url, ['agreement' => false])->assertSessionHasErrors('agreement');
@@ -612,14 +753,21 @@ it('mewajibkan persetujuan dan semua selisih diputuskan sebelum sesi diakhiri', 
     expect($session->refresh()->status)->toBe('finished');
 });
 
-it('menolak scan produk yang sudah diputuskan setelah scan dibuka lagi', function () {
+it('menolak scan produk yang sudah dikunci sampai kuncinya dibuka', function () {
     $session = ($this->sessionInReview)();
 
-    ($this->decide)($session, 10, 1);
+    ($this->lock)($session, 10, 1);
     $this->actingAs($this->pic)->post(route('product-opname-sessions.reopen-scan', $session->id))->assertRedirect();
 
     ($this->scan)($session, '111')->assertUnprocessable();
     ($this->scan)($session, '222')->assertOk();
+
+    $this->actingAs($this->pic)->post(route('product-opname-sessions.close-scan', $session->id))->assertRedirect();
+    ($this->unlock)($session, 10)->assertSessionHasNoErrors();
+
+    $this->actingAs($this->pic)
+        ->postJson(route('product-opname-sessions.add-scans', ['id' => $session->id, 'productId' => 10]), ['qty' => 1])
+        ->assertOk();
 });
 
 it('membuat laporan PDF setelah selesai', function () {
@@ -659,55 +807,6 @@ it('memvalidasi QR tanpa login dan menolak key yang diubah', function () {
         ->assertInertia(fn (AssertableInertia $page) => $page->where('document', null));
     $this->get(route('validasi-dokumen'))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('document', null));
-});
-
-it('menggerakkan stok lewat Revisi SO hanya untuk produk lampiran', function () {
-    $parent = ($this->finishedSession)();
-
-    $this->actingAs($this->pic)
-        ->post(route('product-opname-sessions.store-revision-session', $parent->id))
-        ->assertSessionHasNoErrors();
-
-    $revision = ProductOpnameSession::query()->where('parent_session_id', $parent->id)->firstOrFail();
-    $url = route('product-opname-sessions.store-revision', $revision->id);
-
-    expect($revision->type)->toBe(2);
-    expect(($this->stock)(11))->toBe(0);
-
-    // Ketemu 2: stok bertambah.
-    $this->actingAs($this->pic)
-        ->post($url, ['product_id' => 11, 'adjustment_qty' => 2, 'reason' => 1])
-        ->assertSessionHasNoErrors();
-    expect(($this->stock)(11))->toBe(2);
-    expect(DB::table('product_adjustment_stocks')->value('status'))->toBe('approved');
-
-    // Hilang tidak mengubah stok.
-    $this->actingAs($this->pic)
-        ->post($url, ['product_id' => 11, 'adjustment_qty' => 0, 'reason' => 3])
-        ->assertSessionHasNoErrors();
-    expect(($this->stock)(11))->toBe(2);
-    expect(DB::table('product_opname_session_revisions')->where('product_id', 11)->max('seq'))->toEqual(2);
-
-    $this->actingAs($this->pic)
-        ->post($url, ['product_id' => 11, 'adjustment_qty' => 1, 'reason' => 3])
-        ->assertSessionHasErrors('revision');
-    $this->actingAs($this->pic)
-        ->post($url, ['product_id' => 11, 'adjustment_qty' => -5, 'reason' => 2])
-        ->assertSessionHasErrors('revision');
-
-    // Produk cocok tidak ada di lampiran.
-    $this->actingAs($this->pic)
-        ->post($url, ['product_id' => 12, 'adjustment_qty' => 1, 'reason' => 1])
-        ->assertSessionHasErrors('revision');
-
-    $this->actingAs($this->pic)
-        ->post(route('product-opname-sessions.finish', $revision->id), ['agreement' => true])
-        ->assertSessionHasNoErrors();
-
-    $this->actingAs($this->pic)
-        ->get(route('product-opname-sessions.report', ['id' => $revision->id, 'raw' => 1]))
-        ->assertOk()
-        ->assertHeader('Content-Type', 'application/pdf');
 });
 
 it('mengganti halaman SO lama dengan sesi SO', function () {
@@ -835,30 +934,27 @@ it('mengizinkan PJ membatalkan scan dengan alasan, tanpa mengubah baris lama', f
     ($this->scan)($session, '111')->assertOk();
     ($this->scan)($session, '111')->assertOk();
 
-    $scanId = (int) DB::table('product_opname_session_scans')->min('id');
-    $url = route('product-opname-sessions.cancel-scan', ['id' => $session->id, 'scanId' => $scanId]);
+    $newest = (int) DB::table('product_opname_session_scans')->max('id');
+    $url = route('product-opname-sessions.cancel-scans', ['id' => $session->id, 'productId' => 10]);
 
-    $this->actingAs($this->outsider)->postJson($url, ['reason' => 'salah scan'])->assertForbidden();
-    $this->actingAs($this->pic)->postJson($url, [])->assertUnprocessable();
-    $this->actingAs($this->pic)->postJson($url, ['reason' => 'x'])->assertUnprocessable();
+    $this->actingAs($this->outsider)->postJson($url, ['qty' => 1, 'reason' => 'salah scan'])->assertForbidden();
+    $this->actingAs($this->pic)->postJson($url, ['qty' => 1])->assertUnprocessable();
+    $this->actingAs($this->pic)->postJson($url, ['qty' => 1, 'reason' => 'x'])->assertUnprocessable();
 
     expect(DB::table('product_opname_session_scans')->count())->toBe(2);
 
-    $this->actingAs($this->pic)->postJson($url, ['reason' => 'ter-scan dua kali'])->assertOk();
+    $this->actingAs($this->pic)->postJson($url, ['qty' => 1, 'reason' => 'ter-scan dua kali'])->assertOk();
 
-    $original = DB::table('product_opname_session_scans')->find($scanId);
-    $correction = DB::table('product_opname_session_scans')->where('cancelled_scan_id', $scanId)->first();
+    $original = DB::table('product_opname_session_scans')->find($newest);
+    $correction = DB::table('product_opname_session_scans')->where('cancelled_scan_id', $newest)->first();
 
     expect((int) $original->qty)->toBe(1);
     expect((int) $correction->qty)->toBe(-1);
     expect($correction->reason)->toBe('ter-scan dua kali');
     expect((int) $correction->ins_by)->toBe($this->picEmployee);
 
-    // Tidak bisa dibatalkan dua kali, dan baris koreksi tidak bisa dibatalkan.
-    $this->actingAs($this->pic)->postJson($url, ['reason' => 'ter-scan dua kali'])->assertUnprocessable();
-    $this->actingAs($this->pic)
-        ->postJson(route('product-opname-sessions.cancel-scan', ['id' => $session->id, 'scanId' => $correction->id]), ['reason' => 'balik lagi'])
-        ->assertUnprocessable();
+    // Tinggal satu scan berlaku, jadi tidak bisa dibatalkan dua.
+    $this->actingAs($this->pic)->postJson($url, ['qty' => 2, 'reason' => 'ter-scan dua kali'])->assertUnprocessable();
 
     $live = $this->actingAs($this->member)
         ->getJson(route('product-opname-sessions.live', ['id' => $session->id, 'since' => 0]))
@@ -873,9 +969,9 @@ it('mengizinkan PJ membatalkan scan dengan alasan, tanpa mengubah baris lama', f
         ->getJson(route('product-opname-sessions.product-scans', ['id' => $session->id, 'productId' => 10]))
         ->assertOk()
         ->assertJsonCount(2)
-        ->assertJsonPath('1.cancelled', true)
-        ->assertJsonPath('1.reason', 'ter-scan dua kali')
-        ->assertJsonPath('0.cancelled', false);
+        ->assertJsonPath('0.cancelled', true)
+        ->assertJsonPath('0.reason', 'ter-scan dua kali')
+        ->assertJsonPath('1.cancelled', false);
 
     // Selama scan dibuka anggota sesi juga boleh melihat rincian, karyawan lain tidak.
     $this->actingAs($this->member)
@@ -894,16 +990,15 @@ it('mengizinkan anggota sesi membatalkan scan selama scan dibuka, dan hanya PJ s
     ($this->scan)($session, '111')->assertOk();
     ($this->scan)($session, '111')->assertOk();
 
-    [$first, $second] = DB::table('product_opname_session_scans')->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
-    $url = fn (int $scanId) => route('product-opname-sessions.cancel-scan', ['id' => $session->id, 'scanId' => $scanId]);
+    $url = route('product-opname-sessions.cancel-scans', ['id' => $session->id, 'productId' => 10]);
 
     $this->actingAs($this->member)
         ->get(route('product-opname-sessions.show', $session->id))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('viewer.can_correct', true));
 
-    $this->actingAs($this->member)->postJson($url($first), ['reason' => 'ter-scan dua kali'])->assertOk();
+    $this->actingAs($this->member)->postJson($url, ['qty' => 1, 'reason' => 'ter-scan dua kali'])->assertOk();
 
-    $correction = DB::table('product_opname_session_scans')->where('cancelled_scan_id', $first)->first();
+    $correction = DB::table('product_opname_session_scans')->whereNotNull('cancelled_scan_id')->first();
     expect((int) $correction->ins_by)->toBe($this->memberEmployee);
 
     $this->actingAs($this->pic)->post(route('product-opname-sessions.close-scan', $session->id))->assertRedirect();
@@ -912,31 +1007,93 @@ it('mengizinkan anggota sesi membatalkan scan selama scan dibuka, dan hanya PJ s
         ->get(route('product-opname-sessions.show', $session->id))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('viewer.can_correct', false));
 
-    $this->actingAs($this->member)->postJson($url($second), ['reason' => 'salah barang'])->assertForbidden();
+    $this->actingAs($this->member)->postJson($url, ['qty' => 1, 'reason' => 'salah barang'])->assertForbidden();
     $this->actingAs($this->member)
         ->getJson(route('product-opname-sessions.product-scans', ['id' => $session->id, 'productId' => 10]))
         ->assertForbidden();
 
     // Kalau PJ menutup scan tepat sebelum pembatalan anggota diproses, service tetap menolak.
-    expect(fn () => app(ProductOpnameScanService::class)->cancelScan($session->fresh(), $second, 'salah barang', false))
+    expect(fn () => app(ProductOpnameScanService::class)->cancelScans($session->fresh(), 10, 1, 'salah barang', false))
         ->toThrow(ValidationException::class);
 
     $this->actingAs($this->pic)
         ->get(route('product-opname-sessions.show', $session->id))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('viewer.can_correct', true));
 
-    $this->actingAs($this->pic)->postJson($url($second), ['reason' => 'salah barang'])->assertOk();
+    $this->actingAs($this->pic)->postJson($url, ['qty' => 1, 'reason' => 'salah barang'])->assertOk();
 
     expect((int) DB::table('product_opname_session_scans')->where('product_id', 10)->sum('qty'))->toBe(0);
 });
 
-it('mengubah angka review setelah koreksi, dan menolak koreksi produk yang sudah diputuskan', function () {
-    $session = ($this->sessionInReview)();
-    $first = (int) DB::table('product_opname_session_scans')->where('product_id', 10)->min('id');
+it('menambah scan manual sebagai baris qty 1 sebanyak jumlah yang diketik', function () {
+    $session = ($this->startSession)();
+    ($this->scan)($session, '111')->assertOk();
 
-    $this->actingAs($this->pic)
-        ->postJson(route('product-opname-sessions.cancel-scan', ['id' => $session->id, 'scanId' => $first]), ['reason' => 'dobel'])
-        ->assertOk();
+    $url = route('product-opname-sessions.add-scans', ['id' => $session->id, 'productId' => 10]);
+
+    $this->actingAs($this->member)->postJson($url, ['qty' => 0])->assertUnprocessable();
+    $this->actingAs($this->member)->postJson($url, ['qty' => 501])->assertUnprocessable();
+    $this->actingAs($this->member)->postJson($url, ['qty' => 4])->assertOk();
+
+    $rows = DB::table('product_opname_session_scans')->where('product_id', 10)->orderBy('id')->get();
+    expect($rows)->toHaveCount(5)
+        ->and($rows->sum('qty'))->toBe(5)
+        ->and($rows->where('reason', ProductOpnameScanService::MANUAL_REASON)->count())->toBe(4)
+        ->and((int) $rows->last()->ins_by)->toBe($this->memberEmployee);
+
+    $detail = $this->actingAs($this->member)
+        ->getJson(route('product-opname-sessions.product-scans', ['id' => $session->id, 'productId' => 10]))
+        ->assertOk()
+        ->json();
+    expect(array_column($detail, 'manual'))->toBe([true, true, true, true, false]);
+
+    // Jasa tidak dihitung, baik lewat scan maupun tambah manual.
+    $this->actingAs($this->member)
+        ->postJson(route('product-opname-sessions.add-scans', ['id' => $session->id, 'productId' => 13]), ['qty' => 1])
+        ->assertUnprocessable();
+
+    // Setelah scan ditutup hanya PJ yang bisa menambah.
+    $this->actingAs($this->pic)->post(route('product-opname-sessions.close-scan', $session->id))->assertRedirect();
+    $this->actingAs($this->member)->postJson($url, ['qty' => 1])->assertForbidden();
+    $this->actingAs($this->pic)->postJson($url, ['qty' => 1])->assertOk();
+
+    expect((int) DB::table('product_opname_session_scans')->where('product_id', 10)->sum('qty'))->toBe(6);
+});
+
+it('membatalkan beberapa scan sekaligus mulai dari yang terbaru', function () {
+    $session = ($this->startSession)();
+
+    foreach (range(1, 4) as $i) {
+        ($this->scan)($session, '111')->assertOk();
+    }
+
+    $ids = DB::table('product_opname_session_scans')->orderBy('id')->pluck('id')->map(fn ($id) => (int) $id)->all();
+    $url = route('product-opname-sessions.cancel-scans', ['id' => $session->id, 'productId' => 10]);
+
+    $this->actingAs($this->member)->postJson($url, ['qty' => 2])->assertUnprocessable();
+    $this->actingAs($this->member)->postJson($url, ['qty' => 5, 'reason' => 'Kelebihan Scan'])->assertUnprocessable();
+    $this->actingAs($this->member)->postJson($url, ['qty' => 2, 'reason' => 'Kelebihan Scan'])->assertOk();
+
+    $cancelled = DB::table('product_opname_session_scans')->whereNotNull('cancelled_scan_id')->orderBy('cancelled_scan_id')->get();
+    expect($cancelled->pluck('cancelled_scan_id')->map(fn ($id) => (int) $id)->all())->toBe([$ids[2], $ids[3]])
+        ->and($cancelled->every(fn ($row) => (int) $row->qty === -1 && $row->reason === 'Kelebihan Scan'))->toBeTrue();
+
+    // Pembatalan berikutnya melewati scan yang sudah dibatalkan.
+    $this->actingAs($this->member)->postJson($url, ['qty' => 2, 'reason' => 'Kelebihan Scan'])->assertOk();
+    $this->actingAs($this->member)->postJson($url, ['qty' => 1, 'reason' => 'Kelebihan Scan'])->assertUnprocessable();
+
+    expect((int) DB::table('product_opname_session_scans')->where('product_id', 10)->sum('qty'))->toBe(0);
+
+    $this->actingAs($this->pic)->post(route('product-opname-sessions.close-scan', $session->id))->assertRedirect();
+    ($this->scan)($session, '111', $this->pic)->assertUnprocessable();
+    $this->actingAs($this->member)->postJson($url, ['qty' => 1, 'reason' => 'Kelebihan Scan'])->assertForbidden();
+});
+
+it('mengubah angka review setelah koreksi, dan menolak koreksi produk yang sudah dikunci', function () {
+    $session = ($this->sessionInReview)();
+    $url = route('product-opname-sessions.cancel-scans', ['id' => $session->id, 'productId' => 10]);
+
+    $this->actingAs($this->pic)->postJson($url, ['qty' => 1, 'reason' => 'dobel'])->assertOk();
 
     $this->actingAs($this->pic)
         ->get(route('product-opname-sessions.show', ['id' => $session->id, 'search' => 'Scan Kurang']))
@@ -945,16 +1102,15 @@ it('mengubah angka review setelah koreksi, dan menolak koreksi produk yang sudah
             ->where('review.pagination.data.0.difference_stock', -3)
             ->where('review.pagination.data.0.cancelled_scans', 1));
 
-    ($this->decide)($session, 10, 1)->assertSessionHasNoErrors();
-    expect(($this->stock)(10))->toBe(2);
+    ($this->lock)($session, 10, 1)->assertSessionHasNoErrors();
 
-    $second = (int) DB::table('product_opname_session_scans')->where('product_id', 10)->where('qty', 1)->max('id');
+    $this->actingAs($this->pic)->postJson($url, ['qty' => 1, 'reason' => 'telat'])->assertUnprocessable();
 
-    $this->actingAs($this->pic)
-        ->postJson(route('product-opname-sessions.cancel-scan', ['id' => $session->id, 'scanId' => $second]), ['reason' => 'telat'])
-        ->assertUnprocessable();
+    // Buka kunci dulu, baru hitungan bisa diubah.
+    ($this->unlock)($session, 10)->assertSessionHasNoErrors();
+    $this->actingAs($this->pic)->postJson($url, ['qty' => 1, 'reason' => 'telat'])->assertOk();
 
-    expect(($this->stock)(10))->toBe(2);
+    expect(($this->stock)(10))->toBe(5);
 });
 
 it('menandai scan berdekatan, melebihi stok, dan rincian per petugas', function () {
@@ -1001,15 +1157,13 @@ it('menandai scan berdekatan, melebihi stok, dan rincian per petugas', function 
 
 it('mencatat jumlah koreksi di laporan tanpa error', function () {
     $session = ($this->sessionInReview)();
-    $first = (int) DB::table('product_opname_session_scans')->where('product_id', 12)->min('id');
-
     $this->actingAs($this->pic)
-        ->postJson(route('product-opname-sessions.cancel-scan', ['id' => $session->id, 'scanId' => $first]), ['reason' => 'salah barang'])
+        ->postJson(route('product-opname-sessions.cancel-scans', ['id' => $session->id, 'productId' => 12]), ['qty' => 1, 'reason' => 'salah barang'])
         ->assertOk();
 
-    ($this->decide)($session, 10, 1);
-    ($this->decide)($session, 11, 2);
-    ($this->decide)($session, 12, 2);
+    ($this->lock)($session, 10, 1);
+    ($this->lock)($session, 11, 2);
+    ($this->lock)($session, 12, 2);
 
     $this->actingAs($this->pic)
         ->post(route('product-opname-sessions.finish', $session->id), ['agreement' => true])
@@ -1047,10 +1201,8 @@ it('tetap bisa scan, melihat hasil, dan review walau SQL koreksi belum dijalanka
             ->where('viewer.can_correct', false)
             ->where('review.summary.pending', 3));
 
-    $scanId = (int) DB::table('product_opname_session_scans')->value('id');
-
     $this->actingAs($this->pic)
-        ->postJson(route('product-opname-sessions.cancel-scan', ['id' => $session->id, 'scanId' => $scanId]), ['reason' => 'salah scan'])
+        ->postJson(route('product-opname-sessions.cancel-scans', ['id' => $session->id, 'productId' => 10]), ['qty' => 1, 'reason' => 'salah scan'])
         ->assertStatus(409);
 });
 
@@ -1163,11 +1315,11 @@ it('menampilkan halaman error aplikasi, sedangkan JSON tetap JSON', function () 
         ->assertJsonMissingPath('component');
 });
 
-it('merangkum sesuai, diterima, dan ditolak, lalu memisahkan lampiran yang ditolak', function () {
+it('merangkum sesuai dan pakai stok SO, lalu menghitung pakai stok sistem sebagai sesuai setelah ditutup', function () {
     $session = ($this->sessionInReview)();
 
-    ($this->decide)($session, 10, 1)->assertSessionHasNoErrors();
-    ($this->decide)($session, 11, 2)->assertSessionHasNoErrors();
+    ($this->lock)($session, 10, 1)->assertSessionHasNoErrors();
+    ($this->lock)($session, 11, 2)->assertSessionHasNoErrors();
 
     $reviews = app(ProductOpnameReviewService::class);
 
@@ -1178,14 +1330,19 @@ it('merangkum sesuai, diterima, dan ditolak, lalu memisahkan lampiran yang ditol
     ]);
 
     expect($reviews->attachmentRows($session)->pluck('product_id')->all())->toBe([10]);
-    expect($reviews->rejectedRows($session)->pluck('product_id')->all())->toBe([11]);
-
-    // Yang ditolak tidak mengubah stok, walau tercatat di laporan.
-    expect(($this->stock)(11))->toBe(7);
 
     $this->actingAs($this->pic)
         ->post(route('product-opname-sessions.finish', $session->id), ['agreement' => true])
         ->assertSessionHasNoErrors();
+
+    // Pakai stok sistem tidak mengubah stok; setelah ditutup produknya terhitung sesuai.
+    expect(($this->stock)(10))->toBe(3);
+    expect(($this->stock)(11))->toBe(7);
+    expect($reviews->reportTotals($session))->toBe([
+        'matched' => ['products' => 2, 'recorded' => 8, 'counted' => 8, 'difference' => 0],
+        'accepted' => ['products' => 1, 'recorded' => 5, 'counted' => 3, 'difference' => -2],
+        'rejected' => ['products' => 0, 'recorded' => 0, 'counted' => 0, 'difference' => 0],
+    ]);
 
     $this->actingAs($this->pic)
         ->get(route('product-opname-sessions.report', ['id' => $session->id, 'raw' => 1]))

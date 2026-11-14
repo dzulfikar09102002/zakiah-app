@@ -230,17 +230,6 @@ export default function ScanPanel({ session, viewer }: Props) {
                 </CardContent>
             </Card>
 
-            {viewer.is_pic && (
-                <Button
-                    type="button"
-                    variant="outline"
-                    className="h-11 w-full md:h-9 md:w-auto"
-                    onClick={() => setConfirmClose(true)}
-                >
-                    <Lock /> Tutup Scan dan Review
-                </Button>
-            )}
-
             <Card>
                 <CardHeader>
                     <CardTitle>Hasil Scan</CardTitle>
@@ -336,6 +325,19 @@ export default function ScanPanel({ session, viewer }: Props) {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Langkah berikutnya setelah semua barang dihitung: di kanan bawah, setelah hasil scan. */}
+            {viewer.is_pic && (
+                <div className="flex justify-end">
+                    <Button
+                        type="button"
+                        className="h-11 w-full md:h-9 md:w-auto"
+                        onClick={() => setConfirmClose(true)}
+                    >
+                        <Lock /> Tutup Scan dan Review
+                    </Button>
+                </div>
+            )}
 
             <ScanDetailDialog
                 sessionId={session.id}

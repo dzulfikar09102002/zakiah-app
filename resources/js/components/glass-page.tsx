@@ -1,9 +1,10 @@
 import { usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
+import { BoutiqueIllustration } from '@/components/auth/boutique-illustration';
 import { cn } from '@/lib/utils';
 
 /**
- * Halaman mandiri tanpa menu aplikasi: latar toko dari halaman login dan kartu kaca.
+ * Halaman mandiri tanpa menu aplikasi: ilustrasi vektor dari halaman login dan kartu kaca.
  * Warnanya sengaja tetap terang di mode gelap (kartu kaca di atas foto), tapi mengikuti
  * tema entity lewat variabel --g-* (.glass-theme di app.css).
  */
@@ -37,12 +38,12 @@ export function GlassPage({
                 glassText,
             )}
         >
+            {/* Ilustrasi vektor butik yang sama dengan halaman login. */}
             <div
                 aria-hidden="true"
-                style={{ backgroundImage: "url('/assets/images/store.png')" }}
-                className="fixed inset-0 bg-cover bg-top bg-no-repeat print:hidden"
+                className="fixed inset-0 overflow-hidden bg-[#243146] print:hidden"
             >
-                {/* Vignette yang sama dengan panel kanan halaman login. */}
+                <BoutiqueIllustration />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,var(--g-vignette)_100%)]" />
             </div>
 

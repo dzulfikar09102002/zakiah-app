@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\OpnameSessionType;
 use App\Models\ProductOpnameSession;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
@@ -10,8 +9,9 @@ use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * PDF laporan hasil SO dan Revisi SO: halaman ringkasan ber-QR tanda tangan,
- * lalu lampiran produk yang tidak sesuai.
+ * PDF laporan hasil SO: halaman ringkasan ber-QR tanda tangan, lalu lampiran selisih
+ * yang memakai stok SO beserta alasannya. Yang memakai stok sistem sudah disamakan lewat
+ * koreksi PJ saat sesi ditutup, jadi terhitung sesuai.
  */
 class ProductOpnameReportService
 {
@@ -20,15 +20,13 @@ class ProductOpnameReportService
     public function __construct(
         protected ReportPdfService $reports,
         protected ProductOpnameReviewService $reviews,
-        protected ProductOpnameRevisionService $revisions,
         protected DocumentSignatureService $signatures,
         protected EntityBrandingService $branding,
     ) {}
 
     public function stream(ProductOpnameSession $session): Response
     {
-        $isRevision = $session->sessionType() === OpnameSessionType::Revision;
-        $title = $isRevision ? 'Laporan Revisi Hasil Stok Opname' : 'Laporan Hasil Stok Opname';
+        $title = 'Laporan Hasil Stok Opname';
         $entity = auth()->user()?->entity;
 
         // Sama dengan laporan lain: halaman pembungkus dulu, PDF dimuat lewat ?raw=1.
@@ -53,15 +51,9 @@ class ProductOpnameReportService
         $pdf->drawTitle($title);
         $pdf->drawFilters($this->information($session));
 
-        if ($isRevision) {
-            $this->drawRevisionSummary($pdf, $session);
-            $this->drawSignature($pdf, $session);
-            $this->drawRevisionTable($pdf, $session);
-        } else {
-            $this->drawOpnameSummary($pdf, $session);
-            $this->drawSignature($pdf, $session);
-            $this->drawAttachment($pdf, $session);
-        }
+        $this->drawOpnameSummary($pdf, $session);
+        $this->drawSignature($pdf, $session);
+        $this->drawAttachment($pdf, $session);
 
         $fileName = Str::slug($title.' '.$session->code).'.pdf';
 
@@ -86,10 +78,6 @@ class ProductOpnameReportService
             'Petugas' => $session->employees->map(fn ($employee) => $this->fullName($employee))->implode(', '),
         ];
 
-        if ($session->parent) {
-            $info = ['SO Asal' => $session->parent->code, ...$info];
-        }
-
         $corrections = $this->reviews->correctionCount($session);
 
         if ($corrections > 0) {
@@ -106,8 +94,7 @@ class ProductOpnameReportService
 
         $groups = [
             'Sesuai' => $totals['matched'],
-            'Tidak Sesuai, Diterima (Lampiran 1)' => $totals['accepted'],
-            'Tidak Sesuai, Ditolak (Lampiran 2)' => $totals['rejected'],
+            'Selisih, Pakai Stok SO (Lampiran)' => $totals['accepted'],
         ];
 
         $pdf->startTable([
@@ -141,19 +128,8 @@ class ProductOpnameReportService
         ]);
         $pdf->endTable();
 
-        $pdf->drawNote('Stok sistem hanya berubah dari selisih yang diterima, yaitu '.$this->signed($totals['accepted']['difference']).'. Selisih yang ditolak tidak mengubah stok.');
+        $pdf->drawNote('Stok sistem hanya berubah dari selisih yang memakai stok SO, yaitu '.$this->signed($totals['accepted']['difference']).'. Barang yang memakai stok sistem dinyatakan PJ sesuai fisik dan terhitung sesuai.');
         $pdf->Ln(2);
-    }
-
-    private function drawRevisionSummary(ReportPdfDocument $pdf, ProductOpnameSession $session): void
-    {
-        $rows = $this->revisions->rows($session);
-
-        $pdf->drawSummary([
-            'Baris Revisi' => number_format($rows->count(), 0, ',', '.'),
-            'Produk' => number_format($rows->unique('product_id')->count(), 0, ',', '.'),
-            'Total Penyesuaian' => $this->signed((int) $rows->sum('adjustment_qty')),
-        ]);
     }
 
     private function drawSignature(ReportPdfDocument $pdf, ProductOpnameSession $session): void
@@ -210,16 +186,9 @@ class ProductOpnameReportService
     {
         $this->drawDifferenceTable(
             $pdf,
-            'Lampiran 1: Tidak Sesuai, Diterima',
+            'Lampiran: Selisih, Pakai Stok SO',
             $this->reviews->attachmentRows($session),
-            'Tidak ada selisih yang diterima.',
-        );
-
-        $this->drawDifferenceTable(
-            $pdf,
-            'Lampiran 2: Tidak Sesuai, Ditolak',
-            $this->reviews->rejectedRows($session),
-            'Tidak ada selisih yang ditolak.',
+            'Tidak ada selisih yang memakai stok SO.',
         );
     }
 
@@ -233,12 +202,12 @@ class ProductOpnameReportService
 
         $pdf->startTable([
             ['label' => 'No', 'width' => 9, 'align' => 'L'],
-            ['label' => 'Nama Barang', 'width' => 70, 'align' => 'L'],
-            ['label' => 'Barcode', 'width' => 37, 'align' => 'L'],
+            ['label' => 'Nama Barang', 'width' => 55, 'align' => 'L'],
+            ['label' => 'Barcode', 'width' => 30, 'align' => 'L'],
             ['label' => 'Stok Sistem', 'width' => 19, 'align' => 'R'],
             ['label' => 'Stok SO', 'width' => 17, 'align' => 'R'],
             ['label' => 'Selisih', 'width' => 16, 'align' => 'R'],
-            ['label' => 'Ket.', 'width' => 22, 'align' => 'L'],
+            ['label' => 'Alasan', 'width' => 53, 'align' => 'L'],
         ], 7.5);
 
         foreach ($rows as $index => $row) {
@@ -249,42 +218,12 @@ class ProductOpnameReportService
                 (string) $row->recorded_stock,
                 (string) $row->counted_stock,
                 $this->signed((int) $row->difference_stock),
-                $row->scanned ? 'Selisih' : 'Tidak ter-scan',
+                trim(($row->scanned ? '' : '[Tidak ter-scan] ').($row->note ?? '')),
             ], $index % 2 === 1);
         }
 
         if ($rows->isEmpty()) {
             $pdf->drawEmptyRow($emptyMessage);
-        }
-
-        $pdf->endTable();
-    }
-
-    private function drawRevisionTable(ReportPdfDocument $pdf, ProductOpnameSession $session): void
-    {
-        $rows = $this->revisions->rows($session)->values();
-
-        $pdf->AddPage();
-        $pdf->drawTitle('Lampiran: Rincian Revisi');
-
-        $pdf->startTable([
-            ['label' => 'No', 'width' => 9, 'align' => 'L'],
-            ['label' => 'Nama Barang', 'width' => 62, 'align' => 'L'],
-            ['label' => 'Barcode', 'width' => 33, 'align' => 'L'],
-            ['label' => 'Alasan', 'width' => 18, 'align' => 'L'],
-            ['label' => 'Penyesuaian', 'width' => 20, 'align' => 'R'],
-            ['label' => 'Catatan', 'width' => 48, 'align' => 'L'],
-        ], 7.5);
-
-        foreach ($rows as $index => $row) {
-            $pdf->drawRow([
-                (string) ($index + 1),
-                (string) $row['name'],
-                (string) ($row['barcode'] ?: $row['sku']),
-                (string) $row['reason_label'],
-                $this->signed($row['adjustment_qty']),
-                (string) ($row['note'] ?? ''),
-            ], $index % 2 === 1);
         }
 
         $pdf->endTable();

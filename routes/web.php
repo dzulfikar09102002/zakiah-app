@@ -288,12 +288,12 @@ Route::middleware(['auth', 'verified', EnsureMenuAccess::class])->group(function
             Route::post('finish', 'finish')->name('finish');
             Route::post('cancel', 'cancel')->name('cancel');
             Route::post('scans', 'storeScan')->name('store-scan');
-            Route::post('scans/{scanId}/cancel', 'cancelScan')->name('cancel-scan')->whereNumber('scanId');
             Route::get('products/{productId}/scans', 'productScans')->name('product-scans')->whereNumber('productId');
+            Route::post('products/{productId}/scans', 'addScans')->name('add-scans')->whereNumber('productId');
+            Route::post('products/{productId}/scans/cancel', 'cancelScans')->name('cancel-scans')->whereNumber('productId');
             Route::get('live', 'live')->name('live');
-            Route::post('decide', 'decide')->name('decide');
-            Route::post('revision-sessions', 'storeRevisionSession')->name('store-revision-session');
-            Route::post('revisions', 'storeRevision')->name('store-revision');
+            Route::post('reviews/lock', 'lockReview')->name('lock-review');
+            Route::post('reviews/unlock', 'unlockReview')->name('unlock-review');
             Route::get('report', 'report')->name('report');
         });
 

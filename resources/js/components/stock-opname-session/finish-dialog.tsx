@@ -22,6 +22,8 @@ type Props = {
     picName: string;
     statement: string;
     children?: React.ReactNode;
+    /** Dipanggil setelah sesi berhasil ditutup. */
+    onFinished?: () => void;
 };
 
 /**
@@ -36,6 +38,7 @@ export default function FinishDialog({
     picName,
     statement,
     children,
+    onFinished,
 }: Props) {
     const [agreed, setAgreed] = useState(false);
     const [processing, setProcessing] = useState(false);
@@ -58,8 +61,9 @@ export default function FinishDialog({
             productOpnameSessions.finish(sessionId).url,
             { agreement: agreed },
             {
-                success: 'Sesi diakhiri, laporan sudah tersedia',
+                success: 'Hasil review disimpan, sesi SO ditutup',
                 onSuccess: () => {
+                    onFinished?.();
                     setAgreed(false);
                     onOpenChange(false);
                 },
@@ -72,7 +76,9 @@ export default function FinishDialog({
         <Dialog open={open} onOpenChange={changeOpen}>
             <DialogContent className="max-h-[90dvh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>Simpan dan Akhiri Sesi</DialogTitle>
+                    <DialogTitle>
+                        Simpan Hasil Review &amp; Tutup Sesi SO
+                    </DialogTitle>
                     <DialogDescription>
                         Sesi {sessionCode} akan ditutup permanen dan laporannya
                         ditandatangani secara elektronik atas nama {picName}.
@@ -116,7 +122,7 @@ export default function FinishDialog({
                         onClick={submit}
                     >
                         {processing && <Spinner />}
-                        Setuju, Simpan dan Akhiri
+                        Setuju, Simpan &amp; Tutup Sesi
                     </Button>
                 </DialogFooter>
             </DialogContent>

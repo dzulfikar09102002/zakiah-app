@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\OpnameRevisionReason;
+use App\Enums\OpnameReviewDecision;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreProductOpnameRevisionRequest extends FormRequest
+class LockProductOpnameReviewRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -21,22 +21,20 @@ class StoreProductOpnameRevisionRequest extends FormRequest
     {
         return [
             'product_id' => ['required', 'integer'],
-            'adjustment_qty' => ['required', 'integer', 'between:-100000,100000'],
-            'reason' => ['required', Rule::enum(OpnameRevisionReason::class)],
-            'note' => ['nullable', 'string', 'max:1000'],
+            'decision' => ['required', Rule::enum(OpnameReviewDecision::class)],
+            'note' => ['required', 'string', 'min:3', 'max:1000'],
         ];
     }
 
     /**
      * @return array<string, string>
      */
-    public function attributes(): array
+    public function messages(): array
     {
         return [
-            'product_id' => 'produk',
-            'adjustment_qty' => 'jumlah penyesuaian',
-            'reason' => 'alasan',
-            'note' => 'catatan',
+            'decision.required' => 'Pilih pakai stok SO atau stok sistem.',
+            'note.required' => 'Alasan wajib diisi.',
+            'note.min' => 'Alasan terlalu pendek, minimal 3 huruf.',
         ];
     }
 }
